@@ -1907,11 +1907,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./tools */ "./src/pages/common/tools.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../util */ "./src/util.js");
 
 
 class Nav {
   constructor() {
+    this.id = `nav_`;
     this.$body = jquery__WEBPACK_IMPORTED_MODULE_0___default()("body");
     this.links = [{
       name: "Home",
@@ -1920,7 +1921,8 @@ class Nav {
     }, {
       name: "Trade",
       title: "Trade",
-      href: "trade.html"
+      href: "trade.html",
+      target: "_blank"
     }, {
       name: "Settings",
       title: "Settings",
@@ -1932,23 +1934,27 @@ class Nav {
   getlinks() {
     var html = "";
     this.links.forEach(obj => {
-      html += `<li class="nav-item"><a href="${obj?.href}" title="${obj?.title}" class="py-0 px-2 nav-link">${obj?.name}</a></li>`;
+      var target = obj?.target ? `target="${obj.target}"` : '';
+      html += `<li class="nav-item"><a ${target} href="${obj?.href}" title="${obj?.title}" class="py-0 px-2 nav-link">${obj?.name}</a></li>`;
     });
     return html;
+  }
+  hideLinks() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}links`).hide();
   }
   getIcon() {
     return `<img height="26" src="../resources/images/icon.png"/>`;
   }
   setTitle(txt) {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()("#title").text(`${!txt ? 'Tradex | ' : txt}${(0,_tools__WEBPACK_IMPORTED_MODULE_1__.hhmmss)()}`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()("#title").text(`${!txt ? '' : txt}${(0,_util__WEBPACK_IMPORTED_MODULE_1__.hhmmss)()}`);
   }
   init() {
     this.$body.prepend(`
-            <nav class="container-fluid bg-dark" style="padding-top: 2px;padding-bottom:2px;">
+            <nav id="${this.id}" class="container-fluid bg-dark" style="padding-top: 2px;padding-bottom:2px;">
                 <div class="row px-2">    
                     <div class="col-4 py-0 px-0 navbar navbar-expand-sm navbar-dark">
                        <a class="p-0" href="home.html">${this.getIcon()}</a>
-                        <ul class="navbar-nav w-100">
+                        <ul id="${this.id}links" class="navbar-nav w-100">
                             ${this.getlinks()}
                         </ul>
                     </div>
@@ -1959,33 +1965,6 @@ class Nav {
         `);
     this.setTitle();
   }
-}
-
-/***/ }),
-
-/***/ "./src/pages/common/tools.js":
-/*!***********************************!*\
-  !*** ./src/pages/common/tools.js ***!
-  \***********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   hhmmss: () => (/* binding */ hhmmss)
-/* harmony export */ });
-function hhmmss() {
-  let now = new Date();
-  let hours = now.getHours();
-  let minutes = now.getMinutes();
-  let seconds = now.getSeconds();
-  let ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  hours = hours.toString().padStart(2, '0');
-  minutes = minutes.toString().padStart(2, '0');
-  seconds = seconds.toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds} ${ampm}`;
 }
 
 /***/ }),
@@ -3077,14 +3056,14 @@ class MarketData {
   //       const signal = controller.signal;
   //       const { interval, unit, barsback, sessiontemplate } = options;
 
-  //       const params = new URLSearchParams({
-  //         interval: String(interval),
-  //         unit: String(unit),
-  //         barsback: String(barsback),
-  //         sessiontemplate: String(sessiontemplate),
-  //       }).toString();
+  // const params = new URLSearchParams({
+  //   interval: String(interval),
+  //   unit: String(unit),
+  //   barsback: String(barsback),
+  //   sessiontemplate: String(sessiontemplate),
+  // }).toString();
 
-  //       const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
+  // const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
   //       const response = await fetch(url, {
   //         method: 'get',
   //         signal: signal,
@@ -4011,6 +3990,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   findObjectById: () => (/* binding */ findObjectById),
 /* harmony export */   findObjectByVal: () => (/* binding */ findObjectByVal),
 /* harmony export */   formatCurrency: () => (/* binding */ formatCurrency),
+/* harmony export */   formatVolume: () => (/* binding */ formatVolume),
 /* harmony export */   generateAlphaNumString: () => (/* binding */ generateAlphaNumString),
 /* harmony export */   generateCandleData: () => (/* binding */ generateCandleData),
 /* harmony export */   generateLineData: () => (/* binding */ generateLineData),
@@ -4491,7 +4471,6 @@ function convertToEST(dateTimeString) {
   // Parse the input date string
   const date = new Date(dateTimeString);
   return date.toLocaleString();
-  ;
 }
 function convertUTCToEST(utcTimestamp) {
   // Create a Date object from the UTC timestamp
@@ -4516,6 +4495,15 @@ function convertUTCToEST(utcTimestamp) {
   });
   return formattedDate;
 }
+const formatVolume = number => {
+  const suffixes = ["", "K", "M", "B"];
+  const suffixNum = Math.floor(("" + number).length / 3);
+  let shortNumber = parseFloat((suffixNum !== 0 ? number / Math.pow(1000, suffixNum) : number).toPrecision(5));
+  if (shortNumber % 1 !== 0) {
+    shortNumber = shortNumber.toFixed(3);
+  }
+  return shortNumber + suffixes[suffixNum];
+};
 
 /***/ }),
 

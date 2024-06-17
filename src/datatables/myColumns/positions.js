@@ -56,7 +56,7 @@ export const get_table_positions_columns = () => {
                 var finalPLVal = renderColor(
                     `${getPlusOrMinus(parseFloat(row?.TodaysProfitLoss))}$${plDol} ${arrow} ${plPer}%`,
                      null,
-                     parseFloat(row?.TodaysProfitLoss) > 0);
+                     parseFloat(row?.TodaysProfitLoss) >= 0);
                 return (`<div class="text-center">$${formatCurrency(marketValue)}<br/>${finalPLVal}</div>`);
            }
         },
@@ -69,7 +69,7 @@ export const get_table_positions_columns = () => {
                 var finalPLVal = renderColor(
                     `${getPlusOrMinus(plDol)}$${formatCurrency(plDol.toFixed(2))} ${arrow} ${plPer}%`,
                      null,
-                     parseFloat(plDol > 0));
+                     plDol >= 0);
                 return (`<div class="text-end">$${formatCurrency(totalCost)}<br/>${finalPLVal}</div>`);
            }
         },

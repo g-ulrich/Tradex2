@@ -10,7 +10,7 @@
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Chart)
+/* harmony export */   Chart: () => (/* binding */ Chart)
 /* harmony export */ });
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
@@ -22,43 +22,123 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-class Chart {
+class Header {
   constructor(containerId) {
     this.containerId = containerId;
     this.headerId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(20)}`;
-    this.chart = (0,lightweight_charts__WEBPACK_IMPORTED_MODULE_1__.createChart)(this.containerId, {
-      ..._charts_options__WEBPACK_IMPORTED_MODULE_2__.CHART_THEMES.defaultChart
-    });
-    this.height = 400;
-    this._setResizeListener();
+    this.symbol = "";
+    this.chartType = "";
+    this.params = {};
+    this.frequencyArray = [];
+    this._setParamDefaults();
     this._setHeader();
-    this.lastBar = {};
-    this.series = {};
+    this.init();
   }
-  _updateChartHeight(n) {
-    this.height = n;
-    this.chart.resize(jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`), this.height);
+  _setParamDefaults() {
+    this.symbol = "SPY";
+    this.chartType = "column";
+    this.params = {
+      interval: '5',
+      unit: 'Minute',
+      barsback: '100',
+      sessiontemplate: 'Default'
+    };
+    this.frequencyArray = [{
+      interval: '5',
+      name: '5m',
+      unit: 'Minute'
+    }, {
+      interval: '1',
+      name: '1m',
+      unit: 'Minute'
+    }, {
+      interval: '10',
+      name: '10m',
+      unit: 'Minute'
+    }, {
+      interval: '15',
+      name: '15m',
+      unit: 'Minute'
+    }, {
+      interval: '30',
+      name: '30m',
+      unit: 'Minute'
+    }, {
+      interval: '60',
+      name: '1hr',
+      unit: 'Minute'
+    }, {
+      interval: '1',
+      name: '1D',
+      unit: 'Daily'
+    }, {
+      interval: '1',
+      name: '1W',
+      unit: 'Weekly'
+    }, {
+      interval: '1',
+      name: '1M',
+      unit: 'Monthly'
+    }];
+    this._getParamsFromURL();
   }
-  info(msg) {
-    console.log(`[INFO] ChartClass: ${msg}`);
+  _processURLParams(paramCls, key) {
+    var param = paramCls.get(key);
+    var isSymbolOrChartType = this[key] && this[key] !== "";
+    return param !== null && param !== "" ? param : isSymbolOrChartType ? this[key] : this.params[key];
   }
-  error(msg) {
-    console.log(`[error] ChartClass: ${msg}`);
+  _getParamsFromURL() {
+    const urlP = new URLSearchParams(window.location.search);
+    this.symbol = this._processURLParams(urlP, 'symbol');
+    this.chartType = this._processURLParams(urlP, 'chartType');
+    this.params = {
+      interval: this._processURLParams(urlP, 'interval'),
+      unit: this._processURLParams(urlP, 'unit'),
+      barsback: this._processURLParams(urlP, 'barsback'),
+      sessiontemplate: this._processURLParams(urlP, 'sessiontemplate')
+    };
+  }
+  reloadPage() {
+    const urlparams = new URLSearchParams({
+      symbol: this.symbol,
+      chartType: this.chartType,
+      interval: this.params.interval,
+      unit: this.params.unit,
+      barsback: this.params.barsback,
+      sessiontemplate: this.params.sessiontemplate
+    }).toString();
+    window.location.href = `trade.html?${urlparams}`;
   }
   _setHeader() {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).prepend(`
         <div id="${this.headerId}" class="w-100 pb-1">
         </div>
         `);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).hide();
+  }
+  _addSymbolInputBindings() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).on('keypress', event => {
+      if (event.which == 13) {
+        var symbol = event.target.value;
+        if (symbol.trim() != "") {
+          this.symbol = symbol.toUpperCase();
+          this.reloadPage();
+        }
+      }
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} button`).on('click', () => {
+      // todo get all parameters in a function
+      var symbol = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).val();
+      if (symbol.trim() != "") {
+        this.symbol = symbol.toUpperCase();
+        this.reloadPage();
+      }
+    });
   }
   addSymbolInput() {
-    const $container = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`);
-    const $header = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`);
-    $header.append(`
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
             <input 
             class="text-uppercase p-1 text-white font-weight-bold rounded" 
-            value="" 
+            value="${this.symbol}" 
             placeholder="Symbol" 
             type="search" 
             style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;">
@@ -66,66 +146,224 @@ class Chart {
                 <i class="fa-solid fa-magnifying-glass fa-rotate-90"></i>
             </button>
         `);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).on('keypress', function (event) {
-      if (event.which == 13) {
-        console.log(event.target);
-        // todo get all parameters in a function
-        var symbol = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).val().toUpperCase();
-        if (symbol.trim() != "") {
-          console.log(symbol);
-        }
+    this._addSymbolInputBindings();
+  }
+  addChartTypes() {
+    const chartTypeId = `chartType_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
+    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+            <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
+            <select id="${selectId}"
+                class="p-1 text-white font-weight-bold rounded"
+                style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                >
+                <option ${this.chartType == 'column' ? 'selected' : ''}>column</option>
+                <option ${this.chartType == 'line' ? 'selected' : ''}>line</option>
+                <option ${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
+                <option ${this.chartType == 'area' ? 'selected' : ''}>area</option>
+            </select>
+        `);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
+      this.chartType = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${chartTypeId}`).empty();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${chartTypeId}`).append(`<i class="fa-solid fa-chart-${this.chartType}"></i>`);
+      this.reloadPage();
+    });
+  }
+  getIntervalName() {
+    return `${this.params.interval}${this.params.unit.substring(0, 1)}`;
+  }
+  addInterval() {
+    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
+    var optionsHtml = "";
+    this.frequencyArray.forEach(obj => {
+      optionsHtml += `<option data-unit="${obj?.unit}" data-interval="${obj?.interval}"
+                ${this.params.interval == obj?.interval ? 'selected' : ''}>${obj?.name}</option>`;
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+                <select id="${selectId}"
+                    class="p-1 text-white font-weight-bold rounded"
+                    style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    >
+                    ${optionsHtml}
+                </select>
+            `);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
+      this.params.interval = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-interval');
+      this.params.unit = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-unit');
+      this.reloadPage();
+    });
+  }
+  addSession() {
+    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+                <select id="${selectId}"
+                    class="p-1 text-white font-weight-bold rounded"
+                    style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    >
+                    <option ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
+                    <option ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
+                    <option ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
+                    <option ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
+                    <option ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
+                </select>
+            `);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
+      this.params.sessiontemplate = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
+      console.log(this.params);
+      this.reloadPage();
+    });
+  }
+  hide() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).hide();
+  }
+  show() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).show();
+  }
+  init() {
+    this.addSymbolInput();
+    this.addChartTypes();
+    this.addInterval();
+    this.addSession();
+    // $(`#${this.headerId}`).fadeIn();
+  }
+}
+class Legend {
+  constructor(containerId) {
+    this.containerId = containerId;
+    this._setLegend();
+  }
+  _setLegend() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId} table div`).append(`<span id="${this.containerId}_legend" style="z-index:2;" class="position-absolute"></span>`);
+  }
+  _legendItemWrapper(html) {
+    return '';
+  }
+  _eyeInsert(title) {
+    return `<i id="${this.containerId}_eye_${title}" class="fa-solid fa-eye"></i>`;
+  }
+  update(array) {
+    const $legend = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}_legend`);
+    var html = "";
+    var _s = "<span class='text-muted'>";
+    var s_ = "</span>";
+    array.forEach(obj => {
+      if (obj.title == "bars") {
+        ;
+        html += `<span class="text-${obj.close > obj.open ? 'success' : 'primary'}">
+                ${_s}O:${s_}${obj.open} 
+                ${_s}H:${s_}${obj.high} 
+                ${_s}L:${s_}${obj.low} 
+                ${_s}C:${s_}${obj.close}${s_}<br/>`;
+      } else if (obj.title == "vol") {
+        html += `${this._eyeInsert()} ${_s}Vol${s_} ${(0,_util__WEBPACK_IMPORTED_MODULE_3__.formatVolume)(obj.value)}`;
       }
     });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} button`).on('click', () => {
-      // todo get all parameters in a function
-      var symbol = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).val().toUpperCase();
-      if (symbol.trim() != "") {
-        console.log(symbol);
+    $legend.empty();
+    $legend.append(html);
+  }
+}
+class Chart {
+  constructor(containerId) {
+    this.containerId = containerId;
+    this.header = new Header(this.containerId);
+    this.chart = (0,lightweight_charts__WEBPACK_IMPORTED_MODULE_1__.createChart)(this.containerId, {
+      ..._charts_options__WEBPACK_IMPORTED_MODULE_2__.CHART_THEMES.defaultChart
+    });
+    this.height = 400;
+    this._setResizeListener();
+    this._setCrosshairListener();
+    this.legend = new Legend(this.containerId);
+    this.lastBar = {};
+    this.series = {};
+    this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
+  }
+  info(msg) {
+    console.log(`[INFO] ChartClass: ${msg}`);
+  }
+  error(msg) {
+    console.log(`[error] ChartClass: ${msg}`);
+  }
+  _setCrosshairListener() {
+    this.chart.subscribeCrosshairMove(e => {
+      if (e.time !== undefined) {
+        var array = [];
+        e.seriesData.forEach((value, key) => {
+          array.push({
+            ...value,
+            title: key._internal__series._private__options.title
+          });
+        });
+        this.legend.update(array);
       }
     });
-    this.chart.resize($container.width(), this.height);
-    $header.fadeIn();
+  }
+  _resizeChart() {
+    this.chart.resize(jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).width(), parseInt(window.innerHeight * .8));
   }
   _setResizeListener() {
     const $container = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`);
     this.chart.applyOptions({
       width: $container.width(),
-      height: this.height
+      height: parseInt(window.innerHeight * .8)
     });
     window.addEventListener("resize", () => {
-      this.chart.resize($container.width(), this.height);
+      this.chart.resize($container.width(), parseInt(window.innerHeight * .8));
     });
   }
-  _getCandleBarSeriesOption(seriesObj) {
+  _getCandleBarSeriesOption(seriesObj, title) {
+    var success = "#0b9657";
+    var primary = "#7289da";
+    var secondary = "#99aab5";
     seriesObj.applyOptions({
-      upColor: "#0b9657",
-      // success
-      downColor: "#7289da",
-      // primary
-      borderDownColor: "#7289da",
-      // primary
-      borderUpColor: "#0b9657",
-      // success
-      wickDownColor: "#99aab5",
-      // secondary
-      wickUpColor: "#99aab5" // secondary
+      title: title,
+      //bar
+      thinBars: false,
+      // line
+      color: success,
+      // area
+      topColor: success,
+      bottomColor: primary,
+      lineColor: success,
+      lineWidth: '.5',
+      // candle
+      upColor: success,
+      downColor: primary,
+      borderDownColor: primary,
+      borderUpColor: success,
+      wickDownColor: secondary,
+      wickUpColor: secondary
+      // markers: []
     });
     return seriesObj;
   }
   addCandlestickSeries(name) {
-    var candles = this.chart.addCandlestickSeries();
-    candles = this._getCandleBarSeriesOption(candles);
+    // This method name is not indicative of the series type that will represent that bar data.
+    let candles;
+    if (this.header.chartType == 'column') {
+      candles = this.chart.addCandlestickSeries();
+    } else if (this.header.chartType == 'area') {
+      candles = this.chart.addAreaSeries();
+    } else if (this.header.chartType == 'line') {
+      candles = this.chart.addLineSeries();
+    } else if (this.header.chartType == 'gantt') {
+      candles = this.chart.addBarSeries();
+    } else {
+      candles = this.chart.addCandlestickSeries();
+    }
+    candles = this._getCandleBarSeriesOption(candles, name);
     this.series[name] = {
       id: this.series.length,
       name: name,
       obj: candles
     };
   }
-  _getHistogramVolumeOption(seriesObj) {
+  _getHistogramVolumeOption(seriesObj, title) {
     seriesObj.applyOptions({
       priceFormat: {
         type: 'volume'
       },
+      title: title,
       overlay: true,
       priceScaleId: 'volume_scale'
     });
@@ -139,8 +377,8 @@ class Chart {
   }
   addHistogramSeries(name) {
     var histogram = this.chart.addHistogramSeries();
-    if (name.toLowerCase() == "volume") {
-      histogram = this._getHistogramVolumeOption(histogram);
+    if (name.toLowerCase() == "vol" || name.toLowerCase() == "volume") {
+      histogram = this._getHistogramVolumeOption(histogram, name);
     }
     this.series[name] = {
       id: this.series.length,
@@ -181,11 +419,72 @@ class Chart {
     var newBar = this._processNextBar(bar);
     Object.keys(this.series).forEach(name => {
       var series = this.series[name];
-      if (series?.obj) {
+      if (series?.obj && name == 'volume') {
         this.lastBar = newBar;
+        series.obj.update(newBar);
+      } else {
+        this.lastBar = newBar;
+        if (this.header.chartType == 'area' || this.header.chartType == 'line') {
+          newBar.value = newBar?.close;
+        }
         series.obj.update(newBar);
       }
     });
+  }
+}
+
+/***/ }),
+
+/***/ "./src/charts/customAPIBindings/getData.js":
+/*!*************************************************!*\
+  !*** ./src/charts/customAPIBindings/getData.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Data: () => (/* binding */ Data),
+/* harmony export */   setMarketDataBarsAndStream: () => (/* binding */ setMarketDataBarsAndStream)
+/* harmony export */ });
+function setMarketDataBarsAndStream(chart, symbol, params) {
+  var params = params ? params : {
+    interval: '5',
+    unit: 'Minute',
+    barsback: '100',
+    sessiontemplate: 'Default'
+  };
+  setTimeout(() => {
+    window.ts.marketData.streamBars(chart, "testing", symbol, params);
+  }, 5000);
+  // const self = this;
+  window.ts.marketData.getBars(symbol, params).then(bars => {
+    var candles = window.ts.marketData.bars2Candles(bars);
+    chart.setBars(candles);
+  }).catch(error => {
+    console.log("[ERROR] setAndPollCandles " + error);
+    setTimeout(() => {
+      console.log("[INFO] _pollMarketDataGetBars trying again...");
+      _pollMarketDataGetBars(chart, symbol);
+    }, 1000);
+  });
+}
+class Data {
+  constructor(chartClass) {
+    this.chart = chartClass;
+    this.symbol = "SPY";
+    this.params = {
+      interval: '5',
+      unit: 'Minute',
+      barsback: '100',
+      sessiontemplate: 'Default'
+    };
+  }
+  updateSymbol(symbol) {
+    this.symbol = symbol;
+  }
+  startBarStream(symbol, params) {
+    setMarketDataBarsAndStream(this.chart, symbol, params);
   }
 }
 
@@ -2320,11 +2619,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./tools */ "./src/pages/common/tools.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../util */ "./src/util.js");
 
 
 class Nav {
   constructor() {
+    this.id = `nav_`;
     this.$body = jquery__WEBPACK_IMPORTED_MODULE_0___default()("body");
     this.links = [{
       name: "Home",
@@ -2333,7 +2633,8 @@ class Nav {
     }, {
       name: "Trade",
       title: "Trade",
-      href: "trade.html"
+      href: "trade.html",
+      target: "_blank"
     }, {
       name: "Settings",
       title: "Settings",
@@ -2345,23 +2646,27 @@ class Nav {
   getlinks() {
     var html = "";
     this.links.forEach(obj => {
-      html += `<li class="nav-item"><a href="${obj?.href}" title="${obj?.title}" class="py-0 px-2 nav-link">${obj?.name}</a></li>`;
+      var target = obj?.target ? `target="${obj.target}"` : '';
+      html += `<li class="nav-item"><a ${target} href="${obj?.href}" title="${obj?.title}" class="py-0 px-2 nav-link">${obj?.name}</a></li>`;
     });
     return html;
+  }
+  hideLinks() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}links`).hide();
   }
   getIcon() {
     return `<img height="26" src="../resources/images/icon.png"/>`;
   }
   setTitle(txt) {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()("#title").text(`${!txt ? 'Tradex | ' : txt}${(0,_tools__WEBPACK_IMPORTED_MODULE_1__.hhmmss)()}`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()("#title").text(`${!txt ? '' : txt}${(0,_util__WEBPACK_IMPORTED_MODULE_1__.hhmmss)()}`);
   }
   init() {
     this.$body.prepend(`
-            <nav class="container-fluid bg-dark" style="padding-top: 2px;padding-bottom:2px;">
+            <nav id="${this.id}" class="container-fluid bg-dark" style="padding-top: 2px;padding-bottom:2px;">
                 <div class="row px-2">    
                     <div class="col-4 py-0 px-0 navbar navbar-expand-sm navbar-dark">
                        <a class="p-0" href="home.html">${this.getIcon()}</a>
-                        <ul class="navbar-nav w-100">
+                        <ul id="${this.id}links" class="navbar-nav w-100">
                             ${this.getlinks()}
                         </ul>
                     </div>
@@ -2372,33 +2677,6 @@ class Nav {
         `);
     this.setTitle();
   }
-}
-
-/***/ }),
-
-/***/ "./src/pages/common/tools.js":
-/*!***********************************!*\
-  !*** ./src/pages/common/tools.js ***!
-  \***********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   hhmmss: () => (/* binding */ hhmmss)
-/* harmony export */ });
-function hhmmss() {
-  let now = new Date();
-  let hours = now.getHours();
-  let minutes = now.getMinutes();
-  let seconds = now.getSeconds();
-  let ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  hours = hours.toString().padStart(2, '0');
-  minutes = minutes.toString().padStart(2, '0');
-  seconds = seconds.toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds} ${ampm}`;
 }
 
 /***/ }),
@@ -3490,14 +3768,14 @@ class MarketData {
   //       const signal = controller.signal;
   //       const { interval, unit, barsback, sessiontemplate } = options;
 
-  //       const params = new URLSearchParams({
-  //         interval: String(interval),
-  //         unit: String(unit),
-  //         barsback: String(barsback),
-  //         sessiontemplate: String(sessiontemplate),
-  //       }).toString();
+  // const params = new URLSearchParams({
+  //   interval: String(interval),
+  //   unit: String(unit),
+  //   barsback: String(barsback),
+  //   sessiontemplate: String(sessiontemplate),
+  // }).toString();
 
-  //       const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
+  // const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
   //       const response = await fetch(url, {
   //         method: 'get',
   //         signal: signal,
@@ -4424,6 +4702,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   findObjectById: () => (/* binding */ findObjectById),
 /* harmony export */   findObjectByVal: () => (/* binding */ findObjectByVal),
 /* harmony export */   formatCurrency: () => (/* binding */ formatCurrency),
+/* harmony export */   formatVolume: () => (/* binding */ formatVolume),
 /* harmony export */   generateAlphaNumString: () => (/* binding */ generateAlphaNumString),
 /* harmony export */   generateCandleData: () => (/* binding */ generateCandleData),
 /* harmony export */   generateLineData: () => (/* binding */ generateLineData),
@@ -4904,7 +5183,6 @@ function convertToEST(dateTimeString) {
   // Parse the input date string
   const date = new Date(dateTimeString);
   return date.toLocaleString();
-  ;
 }
 function convertUTCToEST(utcTimestamp) {
   // Create a Date object from the UTC timestamp
@@ -4929,6 +5207,15 @@ function convertUTCToEST(utcTimestamp) {
   });
   return formattedDate;
 }
+const formatVolume = number => {
+  const suffixes = ["", "K", "M", "B"];
+  const suffixNum = Math.floor(("" + number).length / 3);
+  let shortNumber = parseFloat((suffixNum !== 0 ? number / Math.pow(1000, suffixNum) : number).toPrecision(5));
+  if (shortNumber % 1 !== 0) {
+    shortNumber = shortNumber.toFixed(3);
+  }
+  return shortNumber + suffixes[suffixNum];
+};
 
 /***/ }),
 
@@ -5597,139 +5884,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./common/core */ "./src/pages/common/core.js");
 /* harmony import */ var _css_bootstrap_discord_min_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./css/bootstrap-discord.min.css */ "./src/pages/css/bootstrap-discord.min.css");
 /* harmony import */ var _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../charts/chartClass */ "./src/charts/chartClass.js");
+/* harmony import */ var _charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../charts/customAPIBindings/getData */ "./src/charts/customAPIBindings/getData.js");
 
 
 
-// import {CHART_THEMES} from '../charts/options';
 
-// import { createChart, CrosshairMode } from "lightweight-charts";
-
-// const chart = createChart("tradeChart", {...CHART_THEMES.defaultChart,
-//   watermark: {
-//     text: "XYZ",
-//     fontSize: 256,
-//     color: "rgba(256, 256, 256, 0.1)",
-//     visible: true
-//   }
-// });
-
-// const candleSeries = chart.addCandlestickSeries();
-// candleSeries.applyOptions({
-//     upColor: "#0b9657",// success
-//     downColor: "#7289da", // primary
-//     borderDownColor: "#7289da", // primary
-//     borderUpColor: "#0b9657", // success
-//     wickDownColor: "#99aab5", // secondary
-//     wickUpColor: "#99aab5" // secondary
-//   });
-
-// const volumeSeries = chart.addHistogramSeries(
-//     {priceFormat: { type: 'volume' }, 
-//     overlay: true, 
-//     priceScaleId: 'volume_scale'});
-// volumeSeries.priceScale().applyOptions({
-//     scaleMargins: { top: 0.8, bottom: 0 },
-//   });
-
-// for (let i = 0; i < 150; i++) {
-//   /**
-//    * 1. get configuration ( start time, speed, tick_timeframe, symbol, candle timeframe)
-//    * 2. get requested candles ( 100*tick_timeframe/timeframe )
-//    * 3. update series using available data.
-//    * 4. puase and start button ( default all things are stopped.)
-//    * 5. date picker or using scroller change date..
-//    * **/
-//   const bar = nextBar();
-//   candleSeries.update(bar);
-//   volumeSeries.update(bar);
-// }
-
-// resize();
-
-// setInterval(() => {
-//   const bar = nextBar();
-//   candleSeries.update(bar);
-//   volumeSeries.update(bar);
-// }, 3000);
-
-// window.addEventListener("resize", resize, false);
-
-// function resize() {
-//   chart.applyOptions({ width: window.innerWidth, height: window.innerHeight });
-
-//   setTimeout(() => chart.timeScale().fitContent(), 0);
-// }
-// function get_next_bars(start_ts) {}
-// function nextBar() {
-//   if (!nextBar.date) nextBar.date = new Date(2020, 0, 0);
-//   if (!nextBar.bar) nextBar.bar = { open: 100, high: 104, low: 98, close: 103 };
-
-//   nextBar.date.setDate(nextBar.date.getDate() + 1);
-//   nextBar.bar.time = {
-//     year: nextBar.date.getFullYear(),
-//     month: nextBar.date.getMonth() + 1,
-//     day: nextBar.date.getDate()
-//   };
-
-//   let old_price = nextBar.bar.close;
-//   let volatility = 0.1;
-//   let rnd = Math.random();
-//   let change_percent = 2 * volatility * rnd;
-
-//   if (change_percent > volatility) change_percent -= 2 * volatility;
-
-//   let change_amount = old_price * change_percent;
-//   nextBar.bar.open = nextBar.bar.close;
-//   nextBar.bar.close = old_price + change_amount;
-//   nextBar.bar.high =
-//     Math.max(nextBar.bar.open, nextBar.bar.close) +
-//     Math.abs(change_amount) * Math.random();
-//   nextBar.bar.low =
-//     Math.min(nextBar.bar.open, nextBar.bar.close) -
-//     Math.abs(change_amount) * Math.random();
-//   nextBar.bar.value = Math.random() * 100;
-//   nextBar.bar.color =
-//     nextBar.bar.close < nextBar.bar.open
-//       ? "rgba(114, 137, 218, .2)" // primary
-//       : "rgba(11, 150, 87, .2)"; // success
-
-//   return nextBar.bar;
-// }
-
-function _pollMarketDataGetBars(chart, symbol, params) {
-  var params = params ? params : {
-    interval: '5',
-    unit: 'Minute',
-    barsback: '100',
-    sessiontemplate: 'Default'
-  };
-  setTimeout(() => {
-    window.ts.marketData.streamBars(chart, "testing", symbol, params);
-  }, 5000);
-  // const self = this;
-  window.ts.marketData.getBars(symbol, params).then(bars => {
-    var candles = window.ts.marketData.bars2Candles(bars);
-    chart.setBars(candles);
-  }).catch(error => {
-    console.log("[ERROR] setAndPollCandles " + error);
-    setTimeout(() => {
-      console.log("[INFO] _pollMarketDataGetBars trying again...");
-      _pollMarketDataGetBars(chart, symbol);
-    }, 1000);
-  });
-}
 (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const symbol = "SPY"; //urlParams.get('symbol');
-
-  var chart = new _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__["default"]("tradeChart");
+  (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#nav_links").hide();
+  var chart = new _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__.Chart("tradeChart");
   chart.addCandlestickSeries("bars");
-  chart.addHistogramSeries("volume");
-  // $("#symbol").text(symbol);
-  chart.addSymbolInput();
-  (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${chart.headerId} input`).val(symbol);
-  chart.setWatermark(symbol);
-  _pollMarketDataGetBars(chart, symbol);
+  chart.addHistogramSeries("vol");
+  const data = new _charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_3__.Data(chart);
+  data.startBarStream(chart.header.symbol, chart.header.params);
 });
 })();
 

@@ -496,7 +496,7 @@ export function convertToEST(dateTimeString) {
   // Parse the input date string
   const date = new Date(dateTimeString);
 
-  return date.toLocaleString();;
+  return date.toLocaleString();
 }
 export function convertUTCToEST(utcTimestamp) {
   // Create a Date object from the UTC timestamp
@@ -521,4 +521,14 @@ export function convertUTCToEST(utcTimestamp) {
   });
 
   return formattedDate;
+}
+
+export const formatVolume = (number) => {
+  const suffixes = ["", "K", "M", "B"];
+  const suffixNum = Math.floor(("" + number).length / 3);
+  let shortNumber = parseFloat((suffixNum !== 0 ? (number / Math.pow(1000, suffixNum)) : number).toPrecision(5));
+  if (shortNumber % 1 !== 0) {
+    shortNumber = shortNumber.toFixed(3);
+  }
+  return shortNumber + suffixes[suffixNum];
 }

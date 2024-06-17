@@ -7,6 +7,7 @@ import {TS} from '../../tradestation/enpoints/main';
 window.ts = new TS();
 import {Nav} from './nav';
 
+
 const TIMEOUT_MSECONDS = 500; 
 
 $(()=>{

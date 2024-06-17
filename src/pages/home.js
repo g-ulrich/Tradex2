@@ -19,24 +19,6 @@ function appendToRight(id){
     return eleId;
 }
 
-// function addNewDOMCol(id, colStr) {
-//     const eleId = `${id}_${getRandomAlphaNum(5)}`;
-//     $(`#content`).append(
-//         `<div id="${id}_col_container" class="${colStr} p-1">
-//                 <div id="${eleId}" class="w-100 bg-dark rounded p-1">
-//                 </div>
-//             </div>`
-//     );
-//     return eleId;
-// }
-
-// function appendNewDomDiv(id){
-//     const eleId = `${id}_${getRandomAlphaNum(5)}`;
-//     $(`#${id}_col_container`).append(`
-//         <div id="${eleId}" class="w-100 bg-dark rounded p-1 mt-2">
-//                 </div>`);
-//     return eleId;
-// }
 
 function initAccountInfo() {
     window.ts.account.getAccounts().then(accounts => {
@@ -164,6 +146,11 @@ function setOrdersTableData(table, accountIds) {
     });
 }
 
+// Assuming the current URL is something like "http://example.com/trade.html?symbol=MSFT"
+const urlParams = new URLSearchParams(window.location.search);
+const symbol = urlParams.get('symbol');
+
+console.log(symbol); // This will log "MSFT" if the URL is "http://example.com/trade.html?symbol=MSFT"
 $(() => {
     if (window.ts.token) {
         initHome();
@@ -174,8 +161,15 @@ $(() => {
     }
 
     $(document).on('click', '.tradeSymbol', function() {
-        var symbol = $(this).attr('data-symbol');
-        window.location.href = `trade.html?symbol=${symbol}`;
+        const urlparams = new URLSearchParams({
+            symbol: $(this).attr('data-symbol'),
+            chartType: "column",
+            interval: "",
+            unit: "",
+            barsback: "",
+            sessiontemplate: "",
+        }).toString();
+        window.open(`trade.html?${urlparams}`, '_blank');
     });
 });
 

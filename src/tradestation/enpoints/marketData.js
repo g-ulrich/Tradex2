@@ -251,14 +251,14 @@ export class MarketData {
     //       const signal = controller.signal;
     //       const { interval, unit, barsback, sessiontemplate } = options;
 
-    //       const params = new URLSearchParams({
-    //         interval: String(interval),
-    //         unit: String(unit),
-    //         barsback: String(barsback),
-    //         sessiontemplate: String(sessiontemplate),
-    //       }).toString();
+          // const params = new URLSearchParams({
+          //   interval: String(interval),
+          //   unit: String(unit),
+          //   barsback: String(barsback),
+          //   sessiontemplate: String(sessiontemplate),
+          // }).toString();
 
-    //       const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
+          // const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
     //       const response = await fetch(url, {
     //         method: 'get',
     //         signal: signal,
