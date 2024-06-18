@@ -26,6 +26,7 @@ class Header {
   constructor(containerId) {
     this.containerId = containerId;
     this.headerId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(20)}`;
+    this.orderBtnId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(20)}`;
     this.symbol = "";
     this.chartType = "";
     this.params = {};
@@ -155,12 +156,12 @@ class Header {
             <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
             <select id="${selectId}"
                 class="p-1 text-white font-weight-bold rounded"
-                style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                 >
-                <option ${this.chartType == 'column' ? 'selected' : ''}>column</option>
-                <option ${this.chartType == 'line' ? 'selected' : ''}>line</option>
-                <option ${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
-                <option ${this.chartType == 'area' ? 'selected' : ''}>area</option>
+                <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
+                <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
+                <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
+                <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
             </select>
         `);
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
@@ -171,19 +172,28 @@ class Header {
     });
   }
   getIntervalName() {
-    return `${this.params.interval}${this.params.unit.substring(0, 1)}`;
+    var str = "";
+    this.frequencyArray.forEach(obj => {
+      if (obj.interval == this.params.interval) {
+        str = obj.name;
+      }
+    });
+    return str;
+  }
+  getDetailedSymbolName() {
+    return `${this.symbol}:${this.getIntervalName()}`;
   }
   addInterval() {
     const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
     var optionsHtml = "";
     this.frequencyArray.forEach(obj => {
-      optionsHtml += `<option data-unit="${obj?.unit}" data-interval="${obj?.interval}"
+      optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
                 ${this.params.interval == obj?.interval ? 'selected' : ''}>${obj?.name}</option>`;
     });
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
                 <select id="${selectId}"
                     class="p-1 text-white font-weight-bold rounded"
-                    style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                     >
                     ${optionsHtml}
                 </select>
@@ -199,13 +209,13 @@ class Header {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
                 <select id="${selectId}"
                     class="p-1 text-white font-weight-bold rounded"
-                    style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                     >
-                    <option ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
-                    <option ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
-                    <option ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
-                    <option ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
-                    <option ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
                 </select>
             `);
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
@@ -213,6 +223,16 @@ class Header {
       console.log(this.params);
       this.reloadPage();
     });
+  }
+  addButtons() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+        <button id="${this.orderBtnId}_buy" class="float-end text-white mx-2 mb-1 btn btn-sm btn-success">Buy 10 @ $100</button>
+        <button id="${this.orderBtnId}_sell" class="float-end text-white mx-2 mb-1 btn btn-sm btn-primary">Sell 10 @ $100</button>
+        `);
+  }
+  updateButtons(price) {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.orderBtnId}_buy`).text(`Buy @ ${price}`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.orderBtnId}_sell`).text(`Sell @ ${price}`);
   }
   hide() {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).hide();
@@ -225,42 +245,149 @@ class Header {
     this.addChartTypes();
     this.addInterval();
     this.addSession();
+    this.addButtons();
     // $(`#${this.headerId}`).fadeIn();
   }
 }
 class Legend {
-  constructor(containerId) {
+  constructor(containerId, _header) {
     this.containerId = containerId;
+    this.header = _header;
+    this.barDetailsId = `details_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
     this._setLegend();
+    this._getSymbolDetails();
+  }
+  _getSymbolDetails() {
+    var symbol = this.header.symbol;
+    if (symbol) {
+      this._prependSymbolInputToContainer();
+      window.ts.symbol._setSymbolDescrptionForId(`${this.barDetailsId}_`, symbol);
+    } else {
+      setTimeout(() => {
+        this._getSymbolDetails();
+      }, 500);
+    }
+  }
+  _prependSymbolInputToContainer() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId} table div`).prepend(`<span id="${this.barDetailsId}_" class="d-none"></span>`);
   }
   _setLegend() {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId} table div`).append(`<span id="${this.containerId}_legend" style="z-index:2;" class="position-absolute"></span>`);
   }
-  _legendItemWrapper(html) {
-    return '';
+  _legendItemWrapper(title, val) {
+    var actionId = `action_${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
+    var valueId = `value_${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
+    var eye = `<span id="${actionId}_eye" 
+                style="cursor:pointer;"
+                class="text-muted ml-1">
+                <i class="fa-solid fa-eye"></i>
+            </span>`;
+    var trash = title.toLowerCase().replace(':', '') !== 'vol' ? `<span id="${actionId}_trash"
+                style="cursor:pointer;"
+                class="text-muted ml-1">
+                <i class="fa-solid fa-trash-can"></i>
+            </span>` : '';
+    var action = `<span id="${actionId}" class="text-muted">${title}${eye}${trash}</span>`;
+    var value = `<span id="${valueId}">${val}</span>`;
+    return {
+      html: `${action}${value}`,
+      title: title,
+      actionId: actionId,
+      valueId: valueId
+    };
   }
-  _eyeInsert(title) {
-    return `<i id="${this.containerId}_eye_${title}" class="fa-solid fa-eye"></i>`;
+  _colorOHLC(char, val, condition) {
+    return `<span class="text-muted">${char}:</span>
+        <span class="text-${condition ? 'success' : 'primary'}">${val}</span>`;
   }
-  update(array) {
+  _legendBindings(_chartItem, actionId, valueId) {
+    var $eye = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye`);
+    var $trash = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_trash`);
+    $eye.hide();
+    $trash.hide();
+    // hover
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).on({
+      mouseenter: () => {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${valueId}`).hide();
+        $eye.show();
+        $trash.show();
+        // $(this).addClass('rounded bg-secondary');
+      },
+      mouseleave: () => {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${valueId}`).show();
+        $eye.hide();
+        $trash.hide();
+        // $(this).removeClass('rounded bg-secondary');
+      }
+    });
+    $eye.on('click', () => {
+      if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye svg`).hasClass('fa-eye-slash') || jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye i`).hasClass('fa-eye-slash')) {
+        _chartItem.applyOptions({
+          visible: true
+        });
+        $eye.empty();
+        $eye.append(`<i class="fa-solid fa-eye"></i>`);
+      } else {
+        console.log(_chartItem.visible);
+        _chartItem.applyOptions({
+          visible: false
+        });
+        $eye.empty();
+        $eye.append(`<i class="fa-solid fa-eye-slash"></i>`);
+      }
+    });
+    $trash.on('click', () => {});
+  }
+  _getArrow(condition) {
+    var arrow = condition ? '270' : '90';
+    return `<i class="fa-solid fa-play fa-rotate-${arrow}"></i>`;
+  }
+  _getPlusOrMinus(condition) {
+    return condition ? '+' : '';
+  }
+  _getPercentage(bar) {
+    var condition = bar.close - bar.open >= 0;
+    var cls = `class="text-${condition ? 'success' : 'primary'}"`;
+    var pl = bar.close - bar.open;
+    return `<span ${cls}>
+        ${this._getPlusOrMinus(condition)}
+        ${(0,_util__WEBPACK_IMPORTED_MODULE_3__.formatCurrency)(pl.toFixed(2))}
+        ${this._getArrow(condition)}
+        ${(pl / bar.close * 100).toFixed(2)}%
+        </span>`;
+  }
+  update(_chartSeries, series) {
     const $legend = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}_legend`);
     var html = "";
-    var _s = "<span class='text-muted'>";
-    var s_ = "</span>";
-    array.forEach(obj => {
+    var ids = [];
+    series.forEach(obj => {
       if (obj.title == "bars") {
-        ;
-        html += `<span class="text-${obj.close > obj.open ? 'success' : 'primary'}">
-                ${_s}O:${s_}${obj.open} 
-                ${_s}H:${s_}${obj.high} 
-                ${_s}L:${s_}${obj.low} 
-                ${_s}C:${s_}${obj.close}${s_}<br/>`;
+        var color = obj.close > obj.open;
+        html += `<span ></span>
+                <span id="${this.barDetailsId}"></span> 
+                ${this._colorOHLC('O', obj.open, color)}
+                ${this._colorOHLC('H', obj.high, color)}
+                ${this._colorOHLC('L', obj.low, color)}
+                ${this._colorOHLC('C', obj.close, color)}
+                ${this._getPercentage(obj)}
+                <br/>`;
       } else if (obj.title == "vol") {
-        html += `${this._eyeInsert()} ${_s}Vol${s_} ${(0,_util__WEBPACK_IMPORTED_MODULE_3__.formatVolume)(obj.value)}`;
+        var chunk = this._legendItemWrapper("Vol:", (0,_util__WEBPACK_IMPORTED_MODULE_3__.formatVolume)(obj.value));
+        ids.push(chunk);
+        html += chunk.html;
+      } else {
+        var chunk = this._legendItemWrapper(obj.title, obj.value);
+        ids.push(chunk);
+        html += chunk.html;
       }
     });
     $legend.empty();
     $legend.append(html);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.barDetailsId}`).text(jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.barDetailsId}_`).text());
+    ids.forEach(obj => {
+      var _chartItem = _chartSeries[obj.title.toLowerCase().replace(':', '')];
+      this._legendBindings(_chartItem.obj, obj.actionId, obj.valueId);
+    });
   }
 }
 class Chart {
@@ -273,8 +400,10 @@ class Chart {
     this.height = 400;
     this._setResizeListener();
     this._setCrosshairListener();
-    this.legend = new Legend(this.containerId);
+    this._setClickListener();
+    this.legend = new Legend(this.containerId, this.header);
     this.lastBar = {};
+    this.allBars = [];
     this.series = {};
     this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
   }
@@ -284,17 +413,24 @@ class Chart {
   error(msg) {
     console.log(`[error] ChartClass: ${msg}`);
   }
+  _setClickListener() {
+    this.chart.subscribeClick(e => {
+      var price = this.series['bars'].obj.coordinateToPrice(e.point.y);
+      this.header.updateButtons(price.toFixed(2));
+      this.addPriceLine("Action", price);
+    });
+  }
   _setCrosshairListener() {
     this.chart.subscribeCrosshairMove(e => {
       if (e.time !== undefined) {
-        var array = [];
+        var series = [];
         e.seriesData.forEach((value, key) => {
-          array.push({
+          series.push({
             ...value,
             title: key._internal__series._private__options.title
           });
         });
-        this.legend.update(array);
+        this.legend.update(this.series, series);
       }
     });
   }
@@ -386,6 +522,34 @@ class Chart {
       obj: histogram
     };
   }
+  _setPriceLine(name) {
+    const series = this.chart.addLineSeries({
+      color: '#2962FF',
+      lineWidth: 2,
+      // disabling built-in price lines
+      lastValueVisible: false,
+      priceLineVisible: false
+    });
+    this.series[name] = {
+      id: this.series.length,
+      name: name,
+      obj: series
+    };
+  }
+  addPriceLine(name, price) {
+    name = `${name}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(2)}`;
+    console.log(price);
+    const params = {
+      price: price,
+      color: '#26a69a',
+      lineStyle: 2,
+      // LineStyle.Dashed
+      axisLabelVisible: true,
+      title: name
+    };
+    this._setPriceLine(name);
+    this.series[name].obj.createPriceLine(params);
+  }
   setWatermark(text, fontSize, color, visible) {
     this.chart.applyOptions({
       watermark: {
@@ -399,10 +563,18 @@ class Chart {
   _processNextBar(bar) {
     return bar;
   }
+  _setVisibleRange() {
+    this.chart.timeScale().setVisibleRange({
+      from: this.allBars[this.allBars.length - 25].time,
+      to: this.allBars[this.allBars.length - 1].time
+    });
+  }
   setBars(bars) {
     bars.forEach(bar => {
+      this.allBars.push(bar);
       this.setNextBar(bar);
     });
+    this._setVisibleRange();
   }
   setNextStreamBar(bar) {
     let mergedBar = {};
@@ -413,6 +585,7 @@ class Chart {
         mergedBar[key] = this.lastBar[key];
       }
     });
+    this.allBars.push(mergedBar);
     this.setNextBar(mergedBar);
   }
   setNextBar(bar) {
@@ -431,6 +604,10 @@ class Chart {
       }
     });
   }
+
+  // setMarkers(){
+
+  // }
 }
 
 /***/ }),
@@ -569,7 +746,8 @@ const CHART_PRICE_SCALES = {
 };
 const CHART_CROSSHAIR = {
   common: {
-    mode: lightweight_charts__WEBPACK_IMPORTED_MODULE_0__.CrosshairMode.FinanceChart,
+    mode: lightweight_charts__WEBPACK_IMPORTED_MODULE_0__.CrosshairMode.Normal,
+    //.FinanceChart,
     vertLine: {
       labelBackgroundColor: chartColors.discord.darkerGray
     },
@@ -3758,72 +3936,6 @@ class MarketData {
       color: bar.open > bar.close ? downColor || '#7289DA' : upColor || 'rgb(87,242,135)'
     });
   }
-
-  // async streamBarsAlgo(setter, id, symbol, strategyFunc, options){
-  //   const streamId = `${id}${symbol}`;
-  //   if (!this.allStreams?.[streamId]) {
-  //     this.refreshToken();
-  //     try {
-  //       const controller = new AbortController();
-  //       const signal = controller.signal;
-  //       const { interval, unit, barsback, sessiontemplate } = options;
-
-  // const params = new URLSearchParams({
-  //   interval: String(interval),
-  //   unit: String(unit),
-  //   barsback: String(barsback),
-  //   sessiontemplate: String(sessiontemplate),
-  // }).toString();
-
-  // const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
-  //       const response = await fetch(url, {
-  //         method: 'get',
-  //         signal: signal,
-  //         headers: {
-  //           Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
-  //         },
-  //       });
-  //       const reader = response.body.getReader();
-  //       this.allStreams[streamId] = controller;
-  //       // Process the streaming data
-  //       const processChunks = async () => {
-  //         while (this.allStreams?.[streamId]) {
-  //           try {
-  //             const { done, value } = await reader.read();
-  //             if (done || !this.allStreams?.[streamId]) {
-  //               this.info(`Breaking stream for ${symbol}...`);
-  //               break;
-  //             }
-  //             const jsonString = new TextDecoder().decode(value);
-  //             const jsonData = JSON.parse(jsonString.trim());
-  //             const newBar = this.fixBar(jsonData);
-  //             setter(newBar);
-  //           } catch (error) {
-  //             const msg = error.message.toLowerCase();
-  //             if (isSubStr(msg, 'network')) {
-  //               this.info("Network Error");
-  //               await this.delay(1000 * 5);
-  //             }else if (isSubStr(msg, 'whitespace')){
-  //               this.info("None-whitespace Error");
-  //             } else {
-  //               this.error(`streamBars() while ${error}`);
-  //             }
-  //           }
-  //         }
-  //       };
-  //       if (this.allStreams?.[streamId]) {
-  //         processChunks();
-  //       }else{
-  //         this.info(`Killed stream for ${symbol}.`)
-  //       }
-  //     } catch (error) {
-  //       this.error(`streamBars() - ${error}`);
-  //     }
-  //   } else {
-  //     this.info(`${symbol} stream already active.`)
-  //   }
-  // }
-
   async streamBars(chart, streamIdPrefix, symbol, params) {
     const streamId = `${streamIdPrefix}${symbol}`;
     if (!this.allStreams?.[streamId]) {
@@ -3840,7 +3952,6 @@ class MarketData {
             Authorization: `Bearer ${this.accessToken}` // Replace with your actual access token
           }
         });
-        console.log(response);
         const reader = response.body.getReader();
         this.allStreams[streamId] = controller;
         // Process the streaming data
@@ -3856,7 +3967,6 @@ class MarketData {
                 break;
               }
               const jsonString = new TextDecoder().decode(value);
-              this.info(`symbol ${symbol}`);
               const jsonData = JSON.parse(jsonString.trim());
               const newBar = this.fixBar(jsonData);
               chart.setNextStreamBar(this.formatBar(newBar));
@@ -4637,6 +4747,20 @@ class Symbols {
     });
     return response;
   }
+  _setSymbolDescrptionForId(id, symbol) {
+    this.suggestSymbols(symbol).then(arr => {
+      var detailsArray = arr.data;
+      detailsArray.forEach(sym => {
+        var cat = sym?.Category.toLowerCase();
+        if (sym?.Name == symbol) {
+          console.log(sym);
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(`${sym?.Exchange}:${symbol} · ${sym?.Description}`);
+        }
+      });
+    }).catch(error => {
+      // console.log("[ERROR] _setSymbolDescrptionForId",error);
+    });
+  }
   _setSymbolDataToPositions(posArray) {
     posArray.forEach(pos => {
       this.suggestSymbols(pos?.Symbol).then(arr => {
@@ -5208,13 +5332,20 @@ function convertUTCToEST(utcTimestamp) {
   return formattedDate;
 }
 const formatVolume = number => {
-  const suffixes = ["", "K", "M", "B"];
+  var suffix = "";
+  if (number > 999999999) {
+    suffix = "B";
+  } else if (number > 999999) {
+    suffix = "M";
+  } else if (number > 9999) {
+    suffix = "K";
+  }
   const suffixNum = Math.floor(("" + number).length / 3);
   let shortNumber = parseFloat((suffixNum !== 0 ? number / Math.pow(1000, suffixNum) : number).toPrecision(5));
   if (shortNumber % 1 !== 0) {
     shortNumber = shortNumber.toFixed(3);
   }
-  return shortNumber + suffixes[suffixNum];
+  return shortNumber + suffix;
 };
 
 /***/ }),

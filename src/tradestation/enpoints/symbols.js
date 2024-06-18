@@ -83,6 +83,22 @@ export class Symbols {
     return response;
   }
 
+  _setSymbolDescrptionForId(id, symbol){
+    this.suggestSymbols(symbol).then(arr => {
+        var detailsArray = arr.data;
+            detailsArray.forEach((sym)=>{
+              var cat = sym?.Category.toLowerCase();
+                if (sym?.Name == symbol){
+                  console.log(sym);
+                    $(`#${id}`).text(`${sym?.Exchange}:${symbol} · ${sym?.Description}`);
+                }
+            });
+        
+    }).catch(error => {
+        // console.log("[ERROR] _setSymbolDescrptionForId",error);
+    });
+  }
+
   _setSymbolDataToPositions(posArray){
    
     posArray.forEach((pos)=>{

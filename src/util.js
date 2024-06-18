@@ -524,11 +524,18 @@ export function convertUTCToEST(utcTimestamp) {
 }
 
 export const formatVolume = (number) => {
-  const suffixes = ["", "K", "M", "B"];
+  var suffix = "";
+  if (number > 999999999) {
+    suffix = "B";
+  } else if (number > 999999) {
+    suffix = "M";
+  } else if (number > 9999) {
+    suffix = "K"
+  }
   const suffixNum = Math.floor(("" + number).length / 3);
   let shortNumber = parseFloat((suffixNum !== 0 ? (number / Math.pow(1000, suffixNum)) : number).toPrecision(5));
   if (shortNumber % 1 !== 0) {
     shortNumber = shortNumber.toFixed(3);
   }
-  return shortNumber + suffixes[suffixNum];
+  return shortNumber + suffix;
 }

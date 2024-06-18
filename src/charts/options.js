@@ -56,7 +56,7 @@ const CHART_PRICE_SCALES = {
 
 const CHART_CROSSHAIR = {
   common: {
-    mode: CrosshairMode.FinanceChart,
+    mode: CrosshairMode.Normal ,//.FinanceChart,
     vertLine: {
         labelBackgroundColor: chartColors.discord.darkerGray,
     },

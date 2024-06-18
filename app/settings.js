@@ -3046,72 +3046,6 @@ class MarketData {
       color: bar.open > bar.close ? downColor || '#7289DA' : upColor || 'rgb(87,242,135)'
     });
   }
-
-  // async streamBarsAlgo(setter, id, symbol, strategyFunc, options){
-  //   const streamId = `${id}${symbol}`;
-  //   if (!this.allStreams?.[streamId]) {
-  //     this.refreshToken();
-  //     try {
-  //       const controller = new AbortController();
-  //       const signal = controller.signal;
-  //       const { interval, unit, barsback, sessiontemplate } = options;
-
-  // const params = new URLSearchParams({
-  //   interval: String(interval),
-  //   unit: String(unit),
-  //   barsback: String(barsback),
-  //   sessiontemplate: String(sessiontemplate),
-  // }).toString();
-
-  // const url = `${this.baseUrl}/stream/barcharts/${symbol}?${params}`;
-  //       const response = await fetch(url, {
-  //         method: 'get',
-  //         signal: signal,
-  //         headers: {
-  //           Authorization: `Bearer ${this.accessToken}`, // Replace with your actual access token
-  //         },
-  //       });
-  //       const reader = response.body.getReader();
-  //       this.allStreams[streamId] = controller;
-  //       // Process the streaming data
-  //       const processChunks = async () => {
-  //         while (this.allStreams?.[streamId]) {
-  //           try {
-  //             const { done, value } = await reader.read();
-  //             if (done || !this.allStreams?.[streamId]) {
-  //               this.info(`Breaking stream for ${symbol}...`);
-  //               break;
-  //             }
-  //             const jsonString = new TextDecoder().decode(value);
-  //             const jsonData = JSON.parse(jsonString.trim());
-  //             const newBar = this.fixBar(jsonData);
-  //             setter(newBar);
-  //           } catch (error) {
-  //             const msg = error.message.toLowerCase();
-  //             if (isSubStr(msg, 'network')) {
-  //               this.info("Network Error");
-  //               await this.delay(1000 * 5);
-  //             }else if (isSubStr(msg, 'whitespace')){
-  //               this.info("None-whitespace Error");
-  //             } else {
-  //               this.error(`streamBars() while ${error}`);
-  //             }
-  //           }
-  //         }
-  //       };
-  //       if (this.allStreams?.[streamId]) {
-  //         processChunks();
-  //       }else{
-  //         this.info(`Killed stream for ${symbol}.`)
-  //       }
-  //     } catch (error) {
-  //       this.error(`streamBars() - ${error}`);
-  //     }
-  //   } else {
-  //     this.info(`${symbol} stream already active.`)
-  //   }
-  // }
-
   async streamBars(chart, streamIdPrefix, symbol, params) {
     const streamId = `${streamIdPrefix}${symbol}`;
     if (!this.allStreams?.[streamId]) {
@@ -3128,7 +3062,6 @@ class MarketData {
             Authorization: `Bearer ${this.accessToken}` // Replace with your actual access token
           }
         });
-        console.log(response);
         const reader = response.body.getReader();
         this.allStreams[streamId] = controller;
         // Process the streaming data
@@ -3144,7 +3077,6 @@ class MarketData {
                 break;
               }
               const jsonString = new TextDecoder().decode(value);
-              this.info(`symbol ${symbol}`);
               const jsonData = JSON.parse(jsonString.trim());
               const newBar = this.fixBar(jsonData);
               chart.setNextStreamBar(this.formatBar(newBar));
@@ -3925,6 +3857,20 @@ class Symbols {
     });
     return response;
   }
+  _setSymbolDescrptionForId(id, symbol) {
+    this.suggestSymbols(symbol).then(arr => {
+      var detailsArray = arr.data;
+      detailsArray.forEach(sym => {
+        var cat = sym?.Category.toLowerCase();
+        if (sym?.Name == symbol) {
+          console.log(sym);
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(`${sym?.Exchange}:${symbol} · ${sym?.Description}`);
+        }
+      });
+    }).catch(error => {
+      // console.log("[ERROR] _setSymbolDescrptionForId",error);
+    });
+  }
   _setSymbolDataToPositions(posArray) {
     posArray.forEach(pos => {
       this.suggestSymbols(pos?.Symbol).then(arr => {
@@ -4496,13 +4442,20 @@ function convertUTCToEST(utcTimestamp) {
   return formattedDate;
 }
 const formatVolume = number => {
-  const suffixes = ["", "K", "M", "B"];
+  var suffix = "";
+  if (number > 999999999) {
+    suffix = "B";
+  } else if (number > 999999) {
+    suffix = "M";
+  } else if (number > 9999) {
+    suffix = "K";
+  }
   const suffixNum = Math.floor(("" + number).length / 3);
   let shortNumber = parseFloat((suffixNum !== 0 ? number / Math.pow(1000, suffixNum) : number).toPrecision(5));
   if (shortNumber % 1 !== 0) {
     shortNumber = shortNumber.toFixed(3);
   }
-  return shortNumber + suffixes[suffixNum];
+  return shortNumber + suffix;
 };
 
 /***/ }),

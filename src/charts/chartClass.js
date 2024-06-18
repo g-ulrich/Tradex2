@@ -1,12 +1,13 @@
 import $ from 'jquery';
 import { createChart, CrosshairMode } from "lightweight-charts";
 import {CHART_THEMES} from '../charts/options';
-import { getRandomAlphaNum, formatVolume } from '../util';
+import { getRandomAlphaNum, formatVolume, formatCurrency } from '../util';
 
 class Header{
     constructor(containerId){
         this.containerId = containerId;
         this.headerId = `${this.containerId}_${getRandomAlphaNum(20)}`;
+        this.orderBtnId = `${this.containerId}_${getRandomAlphaNum(20)}`;
         this.symbol = "";
         this.chartType = "";
         this.params = {};
@@ -117,12 +118,12 @@ class Header{
             <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
             <select id="${selectId}"
                 class="p-1 text-white font-weight-bold rounded"
-                style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                 >
-                <option ${this.chartType == 'column' ? 'selected' : ''}>column</option>
-                <option ${this.chartType == 'line' ? 'selected' : ''}>line</option>
-                <option ${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
-                <option ${this.chartType == 'area' ? 'selected' : ''}>area</option>
+                <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
+                <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
+                <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
+                <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
             </select>
         `);
         $(`#${selectId}`).on('change', () => {
@@ -134,19 +135,30 @@ class Header{
     }
 
     getIntervalName(){
-        return `${this.params.interval}${this.params.unit.substring(0, 1)}`;
+        var str = "";
+        this.frequencyArray.forEach((obj)=>{
+            if (obj.interval == this.params.interval) {
+                str = obj.name;
+            }
+        });
+        return str;
     }
+
+    getDetailedSymbolName(){
+        return `${this.symbol}:${this.getIntervalName()}`;
+    }
+
     addInterval(){
             const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
             var optionsHtml = "";
             this.frequencyArray.forEach((obj)=>{
-                optionsHtml += `<option data-unit="${obj?.unit}" data-interval="${obj?.interval}"
+                optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
                 ${this.params.interval == obj?.interval ? 'selected':''}>${obj?.name}</option>`;
             });
             $(`#${this.headerId}`).append(`
                 <select id="${selectId}"
                     class="p-1 text-white font-weight-bold rounded"
-                    style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                     >
                     ${optionsHtml}
                 </select>
@@ -164,13 +176,13 @@ class Header{
             $(`#${this.headerId}`).append(`
                 <select id="${selectId}"
                     class="p-1 text-white font-weight-bold rounded"
-                    style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                     >
-                    <option ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
-                    <option ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
-                    <option ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
-                    <option ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
-                    <option ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
                 </select>
             `);
             $(`#${selectId}`).on('change', () => {
@@ -178,6 +190,18 @@ class Header{
                 console.log(this.params);
                 this.reloadPage();
             });
+    }
+
+    addButtons(){
+        $(`#${this.headerId}`).append(`
+        <button id="${this.orderBtnId}_buy" class="float-end text-white mx-2 mb-1 btn btn-sm btn-success">Buy 10 @ $100</button>
+        <button id="${this.orderBtnId}_sell" class="float-end text-white mx-2 mb-1 btn btn-sm btn-primary">Sell 10 @ $100</button>
+        `);
+    }
+
+    updateButtons(price){
+        $(`#${this.orderBtnId}_buy`).text(`Buy @ ${price}`);
+        $(`#${this.orderBtnId}_sell`).text(`Sell @ ${price}`);
     }
 
     hide(){
@@ -193,6 +217,7 @@ class Header{
         this.addChartTypes();
         this.addInterval();
         this.addSession();
+        this.addButtons();
         // $(`#${this.headerId}`).fadeIn();
     }
 
@@ -200,9 +225,30 @@ class Header{
 }
 
 class Legend{
-    constructor(containerId){
+    constructor(containerId, _header){
         this.containerId = containerId;
+        this.header = _header;
+        this.barDetailsId = `details_${getRandomAlphaNum(10)}`;
         this._setLegend();
+        this._getSymbolDetails();
+    }
+
+    _getSymbolDetails(){
+            var symbol = this.header.symbol;
+            if (symbol){
+                this._prependSymbolInputToContainer();
+                window.ts.symbol._setSymbolDescrptionForId(`${this.barDetailsId}_`, symbol);
+            } else{
+                setTimeout(()=>{
+                    this._getSymbolDetails();
+                }, 500);
+            }
+    }
+
+    _prependSymbolInputToContainer(){
+        $(`#${this.containerId} table div`).prepend(
+            `<span id="${this.barDetailsId}_" class="d-none"></span>`
+        );
     }
 
     _setLegend(){
@@ -211,32 +257,122 @@ class Legend{
         );
     }
 
-    _legendItemWrapper(html){
-        return '';
+    _legendItemWrapper(title, val){
+        var actionId = `action_${this.containerId}_${getRandomAlphaNum(10)}`;
+        var valueId = `value_${this.containerId}_${getRandomAlphaNum(10)}`;
+        var eye = `<span id="${actionId}_eye" 
+                style="cursor:pointer;"
+                class="text-muted ml-1">
+                <i class="fa-solid fa-eye"></i>
+            </span>`;
+        var trash = title.toLowerCase().replace(':', '') !== 'vol' ? `<span id="${actionId}_trash"
+                style="cursor:pointer;"
+                class="text-muted ml-1">
+                <i class="fa-solid fa-trash-can"></i>
+            </span>` : '';
+        var action = `<span id="${actionId}" class="text-muted">${title}${eye}${trash}</span>`;
+        var value = `<span id="${valueId}">${val}</span>`;
+        return {html: `${action}${value}`, title:title, actionId: actionId, valueId: valueId};
     }
 
-    _eyeInsert(title){
-        return `<i id="${this.containerId}_eye_${title}" class="fa-solid fa-eye"></i>`;
+    _colorOHLC(char, val, condition){
+        return `<span class="text-muted">${char}:</span>
+        <span class="text-${condition ? 'success' : 'primary'}">${val}</span>`;
     }
 
-    update(array){
+    _legendBindings(_chartItem, actionId, valueId){
+        var $eye = $(`#${actionId}_eye`);
+        var $trash = $(`#${actionId}_trash`);
+        $eye.hide();
+        $trash.hide();
+        // hover
+        $(`#${actionId}`).on({
+            mouseenter: () => {
+                $(`#${valueId}`).hide();
+                $eye.show();
+                $trash.show();
+                // $(this).addClass('rounded bg-secondary');
+            },
+            mouseleave: () => {
+                $(`#${valueId}`).show();
+                $eye.hide();
+                $trash.hide();
+                // $(this).removeClass('rounded bg-secondary');
+            }
+        });
+
+        $eye.on('click', ()=>{
+            if ($(`#${actionId}_eye svg`).hasClass('fa-eye-slash') || 
+                $(`#${actionId}_eye i`).hasClass('fa-eye-slash')) {
+                _chartItem.applyOptions({visible:true});
+                $eye.empty();
+                $eye.append(`<i class="fa-solid fa-eye"></i>`);
+            } else {
+                console.log(_chartItem.visible);
+                _chartItem.applyOptions({visible:false});
+                $eye.empty();
+                $eye.append(`<i class="fa-solid fa-eye-slash"></i>`);
+            }
+        });
+
+        $trash.on('click', ()=>{
+
+        });
+    }
+
+    _getArrow(condition){
+        var arrow = condition ? '270' : '90';
+        return  `<i class="fa-solid fa-play fa-rotate-${arrow}"></i>`;
+    }
+
+    _getPlusOrMinus(condition){
+        return condition ? '+' : '';
+    }
+
+    _getPercentage(bar){
+        var condition = bar.close - bar.open >= 0;
+        var cls = `class="text-${condition ? 'success' : 'primary'}"`;
+        var pl = bar.close - bar.open;
+        return `<span ${cls}>
+        ${this._getPlusOrMinus(condition)}
+        ${formatCurrency(pl.toFixed(2))}
+        ${this._getArrow(condition)}
+        ${((pl / bar.close)*100).toFixed(2)}%
+        </span>`;
+    }
+
+    update(_chartSeries, series){
         const $legend = $(`#${this.containerId}_legend`);
         var html = "";
-        var _s = "<span class='text-muted'>";
-        var s_ = "</span>";
-        array.forEach(obj => {
-            if (obj.title == "bars"){;
-                html += `<span class="text-${obj.close > obj.open ? 'success' : 'primary'}">
-                ${_s}O:${s_}${obj.open} 
-                ${_s}H:${s_}${obj.high} 
-                ${_s}L:${s_}${obj.low} 
-                ${_s}C:${s_}${obj.close}${s_}<br/>`;
+        var ids = [];
+        series.forEach(obj => {
+            if (obj.title == "bars"){
+                var color = obj.close > obj.open;
+                html += `<span ></span>
+                <span id="${this.barDetailsId}"></span> 
+                ${this._colorOHLC('O', obj.open, color)}
+                ${this._colorOHLC('H', obj.high, color)}
+                ${this._colorOHLC('L', obj.low, color)}
+                ${this._colorOHLC('C', obj.close, color)}
+                ${this._getPercentage(obj)}
+                <br/>`;
             } else if (obj.title == "vol"){
-                html += `${this._eyeInsert()} ${_s}Vol${s_} ${formatVolume(obj.value)}`;
+                var chunk = this._legendItemWrapper("Vol:", formatVolume(obj.value));
+                ids.push(chunk);
+                html +=  chunk.html;
+            } else {
+                var chunk = this._legendItemWrapper(obj.title, obj.value);
+                ids.push(chunk);
+                html +=  chunk.html;
             }
         });
         $legend.empty();
         $legend.append(html);
+        $(`#${this.barDetailsId}`).text($(`#${this.barDetailsId}_`).text());
+        ids.forEach((obj)=>{
+            var _chartItem = _chartSeries[obj.title.toLowerCase().replace(':', '')];
+            this._legendBindings(_chartItem.obj, obj.actionId, obj.valueId);
+        });
     }
 
 }
@@ -249,8 +385,10 @@ export class Chart{
         this.height = 400;
         this._setResizeListener();
         this._setCrosshairListener();
-        this.legend = new Legend(this.containerId);
+        this._setClickListener();
+        this.legend = new Legend(this.containerId, this.header);
         this.lastBar = {};
+        this.allBars = [];
         this.series = {};
         this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
     }
@@ -263,15 +401,23 @@ export class Chart{
         console.log(`[error] ChartClass: ${msg}`);
     }
 
+
+    _setClickListener(){
+        this.chart.subscribeClick((e)=>{
+            var price = this.series['bars'].obj.coordinateToPrice(e.point.y);
+            this.header.updateButtons(price.toFixed(2));
+            this.addPriceLine("Action", price)
+        });
+    }
   
     _setCrosshairListener(){
         this.chart.subscribeCrosshairMove(e => {
             if (e.time !== undefined){
-                var array = [];
+                var series = [];
                 e.seriesData.forEach((value, key) => {
-                    array.push({...value, title: key._internal__series._private__options.title});
+                    series.push({...value, title: key._internal__series._private__options.title});
                 });
-                this.legend.update(array);
+                this.legend.update(this.series, series);
             }
         });
     }
@@ -360,6 +506,34 @@ export class Chart{
         }
     }
 
+    _setPriceLine(name){
+        const series = this.chart.addLineSeries({
+            color: '#2962FF',
+            lineWidth: 2,
+            // disabling built-in price lines
+            lastValueVisible: false,
+            priceLineVisible: false,
+        });
+        this.series[name] = {
+            id: this.series.length,
+            name: name,
+            obj: series
+        }
+    }
+
+    addPriceLine(name, price){
+        name = `${name}_${getRandomAlphaNum(2)}`
+        console.log(price);
+        const params = {
+            price: price,
+            color: '#26a69a',
+            lineStyle: 2, // LineStyle.Dashed
+            axisLabelVisible: true,
+            title: name,
+        };
+        this._setPriceLine(name);
+        this.series[name].obj.createPriceLine(params);
+    }
     setWatermark(text, fontSize, color, visible){
         this.chart.applyOptions({watermark: {
             text: text ? text : "",
@@ -373,12 +547,19 @@ export class Chart{
         return bar;
     }
 
-
+    _setVisibleRange(){
+        this.chart.timeScale().setVisibleRange({
+            from: this.allBars[this.allBars.length -25].time,
+            to: this.allBars[this.allBars.length -1].time,
+        });
+    }
 
     setBars(bars){
         bars.forEach((bar)=>{
+            this.allBars.push(bar);
             this.setNextBar(bar);
         });
+        this._setVisibleRange();
     }
 
     setNextStreamBar(bar) {
@@ -390,6 +571,7 @@ export class Chart{
             mergedBar[key] = this.lastBar[key];
           }
         });
+        this.allBars.push(mergedBar);
         this.setNextBar(mergedBar);
       }
 
@@ -409,5 +591,9 @@ export class Chart{
             }
         });
     } 
+
+    // setMarkers(){
+
+    // }
     
 }
