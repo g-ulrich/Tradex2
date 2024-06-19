@@ -71,7 +71,7 @@ class Header{
 
     _setHeader(){
         $(`#${this.containerId}`).prepend(`
-        <div id="${this.headerId}" class="w-100 pb-1">
+            <div id="${this.headerId}" class="w-100">
         </div>
         `);
     }
@@ -99,12 +99,12 @@ class Header{
     addSymbolInput(){
         $(`#${this.headerId}`).append(`
             <input 
-            class="text-uppercase p-1 text-white font-weight-bold rounded" 
+            class="text-uppercase p-1 text-white font-weight-bold" 
             value="${this.symbol}" 
             placeholder="Symbol" 
             type="search" 
             style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;">
-            <button class="btn btn-sm btn-primary mb-1 mr-2">
+            <button class="btn btn-sm btn-primary rounded mb-1 mr-2">
                 <i class="fa-solid fa-magnifying-glass fa-rotate-90"></i>
             </button>
         `);
@@ -117,7 +117,7 @@ class Header{
         $(`#${this.headerId}`).append(`
             <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
             <select id="${selectId}"
-                class="p-1 text-white font-weight-bold rounded"
+                class="p-1 text-white font-weight-bold"
                 style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                 >
                 <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
@@ -157,7 +157,7 @@ class Header{
             });
             $(`#${this.headerId}`).append(`
                 <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold rounded"
+                    class="p-1 text-white font-weight-bold"
                     style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                     >
                     ${optionsHtml}
@@ -175,7 +175,7 @@ class Header{
     
             $(`#${this.headerId}`).append(`
                 <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold rounded"
+                    class="p-1 text-white font-weight-bold"
                     style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                     >
                     <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
@@ -192,18 +192,7 @@ class Header{
             });
     }
 
-    addButtons(){
-        $(`#${this.headerId}`).append(`
-        <button id="${this.orderBtnId}_buy" class="float-end text-white mx-2 mb-1 btn btn-sm btn-success">Buy 10 @ $100</button>
-        <button id="${this.orderBtnId}_sell" class="float-end text-white mx-2 mb-1 btn btn-sm btn-primary">Sell 10 @ $100</button>
-        `);
-    }
-
-    updateButtons(price){
-        $(`#${this.orderBtnId}_buy`).text(`Buy @ ${price}`);
-        $(`#${this.orderBtnId}_sell`).text(`Sell @ ${price}`);
-    }
-
+    
     hide(){
         $(`#${this.headerId}`).hide();
     }
@@ -217,7 +206,6 @@ class Header{
         this.addChartTypes();
         this.addInterval();
         this.addSession();
-        this.addButtons();
         // $(`#${this.headerId}`).fadeIn();
     }
 
@@ -257,13 +245,15 @@ class Legend{
         );
     }
 
-    _legendItemWrapper(title, val){
+    _legendItemWrapper(_chartSeries, title, val){
+        var _chartItem = _chartSeries[title.toLowerCase().replace(':', '')].obj;
+        var isSeriesVisible = _chartItem._internal__series._private__options.visible;
         var actionId = `action_${this.containerId}_${getRandomAlphaNum(10)}`;
         var valueId = `value_${this.containerId}_${getRandomAlphaNum(10)}`;
         var eye = `<span id="${actionId}_eye" 
                 style="cursor:pointer;"
-                class="text-muted ml-1">
-                <i class="fa-solid fa-eye"></i>
+                class="text-muted pl-2">
+                <i class="fa-solid fa-eye${isSeriesVisible ? '' : '-slash'}"></i>
             </span>`;
         var trash = title.toLowerCase().replace(':', '') !== 'vol' ? `<span id="${actionId}_trash"
                 style="cursor:pointer;"
@@ -280,6 +270,11 @@ class Legend{
         <span class="text-${condition ? 'success' : 'primary'}">${val}</span>`;
     }
 
+
+    _isEyeSlashed(actionId){
+        return $(`#${actionId}_eye svg`).hasClass('fa-eye-slash') || 
+                $(`#${actionId}_eye i`).hasClass('fa-eye-slash');
+    }
     _legendBindings(_chartItem, actionId, valueId){
         var $eye = $(`#${actionId}_eye`);
         var $trash = $(`#${actionId}_trash`);
@@ -291,19 +286,20 @@ class Legend{
                 $(`#${valueId}`).hide();
                 $eye.show();
                 $trash.show();
-                // $(this).addClass('rounded bg-secondary');
+                $(`#${actionId}`).addClass('rounded text-white');
+                $(`#${actionId}`).css({'background-color': 'rgba(0,0,0,1)'});
             },
             mouseleave: () => {
                 $(`#${valueId}`).show();
                 $eye.hide();
                 $trash.hide();
-                // $(this).removeClass('rounded bg-secondary');
+                $(`#${actionId}`).removeClass('rounded text-white');
+                $(`#${actionId}`).css({'background-color': 'rgba(0,0,0,0.0)'});
             }
         });
 
         $eye.on('click', ()=>{
-            if ($(`#${actionId}_eye svg`).hasClass('fa-eye-slash') || 
-                $(`#${actionId}_eye i`).hasClass('fa-eye-slash')) {
+            if (this._isEyeSlashed(actionId)) {
                 _chartItem.applyOptions({visible:true});
                 $eye.empty();
                 $eye.append(`<i class="fa-solid fa-eye"></i>`);
@@ -349,7 +345,7 @@ class Legend{
             if (obj.title == "bars"){
                 var color = obj.close > obj.open;
                 html += `<span ></span>
-                <span id="${this.barDetailsId}"></span> 
+                <span id="${this.barDetailsId}"></span></br>
                 ${this._colorOHLC('O', obj.open, color)}
                 ${this._colorOHLC('H', obj.high, color)}
                 ${this._colorOHLC('L', obj.low, color)}
@@ -357,13 +353,13 @@ class Legend{
                 ${this._getPercentage(obj)}
                 <br/>`;
             } else if (obj.title == "vol"){
-                var chunk = this._legendItemWrapper("Vol:", formatVolume(obj.value));
+                var chunk = this._legendItemWrapper(_chartSeries, "Vol:", formatVolume(obj.value));
                 ids.push(chunk);
-                html +=  chunk.html;
+                html +=  chunk.html + "<br/>";
             } else {
-                var chunk = this._legendItemWrapper(obj.title, obj.value);
+                var chunk = this._legendItemWrapper(_chartSeries, obj.title, obj.value);
                 ids.push(chunk);
-                html +=  chunk.html;
+                html +=  chunk.html + "<br/>";
             }
         });
         $legend.empty();
@@ -378,11 +374,11 @@ class Legend{
 }
 
 export class Chart{
-    constructor(containerId){
+    constructor(containerId, orderForm){
+        this.orderForm = orderForm;
         this.containerId = containerId;
         this.header = new Header(this.containerId);
         this.chart = createChart(this.containerId, {...CHART_THEMES.defaultChart});
-        this.height = 400;
         this._setResizeListener();
         this._setCrosshairListener();
         this._setClickListener();
@@ -390,7 +386,12 @@ export class Chart{
         this.lastBar = {};
         this.allBars = [];
         this.series = {};
+        this.lastPriceClicked = null;
         this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
+    }
+
+    _chartHeight(){
+        return parseInt(window.innerHeight * .8);//this.height;
     }
 
     info(msg){
@@ -403,10 +404,14 @@ export class Chart{
 
 
     _setClickListener(){
+        // left clikc buy
+
         this.chart.subscribeClick((e)=>{
             var price = this.series['bars'].obj.coordinateToPrice(e.point.y);
-            this.header.updateButtons(price.toFixed(2));
-            this.addPriceLine("Action", price)
+            this.orderForm.updateBuyButton(price);
+            this.orderForm.updateSellButton(price);
+            this.lastPriceClicked = price;
+            // this.addPriceLine("buy", price);
         });
     }
   
@@ -423,15 +428,15 @@ export class Chart{
     }
 
     _resizeChart(){
-        this.chart.resize($(`#${this.containerId}`).width(), parseInt(window.innerHeight * .8));
+        this.chart.resize($(`#${this.containerId}`).width(), this._chartHeight());
     }
 
   
-    _setResizeListener(){
+    _setResizeListener(){ 
         const $container = $(`#${this.containerId}`);
-        this.chart.applyOptions({ width: $container.width(), height: parseInt(window.innerHeight * .8) });
+        this.chart.applyOptions({ width: $container.width(), height: this._chartHeight() });
         window.addEventListener("resize", ()=>{
-            this.chart.resize($container.width(), parseInt(window.innerHeight * .8));
+            this.chart.resize($container.width(), this._chartHeight());
         });
     }
 
@@ -506,34 +511,36 @@ export class Chart{
         }
     }
 
-    _setPriceLine(name){
-        const series = this.chart.addLineSeries({
-            color: '#2962FF',
+  
+
+    addPriceLine(name, price){
+        var success = "#0b9657";
+        var primary = "#7289da";
+        var params = {
+            color: name.toLowerCase() === 'buy' ? success : primary,
             lineWidth: 2,
-            // disabling built-in price lines
-            lastValueVisible: false,
-            priceLineVisible: false,
-        });
-        this.series[name] = {
+            lastValueVisible: true,
+            priceLineVisible: true,
+            price: price,
+            lineStyle: 2, // LineStyle.Dashed
+            axisLabelVisible: true,
+            title: name,};
+        // var params = {	 
+        //     price: price,
+        //     color: "red",
+        //     lineWidth: 1,
+        //     axisLabelVisible: true,
+        // }
+        var barSeries = this.series['bars'].obj;
+        var series = barSeries.createPriceLine(params);
+        var seriesName = `${name}_${getRandomAlphaNum(2)}`;
+        this.series[seriesName] = {
             id: this.series.length,
-            name: name,
+            name: seriesName,
             obj: series
         }
     }
 
-    addPriceLine(name, price){
-        name = `${name}_${getRandomAlphaNum(2)}`
-        console.log(price);
-        const params = {
-            price: price,
-            color: '#26a69a',
-            lineStyle: 2, // LineStyle.Dashed
-            axisLabelVisible: true,
-            title: name,
-        };
-        this._setPriceLine(name);
-        this.series[name].obj.createPriceLine(params);
-    }
     setWatermark(text, fontSize, color, visible){
         this.chart.applyOptions({watermark: {
             text: text ? text : "",

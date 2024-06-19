@@ -3863,8 +3863,10 @@ class Symbols {
       detailsArray.forEach(sym => {
         var cat = sym?.Category.toLowerCase();
         if (sym?.Name == symbol) {
-          console.log(sym);
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(`${sym?.Exchange}:${symbol} · ${sym?.Description}`);
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(`${sym?.Description}`);
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).empty();
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).append(`${sym?.Exchange}:${symbol} ·
+                      <span class="text-muted">${sym?.Description}</span>`);
         }
       });
     }).catch(error => {
