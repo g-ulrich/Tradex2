@@ -157,14 +157,14 @@ export class SimpleTableData{
     }
 
     setData(self, data){
-        $(`#${self.tableId}_lastupdate`).empty();
-        $(`#${self.tableId}_lastupdate`).append(`<i class="fa-solid fa-spinner fa-spin"></i>`);
+        // $(`#${self.tableId}_lastupdate`).empty();
+        // $(`#${self.tableId}_lastupdate`).append(`<i class="fa-solid fa-spinner fa-spin"></i>`);
         self.table.clear();
         self.table.rows.add(data).draw();
-        setTimeout(()=>{
-            $(`#${self.tableId}_lastupdate`).empty();
+        // setTimeout(()=>{
+            // $(`#${self.tableId}_lastupdate`).empty();
             $(`#${self.tableId}_lastupdate`).text(hhmmss());
-        }, 500);
+        // }, 500);
     }
 
     bgAlpha(alpha){

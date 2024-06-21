@@ -5,6 +5,7 @@ import { get_table_accounts_columns } from '../datatables/myColumns/accounts';
 import { getOrderColumns } from '../datatables/myColumns/orders';
 import "./css/bootstrap-discord.min.css";
 import { SimpleTableData } from '../datatables/simple';
+import { PositionsTable } from '../datatables/positionsTableClass';
 
 
 function appendToLeft(id){
@@ -23,10 +24,10 @@ function appendToRight(id){
 function initAccountInfo() {
     window.ts.account.getAccounts().then(accounts => {
         const accountIds = accounts.map(item => item["AccountID"]);
-        initAccountsTableIntervals(
-            setPositionsTableData,
-            initPositionsTable(),
-            accountIds, 10000);
+        // initAccountsTableIntervals(
+        //     setPositionsTableData,
+        //     initPositionsTable(),
+        //     accountIds, 10000);
         initAccountsTableIntervals(
             setAccountsTableData,
             initAccountsTable(),
@@ -54,30 +55,6 @@ function initAccountsTableIntervals(mainfunc, table, accountIds, intervalSeconds
     setInterval(() => {
         mainfunc(table, accountIds);
     }, intervalSeconds);
-}
-
-// Positions table
-function initPositionsTable() {
-    return new SimpleTableData({
-        title: "Positions",
-        containerID: appendToLeft("position"), // returns id
-        columns: get_table_positions_columns(),
-        dom: 't',
-    });
-}
-
-function setPositionsTableData(table, accountIds) {
-    window.ts.account.getPositions(accountIds).then(array => {
-        table.setData(table, array);
-        // setTimeout(()=>{
-        window.ts.symbol._setSymbolDataToPositions(array);
-        // }, 500);
-    }).catch(error => {
-        console.log("[ERROR] setPositionsTableData", error);
-        setTimeout(() => {
-            setPositionsTableData(table, accountIds);
-        }, 1000);
-    });
 }
 
 // Accounts Table
@@ -146,11 +123,6 @@ function setOrdersTableData(table, accountIds) {
     });
 }
 
-// Assuming the current URL is something like "http://example.com/trade.html?symbol=MSFT"
-const urlParams = new URLSearchParams(window.location.search);
-const symbol = urlParams.get('symbol');
-
-console.log(symbol); // This will log "MSFT" if the URL is "http://example.com/trade.html?symbol=MSFT"
 $(() => {
     if (window.ts.token) {
         initHome();
@@ -159,22 +131,10 @@ $(() => {
             initHome();
         }, 1000);
     }
-
-    $(document).on('click', '.tradeSymbol', function() {
-        const urlparams = new URLSearchParams({
-            symbol: $(this).attr('data-symbol'),
-            chartType: "column",
-            interval: "",
-            unit: "",
-            barsback: "",
-            sessiontemplate: "",
-        }).toString();
-        window.open(`trade.html?${urlparams}`, '_blank');
-    });
 });
 
 function initHome() {
     initAccountInfo();
-
+    new PositionsTable(appendToLeft("position"), true);
 }
 

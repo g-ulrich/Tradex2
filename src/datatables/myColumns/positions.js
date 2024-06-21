@@ -42,8 +42,8 @@ export const get_table_positions_columns = () => {
                 var shares = row?.Quantity;
                 var type = row?.AssetType;
                 return (
-                    `<span id="positions_table_${symbol}_exchange"></span>${symbol} · ${shares} Shares<br/>
-                    <span id="positions_table_${symbol}_desc" class="text-muted">-</span>`
+                    `${symbol} · ${shares} Shares<br/>
+                    <span id="positions_table_${symbol}_exchange"></span> <span id="positions_table_${symbol}_desc" class="text-muted">-</span>`
                 );
            }
         },

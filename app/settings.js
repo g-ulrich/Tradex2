@@ -2610,8 +2610,9 @@ class Accounts {
    * @param {boolean} [changes=false] - A boolean value that specifies whether or not position updates are streamed as changes.
    * @returns {Promise<Array>} - Promise resolving to the streamed positions.
    */
-  async streamPositions(setter, streamIdPrefix, accountIds, changes = false) {
+  async streamPositions(tableCls, positionsArray, streamIdPrefix, accountIds, changes = false) {
     const streamId = `${streamIdPrefix}${accountIds}`;
+    let positions = positionsArray; // initial Array containing the data.
     if (!this.allStreams?.[streamId]) {
       this.refreshToken();
       try {
@@ -2644,8 +2645,27 @@ class Accounts {
               const jsonString = new TextDecoder().decode(value);
               const jsonData = JSON.parse(jsonString.trim());
               if (jsonData?.Symbol) {
-                ;
-                setter(prev => [jsonData]);
+                // If it isnt in positions add it and return
+                let symbolInPositions = false;
+                positions.forEach(pos => {
+                  if (pos?.Symbol === jsonData?.Symbol) {
+                    symbolInPositions = true;
+                  }
+                });
+                if (!symbolInPositions) {
+                  positions.push(jsonData);
+                } else {
+                  // if the symbol is in positions replace.
+                  let newPositions = [];
+                  positions.forEach((pos, i) => {
+                    if (pos?.Symbol != jsonData?.Symbol) {
+                      newPositions.push(pos);
+                    }
+                  });
+                  newPositions.push(jsonData);
+                  positions = newPositions;
+                }
+                tableCls.setData(tableCls, positions);
               }
             } catch (error) {
               const msg = error.message.toLowerCase();
@@ -2827,6 +2847,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../util */ "./src/util.js");
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! electron */ "electron");
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! jquery */ "jquery");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_3__);
 /**
  * @fileoverview
  * This file contains the implementation of the Accounts class that interacts with the TradeStation API.
@@ -2855,6 +2877,7 @@ __webpack_require__.r(__webpack_exports__);
  * @server
  * - URL: https://api.tradestation.com
  */
+
 
 
 
@@ -3348,71 +3371,7 @@ class MarketData {
    * @returns {Promise<QuoteStream>} - Promise resolving to the streamed Quote changes.
    */
 
-  // async streamQuotes(setter, streamIdPrefix, symbols) {
-
-  //     this.refreshToken();
-  //     try {
-  //       const url = `${this.baseUrl}/stream/quotes/${symbols}`;
-  //       const headers = new Headers({
-  //         'Authorization': `Bearer ${this.accessToken}`
-  //       });
-  //       fetch(url, { method: 'GET', headers: headers })
-  //         .then(response => {
-  //           if (!response.ok) {
-  //             throw new Error(`HTTP error! status: ${response.status}`);
-  //           }
-  //           return response.body;
-  //         })
-  //         .then(stream => {
-  //           const reader = stream.getReader();
-  //           return new ReadableStream({
-  //             start(controller) {
-  //               function push() {
-  //                 reader.read().then(({ done, value }) => {
-  //                   if (done) {
-  //                     controller.close();
-  //                     return;
-  //                   }
-  //                   controller.enqueue(value);
-  //                   push();
-  //                 });
-  //               }
-  //               push();
-  //             }
-  //           });
-  //         })
-  //         .then(stream => {
-  //           // Here you can process the stream data
-  //           const reader = stream.getReader();
-  //           // while (true){
-  //             reader.read().then(function process({ done, value }) {
-  //               if (done) {
-  //                 console.log('Stream complete');
-  //                 return;
-  //               }
-
-  //               try {
-  //                 const decoder = new TextDecoder();
-  //                 const jsonString = decoder.decode(value);
-  //                 const jsonObject = JSON.parse(jsonString);
-  //                 setter(jsonObject);
-  //                 return jsonObject;
-  //               } catch (error) {
-  //                 console.log(`streamQuotes ${error}`);
-  //                 return;
-  //               }
-  //             });
-  //           // }
-  //         })
-  //         .catch(err => {
-  //           this.error(`streamQuotes ${err}`);
-  //         });
-  //     } catch (error) {
-  //       this.error(`streamQuotes ${error}`);
-  //     }
-
-  // }
-  async streamQuotes(setter, streamIdPrefix, symbols) {
+  async streamQuotes(chart, streamIdPrefix, symbols) {
     const streamId = `${streamIdPrefix}${symbols}`;
     if (!this.allStreams?.[streamId]) {
       this.refreshToken();
@@ -3442,8 +3401,8 @@ class MarketData {
                 break;
               }
               const jsonString = new TextDecoder().decode(value);
-              const jsonData = JSON.parse(jsonString.trim());
-              setter(jsonData);
+              const q = JSON.parse(jsonString.trim());
+              chart.setStreamQuote(q);
             } catch (error) {
               const msg = error.message.toLowerCase();
               if ((0,_util__WEBPACK_IMPORTED_MODULE_1__.isSubStr)(msg, 'network')) {
@@ -3863,7 +3822,8 @@ class Symbols {
       detailsArray.forEach(sym => {
         var cat = sym?.Category.toLowerCase();
         if (sym?.Name == symbol) {
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(`${sym?.Description}`);
+          var title = `${sym?.Exchange}:${symbol} · ${sym?.Description}`;
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(title);
           jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).empty();
           jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).append(`${sym?.Exchange}:${symbol} ·
                       <span class="text-muted">${sym?.Description}</span>`);

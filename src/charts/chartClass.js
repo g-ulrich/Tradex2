@@ -99,7 +99,7 @@ class Header{
     addSymbolInput(){
         $(`#${this.headerId}`).append(`
             <input 
-            class="text-uppercase p-1 text-white font-weight-bold" 
+            class="text-uppercase p-1 rounded text-white font-weight-bold" 
             value="${this.symbol}" 
             placeholder="Symbol" 
             type="search" 
@@ -137,7 +137,7 @@ class Header{
     getIntervalName(){
         var str = "";
         this.frequencyArray.forEach((obj)=>{
-            if (obj.interval == this.params.interval) {
+            if (obj.interval == this.params.interval && obj.unit == this.params.unit) {
                 str = obj.name;
             }
         });
@@ -153,7 +153,7 @@ class Header{
             var optionsHtml = "";
             this.frequencyArray.forEach((obj)=>{
                 optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
-                ${this.params.interval == obj?.interval ? 'selected':''}>${obj?.name}</option>`;
+                ${this.params.interval == obj?.interval && this.params.unit == obj?.unit ? 'selected':''}>${obj?.name}</option>`;
             });
             $(`#${this.headerId}`).append(`
                 <select id="${selectId}"
@@ -304,7 +304,6 @@ class Legend{
                 $eye.empty();
                 $eye.append(`<i class="fa-solid fa-eye"></i>`);
             } else {
-                console.log(_chartItem.visible);
                 _chartItem.applyOptions({visible:false});
                 $eye.empty();
                 $eye.append(`<i class="fa-solid fa-eye-slash"></i>`);
@@ -345,7 +344,7 @@ class Legend{
             if (obj.title == "bars"){
                 var color = obj.close > obj.open;
                 html += `<span ></span>
-                <span id="${this.barDetailsId}"></span></br>
+                <span class="orderFormSymbolName"id="${this.barDetailsId}"></span></br>
                 ${this._colorOHLC('O', obj.open, color)}
                 ${this._colorOHLC('H', obj.high, color)}
                 ${this._colorOHLC('L', obj.low, color)}
@@ -384,9 +383,10 @@ export class Chart{
         this._setClickListener();
         this.legend = new Legend(this.containerId, this.header);
         this.lastBar = {};
+        this.lastQuote = null;
         this.allBars = [];
         this.series = {};
-        this.lastPriceClicked = null;
+        this.lastPriceClicked = null;   
         this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
     }
 
@@ -561,6 +561,25 @@ export class Chart{
         });
     }
 
+    setQuote(quote){
+        this.lastQuote = quote;
+    }
+
+    setStreamQuote(quote){
+        // if (!this.lastQuote){
+            let merged = { };
+            Object.keys(this.lastQuote).forEach(key => {
+                if (quote[key] !== undefined) {
+                    merged[key] = quote[key]; 
+                }else{
+                    merged[key] = this.lastQuote[key];
+                }
+            });
+            this.lastQuote = merged;
+            this.orderForm.updateQuote(merged);
+        // }
+    }
+
     setBars(bars){
         bars.forEach((bar)=>{
             this.allBars.push(bar);
@@ -599,8 +618,41 @@ export class Chart{
         });
     } 
 
-    // setMarkers(){
+    setMarkersForOrders(orders){
+        // // TODO get legs
+        // var orderHistory = [];
+        // const legs = orderHistory.map((order)=>{
+        //     try {
+        //       return{...order,
+        //         BuyOrSell: order.Legs[0]?.BuyOrSell,
+        //         QuantityOrdered: order.Legs[0]?.QuantityOrdered
+        //       }
+        //     }catch (error) {
+        //       console.error("insertcandles legs", error);
+        //     }
+        //   });
+        // const markersArray = legs.map((order)=>{
+        //     const setMarkerPos = (orderDT) => {
+        //         const old_epoch = new Date(orderDT).getTime();
+        //         const new_epoch = old_epoch + ((-5 * 60) * 60 * 1000); // utc to est
+        //         return candles[findClosestEpochIndex(candles, new_epoch/1000)].time;
+        //       }
+        //     var time = setMarkerPos(typeof order?.ClosedDateTime === 'undefined' ? order?.OpenedDateTime : order?.ClosedDateTime);
+        //     return { time: time,
+        //       position: order?.BuyOrSell !== 'Buy' ? 'aboveBar' : 'belowBar',
+        //       color: order?.BuyOrSell !== 'Buy' ? '#e91e63' :  '#2196F3',
+        //       shape: order?.BuyOrSell !== 'Buy' ? 'arrowDown' : 'arrowUp',
+        //       text: (order?.BuyOrSell !== 'Buy' ?
+        //                order?.BuyOrSell : 'Buy') +
+        //                 `${order?.Status !== 'FLL' ? ` (${order?.Status})` : ' (FLL)'}` +
+        //                  ` ${order?.QuantityOrdered} @ `+
+        //                   `$${parseFloat(order?.FilledPrice === '0' ?
+        //                     order?.LimitPrice :
+        //                     order?.FilledPrice).toFixed(2)}`}
+        //     });
+    }
 
-    // }
+
+    
     
 }

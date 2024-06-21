@@ -677,8 +677,9 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
    * @param {boolean} [changes=false] - A boolean value that specifies whether or not position updates are streamed as changes.
    * @returns {Promise<Array>} - Promise resolving to the streamed positions.
    */
-  async streamPositions(setter, streamIdPrefix, accountIds, changes = false) {
+  async streamPositions(tableCls, positionsArray, streamIdPrefix, accountIds, changes = false) {
     const streamId = `${streamIdPrefix}${accountIds}`;
+    let positions = positionsArray; // initial Array containing the data.
     if (!this.allStreams?.[streamId]) {
       this.refreshToken();
       try {
@@ -710,11 +711,30 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
                 }
                 const jsonString = new TextDecoder().decode(value);
                 const jsonData = JSON.parse(jsonString.trim());
-                if (jsonData?.Symbol) {;
-                  setter(prev=>[jsonData]);
+                if (jsonData?.Symbol) {
+                  // If it isnt in positions add it and return
+                  let symbolInPositions = false;
+                  positions.forEach((pos)=>{
+                    if (pos?.Symbol === jsonData?.Symbol) {
+                      symbolInPositions = true;
+                    }
+                  });
+                  if (!symbolInPositions) {
+                    positions.push(jsonData);
+                  }else{
+                    // if the symbol is in positions replace.
+                    let newPositions = [];
+                    positions.forEach((pos, i)=>{
+                      if (pos?.Symbol != jsonData?.Symbol) {
+                        newPositions.push(pos);
+                      }
+                    });
+                    newPositions.push(jsonData);
+                    positions = newPositions;
+                  }
+                  tableCls.setData(tableCls, positions);
                 }
-
-
+                
               } catch (error) {
                 const msg = error.message.toLowerCase();
                 if (isSubStr(msg, 'network')) {

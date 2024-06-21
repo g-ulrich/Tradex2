@@ -89,8 +89,8 @@ export class Symbols {
             detailsArray.forEach((sym)=>{
               var cat = sym?.Category.toLowerCase();
                 if (sym?.Name == symbol){
-
-                    $(`#${id}`).text(`${sym?.Description}`);
+                    var title = `${sym?.Exchange}:${symbol} · ${sym?.Description}`;
+                    $(`#${id}`).text(title);
                     $(`.orderFormSymbolName`).empty();
                     $(`.orderFormSymbolName`).append(
                       `${sym?.Exchange}:${symbol} ·
