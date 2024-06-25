@@ -1,7 +1,9 @@
 import $ from 'jquery';
 import { createChart, CrosshairMode } from "lightweight-charts";
 import {CHART_THEMES} from '../charts/options';
-import { getRandomAlphaNum, formatVolume, formatCurrency } from '../util';
+import { getRandomAlphaNum, formatVolume, formatCurrency, getMean } from '../util';
+import { getSignalColumns } from '../datatables/myColumns/signals';
+import { SimpleTableData } from '../datatables/simple';
 
 class Header{
     constructor(containerId){
@@ -386,8 +388,15 @@ export class Chart{
         this.lastQuote = null;
         this.allBars = [];
         this.series = {};
+        this.pl = 0;
         this.lastPriceClicked = null;   
         this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
+        this.signals = new SimpleTableData({
+            title: "Signals",
+            containerID: "signals",
+            columns: getSignalColumns(),
+            dom: 't',
+        });
     }
 
     _chartHeight(){
@@ -551,6 +560,9 @@ export class Chart{
     }
 
     _processNextBar(bar){
+        bar.color = bar.close < bar.open ? 
+        "rgba(114, 137, 218, .2)" // primary
+        : "rgba(11, 150, 87, .2)" // success
         return bar;
     }
 
@@ -559,6 +571,19 @@ export class Chart{
             from: this.allBars[this.allBars.length -25].time,
             to: this.allBars[this.allBars.length -1].time,
         });
+    }
+
+    _pushBar(bar){
+        if (this.allBars.length > 1){
+            var lastBar = this.allBars[this.allBars.length - 1];
+            if (lastBar.time === bar.time) {
+                this.allBars[this.allBars.length - 1] = bar;
+            }else{
+                this.allBars.push(bar);
+            }
+        }else{
+            this.allBars.push(bar);
+        }
     }
 
     setQuote(quote){
@@ -582,7 +607,7 @@ export class Chart{
 
     setBars(bars){
         bars.forEach((bar)=>{
-            this.allBars.push(bar);
+            this._pushBar(bar);
             this.setNextBar(bar);
         });
         this._setVisibleRange();
@@ -597,9 +622,87 @@ export class Chart{
             mergedBar[key] = this.lastBar[key];
           }
         });
-        this.allBars.push(mergedBar);
+        this._pushBar(mergedBar);
+        this._message(this.lastBar, mergedBar);
         this.setNextBar(mergedBar);
       }
+
+    _message(){
+        var newArray = this.allBars.slice(-5);
+        var percentages = [];
+        newArray.forEach((bar)=>{
+            var pl = bar.close - bar.open;
+            percentages.push((pl / bar.close)*100);
+        });
+        var avgPerc = Math.abs(getMean(percentages));
+        var cur = this.allBars[this.allBars.length - 1];
+        var curPl = cur.close - cur.open;
+        var curPerc = Math.abs((curPl / cur.close) * 100);
+        var prev = this.allBars[this.allBars.length - 2];
+        var isVolgtr = cur.volume > prev.volume;
+        var isCurUp = cur.close > cur.open;
+        var isPrevUp = prev.close > prev.open;
+        var msg = "";
+        var desc = "";
+            if (isVolgtr & !isPrevUp & isCurUp){
+                msg = 'buy';
+                desc = "Volume is greater then prev, prev candle is down and cur is up."
+            } 
+            if (isVolgtr & isPrevUp & isCurUp){
+                msg = 'buy';
+                desc = "Volume is greater then prev, prev is up and cur is up.";
+            } 
+            if (!isVolgtr & !isPrevUp & !isCurUp) {
+                msg = "buy"
+                desc = "Volume is lower then prev, prev is down and cur is down.";
+            }
+        // Down
+        if (!isVolgtr & !isPrevUp & isCurUp) {
+            msg = "sell";
+            desc = "Volume is lower then prev, prev is down and cur is up.";
+        }
+        if (!isVolgtr & isPrevUp & !isCurUp) {
+            msg = "sell";
+            desc = "Volume is lower then prev, prev is up and cur is down.";
+        }
+        if (isVolgtr & !isPrevUp & !isCurUp) {
+            msg = "sell";
+            desc = "Volume is greater the prev, prev is down and cur is down.";
+        }
+
+        if (avgPerc < curPerc & isCurUp) {
+            msg = "buy";
+            desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is up.`
+        }
+        if (avgPerc < curPerc & !isCurUp) {
+            msg = "sell";
+            desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is down.`
+        }
+        
+    
+        var row = this.signals.getLastRowAdded();
+        if (row != null & msg == 'sell'){
+            if (row.action == 'buy'){
+                this.pl += cur.close - row.price;
+            }
+        }
+        var payload = [{
+            action: msg,
+            price: cur?.close.toFixed(2),
+            pl: this.pl.toFixed(2),
+            desc: desc
+            }];
+        if (msg !== "") {
+            if (row == null & msg !== 'sell') { // init
+                this.signals.addRow(this.signals, payload);
+            } else if (row != null) {
+                if (msg !== row.action){
+                    this.signals.addRow(this.signals, payload);
+
+                }
+            }
+        }
+    }
 
     setNextBar(bar){
         var newBar = this._processNextBar(bar);
@@ -615,6 +718,7 @@ export class Chart{
                 }
                 series.obj.update(newBar);
             }
+
         });
     } 
 

@@ -4,9 +4,11 @@ import {Chart} from "../charts/chartClass";
 import {Data} from "../charts/customAPIBindings/getData";
 import {getRandomAlphaNum, formatCurrency} from "../util";
 import { get_table_positions_columns } from '../datatables/myColumns/positions';
+
 import { SimpleTableData } from '../datatables/simple';
 import { PositionsTable } from '../datatables/positionsTableClass';
-
+// import { secEdgarApi } from 'sec-edgar-api';
+import { ipcRenderer } from "electron";
 class OrderForm{
     constructor(containerId){
         this.containerId = containerId;
@@ -249,6 +251,8 @@ function setPositionsTableData(table, accountIds) {
 // }
 
 
+// const reports = await secEdgarApi.getReports({ symbol: 'AAPL' });
+
 
 $(()=>{
     $("#nav_links").hide();
@@ -260,5 +264,34 @@ $(()=>{
     data.startBarStream(chart.header.symbol, chart.header.params);
     data.startQuoteStream(chart.header.symbol);
     new PositionsTable("positions");
-
+    
+    // secReport(chart.header.symbol);
+    // getFMPData("jk8BGBSpU68K8J5MyeJkVhOBWLvc8tbY");
 });
+
+
+
+// function secReport(symbol){
+//     secEdgarApi.getReports({ symbol: symbol }).then(res => {
+//             console.log(res);
+//     }).catch(error => {
+//         console.log("[ERROR] secReport", error);
+//         setTimeout(() => {
+//             secReport(symbol);
+//         }, 1000);
+//     });
+// }
+// function getFMPData(key){
+//     $.ajax({
+//         url: `https://financialmodelingprep.com/api/v4/shares_float?symbol=AAPL&apikey=${key}`,
+//         type: 'GET',
+//         dataType: 'json',
+//         success: function(data) {
+//             console.log(data);
+//             // Process the data as needed
+//         },
+//         error: function(jqXHR, textStatus, errorThrown) {
+//             console.error(textStatus, errorThrown);
+//         }
+//     });
+// }

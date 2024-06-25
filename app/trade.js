@@ -18,6 +18,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lightweight_charts__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lightweight_charts__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _charts_options__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../charts/options */ "./src/charts/options.js");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util */ "./src/util.js");
+/* harmony import */ var _datatables_myColumns_signals__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../datatables/myColumns/signals */ "./src/datatables/myColumns/signals.js");
+/* harmony import */ var _datatables_simple__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../datatables/simple */ "./src/datatables/simple.js");
+
+
 
 
 
@@ -405,8 +409,15 @@ class Chart {
     this.lastQuote = null;
     this.allBars = [];
     this.series = {};
+    this.pl = 0;
     this.lastPriceClicked = null;
     this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
+    this.signals = new _datatables_simple__WEBPACK_IMPORTED_MODULE_5__.SimpleTableData({
+      title: "Signals",
+      containerID: "signals",
+      columns: (0,_datatables_myColumns_signals__WEBPACK_IMPORTED_MODULE_4__.getSignalColumns)(),
+      dom: 't'
+    });
   }
   _chartHeight() {
     return parseInt(window.innerHeight * .8); //this.height;
@@ -570,6 +581,8 @@ class Chart {
     });
   }
   _processNextBar(bar) {
+    bar.color = bar.close < bar.open ? "rgba(114, 137, 218, .2)" // primary
+    : "rgba(11, 150, 87, .2)"; // success
     return bar;
   }
   _setVisibleRange() {
@@ -577,6 +590,18 @@ class Chart {
       from: this.allBars[this.allBars.length - 25].time,
       to: this.allBars[this.allBars.length - 1].time
     });
+  }
+  _pushBar(bar) {
+    if (this.allBars.length > 1) {
+      var lastBar = this.allBars[this.allBars.length - 1];
+      if (lastBar.time === bar.time) {
+        this.allBars[this.allBars.length - 1] = bar;
+      } else {
+        this.allBars.push(bar);
+      }
+    } else {
+      this.allBars.push(bar);
+    }
   }
   setQuote(quote) {
     this.lastQuote = quote;
@@ -597,7 +622,7 @@ class Chart {
   }
   setBars(bars) {
     bars.forEach(bar => {
-      this.allBars.push(bar);
+      this._pushBar(bar);
       this.setNextBar(bar);
     });
     this._setVisibleRange();
@@ -611,8 +636,82 @@ class Chart {
         mergedBar[key] = this.lastBar[key];
       }
     });
-    this.allBars.push(mergedBar);
+    this._pushBar(mergedBar);
+    this._message(this.lastBar, mergedBar);
     this.setNextBar(mergedBar);
+  }
+  _message() {
+    var newArray = this.allBars.slice(-5);
+    var percentages = [];
+    newArray.forEach(bar => {
+      var pl = bar.close - bar.open;
+      percentages.push(pl / bar.close * 100);
+    });
+    var avgPerc = Math.abs((0,_util__WEBPACK_IMPORTED_MODULE_3__.getMean)(percentages));
+    var cur = this.allBars[this.allBars.length - 1];
+    var curPl = cur.close - cur.open;
+    var curPerc = Math.abs(curPl / cur.close * 100);
+    var prev = this.allBars[this.allBars.length - 2];
+    var isVolgtr = cur.volume > prev.volume;
+    var isCurUp = cur.close > cur.open;
+    var isPrevUp = prev.close > prev.open;
+    var msg = "";
+    var desc = "";
+    if (isVolgtr & !isPrevUp & isCurUp) {
+      msg = 'buy';
+      desc = "Volume is greater then prev, prev candle is down and cur is up.";
+    }
+    if (isVolgtr & isPrevUp & isCurUp) {
+      msg = 'buy';
+      desc = "Volume is greater then prev, prev is up and cur is up.";
+    }
+    if (!isVolgtr & !isPrevUp & !isCurUp) {
+      msg = "buy";
+      desc = "Volume is lower then prev, prev is down and cur is down.";
+    }
+    // Down
+    if (!isVolgtr & !isPrevUp & isCurUp) {
+      msg = "sell";
+      desc = "Volume is lower then prev, prev is down and cur is up.";
+    }
+    if (!isVolgtr & isPrevUp & !isCurUp) {
+      msg = "sell";
+      desc = "Volume is lower then prev, prev is up and cur is down.";
+    }
+    if (isVolgtr & !isPrevUp & !isCurUp) {
+      msg = "sell";
+      desc = "Volume is greater the prev, prev is down and cur is down.";
+    }
+    if (avgPerc < curPerc & isCurUp) {
+      msg = "buy";
+      desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is up.`;
+    }
+    if (avgPerc < curPerc & !isCurUp) {
+      msg = "sell";
+      desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is down.`;
+    }
+    var row = this.signals.getLastRowAdded();
+    if (row != null & msg == 'sell') {
+      if (row.action == 'buy') {
+        this.pl += cur.close - row.price;
+      }
+    }
+    var payload = [{
+      action: msg,
+      price: cur?.close.toFixed(2),
+      pl: this.pl.toFixed(2),
+      desc: desc
+    }];
+    if (msg !== "") {
+      if (row == null & msg !== 'sell') {
+        // init
+        this.signals.addRow(this.signals, payload);
+      } else if (row != null) {
+        if (msg !== row.action) {
+          this.signals.addRow(this.signals, payload);
+        }
+      }
+    }
   }
   setNextBar(bar) {
     var newBar = this._processNextBar(bar);
@@ -708,27 +807,6 @@ function setMarketDataBarsAndStream(chart, symbol, params) {
     setTimeout(() => {
       console.log("[INFO] setMarketDataBarsAndStream trying again...");
       setMarketDataBarsAndStream(chart, symbol, params);
-    }, 1000);
-  });
-}
-function initAccountInfo(tableCls) {
-  window.ts.account.getAccounts().then(accounts => {
-    const accountIds = accounts.map(item => item["AccountID"]);
-    setPositionsTableData(tableCls, accountIds);
-  }).catch(error => {
-    console.log("[ERROR] initAccountInfo", error);
-    setTimeout(() => {
-      initAccountInfo();
-    }, 1000);
-  });
-}
-function setPositionsTableData(tableCls, accountIds) {
-  window.ts.account.getPositions(accountIds).then(array => {
-    window.ts.account.streamPositions(tableCls, array, "_", accountIds);
-  }).catch(error => {
-    console.log("[ERROR] setPositionsTableData", error);
-    setTimeout(() => {
-      setPositionsTableData(table, accountIds);
     }, 1000);
   });
 }
@@ -4294,6 +4372,49 @@ const get_table_positions_columns = () => {
 
 /***/ }),
 
+/***/ "./src/datatables/myColumns/signals.js":
+/*!*********************************************!*\
+  !*** ./src/datatables/myColumns/signals.js ***!
+  \*********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getSignalColumns: () => (/* binding */ getSignalColumns)
+/* harmony export */ });
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../util */ "./src/util.js");
+
+const getSignalColumns = () => {
+  return [{
+    data: 'action',
+    name: 'Action',
+    render: function (data, type, row) {
+      return data;
+    }
+  }, {
+    data: 'price',
+    name: 'Price',
+    render: function (data, type, row) {
+      return (0,_util__WEBPACK_IMPORTED_MODULE_0__.formatCurrency)(data);
+    }
+  }, {
+    data: 'pl',
+    name: 'PL',
+    render: function (data, type, row) {
+      return (0,_util__WEBPACK_IMPORTED_MODULE_0__.formatCurrency)(data);
+    }
+  }, {
+    data: 'desc',
+    name: 'Description',
+    render: function (data, type, row) {
+      return data;
+    }
+  }];
+};
+
+/***/ }),
+
 /***/ "./src/datatables/positionsTableClass.js":
 /*!***********************************************!*\
   !*** ./src/datatables/positionsTableClass.js ***!
@@ -4325,7 +4446,7 @@ function initAccountInfo(tableCls) {
 }
 function setPositionsTableData(tableCls, accountIds) {
   window.ts.account.getPositions(accountIds).then(array => {
-    tableCls.setData(tableCls, array);
+    tableCls.setPollData(tableCls, array);
     window.ts.account.streamPositions(tableCls, array, "_", accountIds);
   }).catch(error => {
     console.log("[ERROR] setPositionsTableData", error);
@@ -4504,6 +4625,7 @@ class SimpleTableData {
     this.cols = params?.columns || null;
     this.table = null;
     this.table = this.initTable();
+    this.lastRowAdded = null;
   }
   createTitleContainer() {
     if (this.title !== "") {
@@ -4528,15 +4650,28 @@ class SimpleTableData {
                 ${this.setHeaders()}
             </table>`);
   }
-  setData(self, data) {
-    // $(`#${self.tableId}_lastupdate`).empty();
-    // $(`#${self.tableId}_lastupdate`).append(`<i class="fa-solid fa-spinner fa-spin"></i>`);
+  getLastRowAdded() {
+    return this.lastRowAdded;
+  }
+  addRow(self, data) {
+    self.table.rows.add(data).draw(false);
+    this.lastRowAdded = data[0];
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${self.tableId}_lastupdate`).text((0,_util__WEBPACK_IMPORTED_MODULE_1__.hhmmss)());
+  }
+  setStreamData(self, data) {
     self.table.clear();
     self.table.rows.add(data).draw();
-    // setTimeout(()=>{
-    // $(`#${self.tableId}_lastupdate`).empty();
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${self.tableId}_lastupdate`).text((0,_util__WEBPACK_IMPORTED_MODULE_1__.hhmmss)());
-    // }, 500);
+  }
+  setPollData(self, data) {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${self.tableId}_lastupdate`).empty();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${self.tableId}_lastupdate`).append(`<i class="fa-solid fa-spinner fa-spin"></i>`);
+    self.table.clear();
+    self.table.rows.add(data).draw();
+    setTimeout(() => {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${self.tableId}_lastupdate`).empty();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${self.tableId}_lastupdate`).text((0,_util__WEBPACK_IMPORTED_MODULE_1__.hhmmss)());
+    }, 500);
   }
   bgAlpha(alpha) {
     return {
@@ -7237,7 +7372,7 @@ class Accounts {
                   newPositions.push(jsonData);
                   positions = newPositions;
                 }
-                tableCls.setData(tableCls, positions);
+                tableCls.setStreamData(tableCls, positions);
               }
             } catch (error) {
               const msg = error.message.toLowerCase();
@@ -8481,6 +8616,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getFunctionParameters: () => (/* binding */ getFunctionParameters),
 /* harmony export */   getHeightFromClass: () => (/* binding */ getHeightFromClass),
 /* harmony export */   getIndexByVal: () => (/* binding */ getIndexByVal),
+/* harmony export */   getMean: () => (/* binding */ getMean),
 /* harmony export */   getRandomAlphaNum: () => (/* binding */ getRandomAlphaNum),
 /* harmony export */   getRandomRGB: () => (/* binding */ getRandomRGB),
 /* harmony export */   hhmmss: () => (/* binding */ hhmmss),
@@ -8991,6 +9127,11 @@ const formatVolume = number => {
   }
   return shortNumber + suffix;
 };
+function getMean(arr) {
+  let sum = arr.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+  let average = sum / arr.length;
+  return average;
+}
 
 /***/ }),
 
@@ -9732,6 +9873,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _datatables_myColumns_positions__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../datatables/myColumns/positions */ "./src/datatables/myColumns/positions.js");
 /* harmony import */ var _datatables_simple__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../datatables/simple */ "./src/datatables/simple.js");
 /* harmony import */ var _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../datatables/positionsTableClass */ "./src/datatables/positionsTableClass.js");
+/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! electron */ "electron");
+/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_8__);
 
 
 
@@ -9739,6 +9882,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+// import { secEdgarApi } from 'sec-edgar-api';
 
 class OrderForm {
   constructor(containerId) {
@@ -9967,6 +10112,8 @@ function setPositionsTableData(table, accountIds) {
 //     }, intervalSeconds);
 // }
 
+// const reports = await secEdgarApi.getReports({ symbol: 'AAPL' });
+
 (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(() => {
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#nav_links").hide();
   var orderForm = new OrderForm("orders");
@@ -9977,7 +10124,35 @@ function setPositionsTableData(table, accountIds) {
   data.startBarStream(chart.header.symbol, chart.header.params);
   data.startQuoteStream(chart.header.symbol);
   new _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_7__.PositionsTable("positions");
+
+  // secReport(chart.header.symbol);
+  // getFMPData("jk8BGBSpU68K8J5MyeJkVhOBWLvc8tbY");
 });
+
+// function secReport(symbol){
+//     secEdgarApi.getReports({ symbol: symbol }).then(res => {
+//             console.log(res);
+//     }).catch(error => {
+//         console.log("[ERROR] secReport", error);
+//         setTimeout(() => {
+//             secReport(symbol);
+//         }, 1000);
+//     });
+// }
+// function getFMPData(key){
+//     $.ajax({
+//         url: `https://financialmodelingprep.com/api/v4/shares_float?symbol=AAPL&apikey=${key}`,
+//         type: 'GET',
+//         dataType: 'json',
+//         success: function(data) {
+//             console.log(data);
+//             // Process the data as needed
+//         },
+//         error: function(jqXHR, textStatus, errorThrown) {
+//             console.error(textStatus, errorThrown);
+//         }
+//     });
+// }
 })();
 
 /******/ })()

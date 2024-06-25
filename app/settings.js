@@ -2665,7 +2665,7 @@ class Accounts {
                   newPositions.push(jsonData);
                   positions = newPositions;
                 }
-                tableCls.setData(tableCls, positions);
+                tableCls.setStreamData(tableCls, positions);
               }
             } catch (error) {
               const msg = error.message.toLowerCase();
@@ -3909,6 +3909,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getFunctionParameters: () => (/* binding */ getFunctionParameters),
 /* harmony export */   getHeightFromClass: () => (/* binding */ getHeightFromClass),
 /* harmony export */   getIndexByVal: () => (/* binding */ getIndexByVal),
+/* harmony export */   getMean: () => (/* binding */ getMean),
 /* harmony export */   getRandomAlphaNum: () => (/* binding */ getRandomAlphaNum),
 /* harmony export */   getRandomRGB: () => (/* binding */ getRandomRGB),
 /* harmony export */   hhmmss: () => (/* binding */ hhmmss),
@@ -4419,6 +4420,11 @@ const formatVolume = number => {
   }
   return shortNumber + suffix;
 };
+function getMean(arr) {
+  let sum = arr.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+  let average = sum / arr.length;
+  return average;
+}
 
 /***/ }),
 

@@ -126,6 +126,7 @@ export class SimpleTableData{
         this.cols = params?.columns || null;
         this.table = null;
         this.table = this.initTable();
+        this.lastRowAdded= null;
     }
 
     createTitleContainer(){
@@ -156,15 +157,31 @@ export class SimpleTableData{
         );
     }
 
-    setData(self, data){
-        // $(`#${self.tableId}_lastupdate`).empty();
-        // $(`#${self.tableId}_lastupdate`).append(`<i class="fa-solid fa-spinner fa-spin"></i>`);
+    getLastRowAdded(){
+        return this.lastRowAdded;
+    }
+
+    addRow(self, data){
+        self.table.rows.add(data).draw(false);
+        this.lastRowAdded = data[0];
+        $(`#${self.tableId}_lastupdate`).text(hhmmss());
+    }
+
+    setStreamData(self, data){
         self.table.clear();
         self.table.rows.add(data).draw();
-        // setTimeout(()=>{
-            // $(`#${self.tableId}_lastupdate`).empty();
+        $(`#${self.tableId}_lastupdate`).text(hhmmss());
+    }
+
+    setPollData(self, data){
+        $(`#${self.tableId}_lastupdate`).empty();
+        $(`#${self.tableId}_lastupdate`).append(`<i class="fa-solid fa-spinner fa-spin"></i>`);
+        self.table.clear();
+        self.table.rows.add(data).draw();
+        setTimeout(()=>{
+            $(`#${self.tableId}_lastupdate`).empty();
             $(`#${self.tableId}_lastupdate`).text(hhmmss());
-        // }, 500);
+        }, 500);
     }
 
     bgAlpha(alpha){

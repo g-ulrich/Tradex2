@@ -732,7 +732,7 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
                     newPositions.push(jsonData);
                     positions = newPositions;
                   }
-                  tableCls.setData(tableCls, positions);
+                  tableCls.setStreamData(tableCls, positions);
                 }
                 
               } catch (error) {

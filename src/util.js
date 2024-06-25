@@ -539,3 +539,9 @@ export const formatVolume = (number) => {
   }
   return shortNumber + suffix;
 }
+
+export function getMean(arr) {
+  let sum = arr.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+  let average = sum / arr.length;
+  return average;
+}

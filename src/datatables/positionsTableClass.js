@@ -16,7 +16,7 @@ function initAccountInfo(tableCls) {
 
 function setPositionsTableData(tableCls, accountIds) {
     window.ts.account.getPositions(accountIds).then(array => {
-        tableCls.setData(tableCls, array);
+        tableCls.setPollData(tableCls, array);
         window.ts.account.streamPositions(tableCls, array, "_", accountIds);
     }).catch(error => {
         console.log("[ERROR] setPositionsTableData", error);

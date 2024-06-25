@@ -70,7 +70,7 @@ function initAccountsTable() {
 function setAccountsTableData(table, accountIds) {
     window.ts.account.getAccountBalances(accountIds).then(array => {
         // window.ts.account.configBalances(array)
-        table.setData(table, array);
+        table.setPollData(table, array);
     }).catch(error => {
         console.log("[ERROR] setAccountsTableData", error);
         setTimeout(() => {
@@ -92,7 +92,7 @@ function initTodaysOrdersTable() {
 function setTodaysOrdersTableData(table, accountIds) {
     window.ts.account.getOrders(accountIds).then(array => {
         // window.ts.account.configBalances(array)
-        table.setData(table, array);
+        table.setPollData(table, array);
     }).catch(error => {
         console.log("[ERROR] setTodaysOrdersTableData", error);
         setTimeout(() => {
@@ -114,7 +114,7 @@ function initOrdersTable() {
 function setOrdersTableData(table, accountIds) {
     window.ts.account.getHistoricalOrders(accountIds, getDateNDaysAgo(10)).then(array => {
         // window.ts.account.configBalances(array)
-        table.setData(table, array);
+        table.setPollData(table, array);
     }).catch(error => {
         console.log("[ERROR] setOrdersTableData", error);
         setTimeout(() => {
