@@ -1,0 +1,13 @@
+{
+    "name": "background-shade-series",
+    "type": "module",
+    "main": "./background-shade-series.umd.cjs",
+    "module": "./background-shade-series.js",
+    "exports": {
+        ".": {
+            "import": "./background-shade-series.js",
+            "require": "./background-shade-series.umd.cjs",
+            "types": "./background-shade-series.d.ts"
+        }
+    }
+}

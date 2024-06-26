@@ -1,0 +1,13 @@
+{
+    "name": "partial-price-line",
+    "type": "module",
+    "main": "./partial-price-line.umd.cjs",
+    "module": "./partial-price-line.js",
+    "exports": {
+        ".": {
+            "import": "./partial-price-line.js",
+            "require": "./partial-price-line.umd.cjs",
+            "types": "./partial-price-line.d.ts"
+        }
+    }
+}

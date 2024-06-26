@@ -1,0 +1,13 @@
+{
+    "name": "bands-indicator",
+    "type": "module",
+    "main": "./bands-indicator.umd.cjs",
+    "module": "./bands-indicator.js",
+    "exports": {
+        ".": {
+            "import": "./bands-indicator.js",
+            "require": "./bands-indicator.umd.cjs",
+            "types": "./bands-indicator.d.ts"
+        }
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "name": "expiring-price-alerts",
+    "type": "module",
+    "main": "./expiring-price-alerts.umd.cjs",
+    "module": "./expiring-price-alerts.js",
+    "exports": {
+        ".": {
+            "import": "./expiring-price-alerts.js",
+            "require": "./expiring-price-alerts.umd.cjs",
+            "types": "./expiring-price-alerts.d.ts"
+        }
+    }
+}

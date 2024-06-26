@@ -1,0 +1,13 @@
+{
+    "name": "volume-profile",
+    "type": "module",
+    "main": "./volume-profile.umd.cjs",
+    "module": "./volume-profile.js",
+    "exports": {
+        ".": {
+            "import": "./volume-profile.js",
+            "require": "./volume-profile.umd.cjs",
+            "types": "./volume-profile.d.ts"
+        }
+    }
+}

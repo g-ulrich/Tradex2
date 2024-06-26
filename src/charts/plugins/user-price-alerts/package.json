@@ -1,0 +1,13 @@
+{
+    "name": "user-price-alerts",
+    "type": "module",
+    "main": "./user-price-alerts.umd.cjs",
+    "module": "./user-price-alerts.js",
+    "exports": {
+        ".": {
+            "import": "./user-price-alerts.js",
+            "require": "./user-price-alerts.umd.cjs",
+            "types": "./user-price-alerts.d.ts"
+        }
+    }
+}

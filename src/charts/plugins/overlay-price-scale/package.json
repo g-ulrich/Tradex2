@@ -1,0 +1,13 @@
+{
+    "name": "overlay-price-scale",
+    "type": "module",
+    "main": "./overlay-price-scale.umd.cjs",
+    "module": "./overlay-price-scale.js",
+    "exports": {
+        ".": {
+            "import": "./overlay-price-scale.js",
+            "require": "./overlay-price-scale.umd.cjs",
+            "types": "./overlay-price-scale.d.ts"
+        }
+    }
+}

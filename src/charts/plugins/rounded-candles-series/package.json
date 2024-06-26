@@ -1,0 +1,13 @@
+{
+    "name": "rounded-candles-series",
+    "type": "module",
+    "main": "./rounded-candles-series.umd.cjs",
+    "module": "./rounded-candles-series.js",
+    "exports": {
+        ".": {
+            "import": "./rounded-candles-series.js",
+            "require": "./rounded-candles-series.umd.cjs",
+            "types": "./rounded-candles-series.d.ts"
+        }
+    }
+}

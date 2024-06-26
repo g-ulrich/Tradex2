@@ -1,0 +1,13 @@
+{
+    "name": "user-price-lines",
+    "type": "module",
+    "main": "./user-price-lines.umd.cjs",
+    "module": "./user-price-lines.js",
+    "exports": {
+        ".": {
+            "import": "./user-price-lines.js",
+            "require": "./user-price-lines.umd.cjs",
+            "types": "./user-price-lines.d.ts"
+        }
+    }
+}

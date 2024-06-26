@@ -1,0 +1,13 @@
+{
+    "name": "image-watermark",
+    "type": "module",
+    "main": "./image-watermark.umd.cjs",
+    "module": "./image-watermark.js",
+    "exports": {
+        ".": {
+            "import": "./image-watermark.js",
+            "require": "./image-watermark.umd.cjs",
+            "types": "./image-watermark.d.ts"
+        }
+    }
+}

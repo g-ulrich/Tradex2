@@ -567,7 +567,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
    */
 
 
-  async streamQuotes(chart, streamIdPrefix, symbols){
+  async streamQuotes(cls, streamIdPrefix, symbols){
     const streamId = `${streamIdPrefix}${symbols}`;
     if (!this.allStreams?.[streamId]) {
       this.refreshToken();
@@ -597,7 +597,7 @@ async getOptionStrikes(underlying, spreadType = 'Single', strikeInterval = 1, ex
               }
               const jsonString = new TextDecoder().decode(value);
               const q = JSON.parse(jsonString.trim());
-              chart.setStreamQuote(q);
+              cls.setStreamQuote(q);
 
             } catch (error) {
               const msg = error.message.toLowerCase();

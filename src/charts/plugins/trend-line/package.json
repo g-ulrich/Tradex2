@@ -1,0 +1,13 @@
+{
+    "name": "trend-line",
+    "type": "module",
+    "main": "./trend-line.umd.cjs",
+    "module": "./trend-line.js",
+    "exports": {
+        ".": {
+            "import": "./trend-line.js",
+            "require": "./trend-line.umd.cjs",
+            "types": "./trend-line.d.ts"
+        }
+    }
+}

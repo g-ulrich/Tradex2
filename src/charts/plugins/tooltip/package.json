@@ -1,0 +1,13 @@
+{
+    "name": "tooltip",
+    "type": "module",
+    "main": "./tooltip.umd.cjs",
+    "module": "./tooltip.js",
+    "exports": {
+        ".": {
+            "import": "./tooltip.js",
+            "require": "./tooltip.umd.cjs",
+            "types": "./tooltip.d.ts"
+        }
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "name": "rectangle-drawing-tool",
+    "type": "module",
+    "main": "./rectangle-drawing-tool.umd.cjs",
+    "module": "./rectangle-drawing-tool.js",
+    "exports": {
+        ".": {
+            "import": "./rectangle-drawing-tool.js",
+            "require": "./rectangle-drawing-tool.umd.cjs",
+            "types": "./rectangle-drawing-tool.d.ts"
+        }
+    }
+}

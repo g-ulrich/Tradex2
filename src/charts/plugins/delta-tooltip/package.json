@@ -1,0 +1,13 @@
+{
+    "name": "delta-tooltip",
+    "type": "module",
+    "main": "./delta-tooltip.umd.cjs",
+    "module": "./delta-tooltip.js",
+    "exports": {
+        ".": {
+            "import": "./delta-tooltip.js",
+            "require": "./delta-tooltip.umd.cjs",
+            "types": "./delta-tooltip.d.ts"
+        }
+    }
+}

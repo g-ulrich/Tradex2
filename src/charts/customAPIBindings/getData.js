@@ -1,8 +1,9 @@
+import {getRandomAlphaNum} from '../../util';
 
-export function setMarketDataQuotesAndStream(chart, symbol){
+export function setMarketDataQuotesAndStream(cls, symbol){
     window.ts.marketData.getQuoteSnapshots(symbol).then(quote => {
-        chart.setQuote(quote[0]);
-        window.ts.marketData.streamQuotes(chart, "quotes", symbol);
+        cls.setQuote(quote[0]);
+        window.ts.marketData.streamQuotes(cls, `q_${getRandomAlphaNum(5)}`, symbol);
     }).catch(error => {
         console.log("[ERROR] setMarketDataQuotesAndStream " + error);
         setTimeout(() => {
@@ -13,7 +14,7 @@ export function setMarketDataQuotesAndStream(chart, symbol){
 }
 
 
-export function setMarketDataBarsAndStream(chart, symbol, params){
+export function setMarketDataBarsAndStream(cls, symbol, params){
     var params = params ? params : {
         interval : '5',
         unit : 'Minute',
@@ -22,13 +23,13 @@ export function setMarketDataBarsAndStream(chart, symbol, params){
       };
     window.ts.marketData.getBars(symbol, params).then(bars => {
         var candles = window.ts.marketData.bars2Candles(bars);
-        chart.setBars(candles);
-        window.ts.marketData.streamBars(chart, "testing", symbol, params);
+        cls.setBars(candles);
+        window.ts.marketData.streamBars(cls, `c_${getRandomAlphaNum(10)}`, symbol, params);
     }).catch(error => {
         console.log("[ERROR] setMarketDataBarsAndStream " + error);
         setTimeout(() => {
             console.log("[INFO] setMarketDataBarsAndStream trying again...");
-            setMarketDataBarsAndStream(chart, symbol, params);
+            setMarketDataBarsAndStream(cls, symbol, params);
         }, 1000);
     });
 }   

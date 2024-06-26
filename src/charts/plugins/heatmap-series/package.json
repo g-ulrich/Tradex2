@@ -1,0 +1,13 @@
+{
+    "name": "heatmap-series",
+    "type": "module",
+    "main": "./heatmap-series.umd.cjs",
+    "module": "./heatmap-series.js",
+    "exports": {
+        ".": {
+            "import": "./heatmap-series.js",
+            "require": "./heatmap-series.umd.cjs",
+            "types": "./heatmap-series.d.ts"
+        }
+    }
+}

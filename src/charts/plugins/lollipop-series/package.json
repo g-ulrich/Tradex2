@@ -1,0 +1,13 @@
+{
+    "name": "lollipop-series",
+    "type": "module",
+    "main": "./lollipop-series.umd.cjs",
+    "module": "./lollipop-series.js",
+    "exports": {
+        ".": {
+            "import": "./lollipop-series.js",
+            "require": "./lollipop-series.umd.cjs",
+            "types": "./lollipop-series.d.ts"
+        }
+    }
+}

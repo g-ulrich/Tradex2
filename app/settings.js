@@ -3371,7 +3371,7 @@ class MarketData {
    * @returns {Promise<QuoteStream>} - Promise resolving to the streamed Quote changes.
    */
 
-  async streamQuotes(chart, streamIdPrefix, symbols) {
+  async streamQuotes(cls, streamIdPrefix, symbols) {
     const streamId = `${streamIdPrefix}${symbols}`;
     if (!this.allStreams?.[streamId]) {
       this.refreshToken();
@@ -3402,7 +3402,7 @@ class MarketData {
               }
               const jsonString = new TextDecoder().decode(value);
               const q = JSON.parse(jsonString.trim());
-              chart.setStreamQuote(q);
+              cls.setStreamQuote(q);
             } catch (error) {
               const msg = error.message.toLowerCase();
               if ((0,_util__WEBPACK_IMPORTED_MODULE_1__.isSubStr)(msg, 'network')) {
@@ -3816,16 +3816,16 @@ class Symbols {
     });
     return response;
   }
-  _setSymbolDescrptionForId(id, symbol) {
+  _setFullSymbolName(symbol) {
     this.suggestSymbols(symbol).then(arr => {
       var detailsArray = arr.data;
       detailsArray.forEach(sym => {
         var cat = sym?.Category.toLowerCase();
         if (sym?.Name == symbol) {
           var title = `${sym?.Exchange}:${symbol} · ${sym?.Description}`;
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(title);
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).empty();
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).append(`${sym?.Exchange}:${symbol} ·
+          // $(`#${id}`).text(title);
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.fullSymbolName`).empty();
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.fullSymbolName`).append(`${sym?.Exchange}:${symbol} ·
                       <span class="text-muted">${sym?.Description}</span>`);
         }
       });
@@ -3904,6 +3904,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   generateLineData: () => (/* binding */ generateLineData),
 /* harmony export */   generateRandomData: () => (/* binding */ generateRandomData),
 /* harmony export */   getAllFunctions: () => (/* binding */ getAllFunctions),
+/* harmony export */   getBarTimeDate: () => (/* binding */ getBarTimeDate),
 /* harmony export */   getCurrentTime: () => (/* binding */ getCurrentTime),
 /* harmony export */   getDateNDaysAgo: () => (/* binding */ getDateNDaysAgo),
 /* harmony export */   getFunctionParameters: () => (/* binding */ getFunctionParameters),
@@ -3920,11 +3921,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   isStringInArray: () => (/* binding */ isStringInArray),
 /* harmony export */   isSubStr: () => (/* binding */ isSubStr),
 /* harmony export */   jsonArrayToArrayByKey: () => (/* binding */ jsonArrayToArrayByKey),
+/* harmony export */   maxJsonArrayVal: () => (/* binding */ maxJsonArrayVal),
+/* harmony export */   minJsonArrayVal: () => (/* binding */ minJsonArrayVal),
 /* harmony export */   randNum: () => (/* binding */ randNum),
 /* harmony export */   removeDupsFromJsonArr: () => (/* binding */ removeDupsFromJsonArr),
 /* harmony export */   renameKey: () => (/* binding */ renameKey),
 /* harmony export */   resolveHtmlPath: () => (/* binding */ resolveHtmlPath),
 /* harmony export */   rgbColors: () => (/* binding */ rgbColors),
+/* harmony export */   sessionHighlighter: () => (/* binding */ sessionHighlighter),
+/* harmony export */   sortJsonArrayByKey: () => (/* binding */ sortJsonArrayByKey),
 /* harmony export */   strHas: () => (/* binding */ strHas),
 /* harmony export */   titleBarheight: () => (/* binding */ titleBarheight)
 /* harmony export */ });
@@ -3934,7 +3939,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! electron */ "electron");
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var lightweight_charts__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lightweight-charts */ "lightweight-charts");
+/* harmony import */ var lightweight_charts__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lightweight_charts__WEBPACK_IMPORTED_MODULE_3__);
 /* eslint import/prefer-default-export: off */
+
 
 
 
@@ -4425,6 +4433,57 @@ function getMean(arr) {
   let average = sum / arr.length;
   return average;
 }
+const sortJsonArrayByKey = (jsonArray, key) => {
+  return jsonArray.sort((a, b) => {
+    return a[key] - b[key];
+  });
+};
+function maxJsonArrayVal(jsonArray, key) {
+  let max = jsonArray[0][key]; // Start with the smallest possible number
+  let obj = jsonArray[0];
+  jsonArray.forEach(item => {
+    if (item[key] > max) {
+      max = item[key];
+      obj = item;
+    }
+  });
+  return obj;
+}
+function minJsonArrayVal(jsonArray, key) {
+  let min = jsonArray[0][key]; // Start with the largest possible number
+  let obj = jsonArray[0];
+  jsonArray.forEach(item => {
+    if (item[key] < min) {
+      min = item[key];
+      obj = item;
+    }
+  });
+  return obj;
+}
+function getBarTimeDate(time) {
+  if ((0,lightweight_charts__WEBPACK_IMPORTED_MODULE_3__.isUTCTimestamp)(time)) {
+    return new Date(time * 1000);
+  } else if (isBusinessDay(time)) {
+    return new Date(time.year, time.month, time.day);
+  } else {
+    return new Date(time);
+  }
+}
+const sessionHighlighter = time => {
+  const date = getBarTimeDate(time);
+  const offset = 4;
+  const hours = date.getHours();
+  const minute = date.getMinutes();
+  var isBeforeOpen = hours == 9 - offset && minute <= 30 || hours < 9 - offset;
+  var isAfterClose = hours >= 16 - offset;
+  if (isBeforeOpen) {
+    return 'rgba(41, 98, 255, 0.08)';
+  } else if (isAfterClose) {
+    return 'rgba(41, 98, 255, 0.08)';
+  } else {
+    return 'rgba(0, 0, 0, 0)';
+  }
+};
 
 /***/ }),
 
@@ -4973,6 +5032,17 @@ module.exports = require("electron");
 
 "use strict";
 module.exports = require("jquery");
+
+/***/ }),
+
+/***/ "lightweight-charts":
+/*!*************************************!*\
+  !*** external "lightweight-charts" ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("lightweight-charts");
 
 /***/ }),
 

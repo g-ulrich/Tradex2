@@ -1,0 +1,13 @@
+{
+    "name": "anchored-text",
+    "type": "module",
+    "main": "./anchored-text.umd.cjs",
+    "module": "./anchored-text.js",
+    "exports": {
+        ".": {
+            "import": "./anchored-text.js",
+            "require": "./anchored-text.umd.cjs",
+            "types": "./anchored-text.d.ts"
+        }
+    }
+}

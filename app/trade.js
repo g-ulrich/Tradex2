@@ -10,7 +10,7 @@
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Chart: () => (/* binding */ Chart)
+/* harmony export */   "default": () => (/* binding */ Chart)
 /* harmony export */ });
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
@@ -18,406 +18,50 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lightweight_charts__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lightweight_charts__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _charts_options__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../charts/options */ "./src/charts/options.js");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util */ "./src/util.js");
-/* harmony import */ var _datatables_myColumns_signals__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../datatables/myColumns/signals */ "./src/datatables/myColumns/signals.js");
-/* harmony import */ var _datatables_simple__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../datatables/simple */ "./src/datatables/simple.js");
+/* harmony import */ var _chartLegendClass__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./chartLegendClass */ "./src/charts/chartLegendClass.js");
+/* harmony import */ var _chartHeaderClass__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./chartHeaderClass */ "./src/charts/chartHeaderClass.js");
+/* harmony import */ var _charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../charts/customAPIBindings/getData */ "./src/charts/customAPIBindings/getData.js");
+/* harmony import */ var _plugins_session_highlighting_session_highlighting__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./plugins/session-highlighting/session-highlighting */ "./src/charts/plugins/session-highlighting/session-highlighting.js");
 
 
 
 
 
 
-class Header {
-  constructor(containerId) {
-    this.containerId = containerId;
-    this.headerId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(20)}`;
-    this.orderBtnId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(20)}`;
-    this.symbol = "";
-    this.chartType = "";
-    this.params = {};
-    this.frequencyArray = [];
-    this._setParamDefaults();
-    this._setHeader();
-    this.init();
-  }
-  _setParamDefaults() {
-    this.symbol = "SPY";
-    this.chartType = "column";
-    this.params = {
-      interval: '5',
-      unit: 'Minute',
-      barsback: '100',
-      sessiontemplate: 'Default'
-    };
-    this.frequencyArray = [{
-      interval: '5',
-      name: '5m',
-      unit: 'Minute'
-    }, {
-      interval: '1',
-      name: '1m',
-      unit: 'Minute'
-    }, {
-      interval: '10',
-      name: '10m',
-      unit: 'Minute'
-    }, {
-      interval: '15',
-      name: '15m',
-      unit: 'Minute'
-    }, {
-      interval: '30',
-      name: '30m',
-      unit: 'Minute'
-    }, {
-      interval: '60',
-      name: '1hr',
-      unit: 'Minute'
-    }, {
-      interval: '1',
-      name: '1D',
-      unit: 'Daily'
-    }, {
-      interval: '1',
-      name: '1W',
-      unit: 'Weekly'
-    }, {
-      interval: '1',
-      name: '1M',
-      unit: 'Monthly'
-    }];
-    this._getParamsFromURL();
-  }
-  _processURLParams(paramCls, key) {
-    var param = paramCls.get(key);
-    var isSymbolOrChartType = this[key] && this[key] !== "";
-    return param !== null && param !== "" ? param : isSymbolOrChartType ? this[key] : this.params[key];
-  }
-  _getParamsFromURL() {
-    const urlP = new URLSearchParams(window.location.search);
-    this.symbol = this._processURLParams(urlP, 'symbol');
-    this.chartType = this._processURLParams(urlP, 'chartType');
-    this.params = {
-      interval: this._processURLParams(urlP, 'interval'),
-      unit: this._processURLParams(urlP, 'unit'),
-      barsback: this._processURLParams(urlP, 'barsback'),
-      sessiontemplate: this._processURLParams(urlP, 'sessiontemplate')
-    };
-  }
-  reloadPage() {
-    const urlparams = new URLSearchParams({
-      symbol: this.symbol,
-      chartType: this.chartType,
-      interval: this.params.interval,
-      unit: this.params.unit,
-      barsback: this.params.barsback,
-      sessiontemplate: this.params.sessiontemplate
-    }).toString();
-    window.location.href = `trade.html?${urlparams}`;
-  }
-  _setHeader() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).prepend(`
-            <div id="${this.headerId}" class="w-100">
-        </div>
-        `);
-  }
-  _addSymbolInputBindings() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).on('keypress', event => {
-      if (event.which == 13) {
-        var symbol = event.target.value;
-        if (symbol.trim() != "") {
-          this.symbol = symbol.toUpperCase();
-          this.reloadPage();
-        }
-      }
-    });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} button`).on('click', () => {
-      // todo get all parameters in a function
-      var symbol = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).val();
-      if (symbol.trim() != "") {
-        this.symbol = symbol.toUpperCase();
-        this.reloadPage();
-      }
-    });
-  }
-  addSymbolInput() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
-            <input 
-            class="text-uppercase p-1 rounded text-white font-weight-bold" 
-            value="${this.symbol}" 
-            placeholder="Symbol" 
-            type="search" 
-            style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;">
-            <button class="btn btn-sm btn-primary rounded mb-1 mr-2">
-                <i class="fa-solid fa-magnifying-glass fa-rotate-90"></i>
-            </button>
-        `);
-    this._addSymbolInputBindings();
-  }
-  addChartTypes() {
-    const chartTypeId = `chartType_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
-    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
-            <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
-            <select id="${selectId}"
-                class="p-1 text-white font-weight-bold"
-                style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                >
-                <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
-                <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
-                <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
-                <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
-            </select>
-        `);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
-      this.chartType = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${chartTypeId}`).empty();
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${chartTypeId}`).append(`<i class="fa-solid fa-chart-${this.chartType}"></i>`);
-      this.reloadPage();
-    });
-  }
-  getIntervalName() {
-    var str = "";
-    this.frequencyArray.forEach(obj => {
-      if (obj.interval == this.params.interval && obj.unit == this.params.unit) {
-        str = obj.name;
-      }
-    });
-    return str;
-  }
-  getDetailedSymbolName() {
-    return `${this.symbol}:${this.getIntervalName()}`;
-  }
-  addInterval() {
-    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
-    var optionsHtml = "";
-    this.frequencyArray.forEach(obj => {
-      optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
-                ${this.params.interval == obj?.interval && this.params.unit == obj?.unit ? 'selected' : ''}>${obj?.name}</option>`;
-    });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    ${optionsHtml}
-                </select>
-            `);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
-      this.params.interval = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-interval');
-      this.params.unit = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-unit');
-      this.reloadPage();
-    });
-  }
-  addSession() {
-    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
-                </select>
-            `);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
-      this.params.sessiontemplate = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
-      console.log(this.params);
-      this.reloadPage();
-    });
-  }
-  hide() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).hide();
-  }
-  show() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).show();
-  }
-  init() {
-    this.addSymbolInput();
-    this.addChartTypes();
-    this.addInterval();
-    this.addSession();
-    // $(`#${this.headerId}`).fadeIn();
-  }
-}
-class Legend {
-  constructor(containerId, _header) {
-    this.containerId = containerId;
-    this.header = _header;
-    this.barDetailsId = `details_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
-    this._setLegend();
-    this._getSymbolDetails();
-  }
-  _getSymbolDetails() {
-    var symbol = this.header.symbol;
-    if (symbol) {
-      this._prependSymbolInputToContainer();
-      window.ts.symbol._setSymbolDescrptionForId(`${this.barDetailsId}_`, symbol);
-    } else {
-      setTimeout(() => {
-        this._getSymbolDetails();
-      }, 500);
-    }
-  }
-  _prependSymbolInputToContainer() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId} table div`).prepend(`<span id="${this.barDetailsId}_" class="d-none"></span>`);
-  }
-  _setLegend() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId} table div`).append(`<span id="${this.containerId}_legend" style="z-index:2;" class="position-absolute"></span>`);
-  }
-  _legendItemWrapper(_chartSeries, title, val) {
-    var _chartItem = _chartSeries[title.toLowerCase().replace(':', '')].obj;
-    var isSeriesVisible = _chartItem._internal__series._private__options.visible;
-    var actionId = `action_${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
-    var valueId = `value_${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_3__.getRandomAlphaNum)(10)}`;
-    var eye = `<span id="${actionId}_eye" 
-                style="cursor:pointer;"
-                class="text-muted pl-2">
-                <i class="fa-solid fa-eye${isSeriesVisible ? '' : '-slash'}"></i>
-            </span>`;
-    var trash = title.toLowerCase().replace(':', '') !== 'vol' ? `<span id="${actionId}_trash"
-                style="cursor:pointer;"
-                class="text-muted ml-1">
-                <i class="fa-solid fa-trash-can"></i>
-            </span>` : '';
-    var action = `<span id="${actionId}" class="text-muted">${title}${eye}${trash}</span>`;
-    var value = `<span id="${valueId}">${val}</span>`;
-    return {
-      html: `${action}${value}`,
-      title: title,
-      actionId: actionId,
-      valueId: valueId
-    };
-  }
-  _colorOHLC(char, val, condition) {
-    return `<span class="text-muted">${char}:</span>
-        <span class="text-${condition ? 'success' : 'primary'}">${val}</span>`;
-  }
-  _isEyeSlashed(actionId) {
-    return jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye svg`).hasClass('fa-eye-slash') || jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye i`).hasClass('fa-eye-slash');
-  }
-  _legendBindings(_chartItem, actionId, valueId) {
-    var $eye = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye`);
-    var $trash = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_trash`);
-    $eye.hide();
-    $trash.hide();
-    // hover
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).on({
-      mouseenter: () => {
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${valueId}`).hide();
-        $eye.show();
-        $trash.show();
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).addClass('rounded text-white');
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).css({
-          'background-color': 'rgba(0,0,0,1)'
-        });
-      },
-      mouseleave: () => {
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${valueId}`).show();
-        $eye.hide();
-        $trash.hide();
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).removeClass('rounded text-white');
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).css({
-          'background-color': 'rgba(0,0,0,0.0)'
-        });
-      }
-    });
-    $eye.on('click', () => {
-      if (this._isEyeSlashed(actionId)) {
-        _chartItem.applyOptions({
-          visible: true
-        });
-        $eye.empty();
-        $eye.append(`<i class="fa-solid fa-eye"></i>`);
-      } else {
-        _chartItem.applyOptions({
-          visible: false
-        });
-        $eye.empty();
-        $eye.append(`<i class="fa-solid fa-eye-slash"></i>`);
-      }
-    });
-    $trash.on('click', () => {});
-  }
-  _getArrow(condition) {
-    var arrow = condition ? '270' : '90';
-    return `<i class="fa-solid fa-play fa-rotate-${arrow}"></i>`;
-  }
-  _getPlusOrMinus(condition) {
-    return condition ? '+' : '';
-  }
-  _getPercentage(bar) {
-    var condition = bar.close - bar.open >= 0;
-    var cls = `class="text-${condition ? 'success' : 'primary'}"`;
-    var pl = bar.close - bar.open;
-    return `<span ${cls}>
-        ${this._getPlusOrMinus(condition)}
-        ${(0,_util__WEBPACK_IMPORTED_MODULE_3__.formatCurrency)(pl.toFixed(2))}
-        ${this._getArrow(condition)}
-        ${(pl / bar.close * 100).toFixed(2)}%
-        </span>`;
-  }
-  update(_chartSeries, series) {
-    const $legend = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}_legend`);
-    var html = "";
-    var ids = [];
-    series.forEach(obj => {
-      if (obj.title == "bars") {
-        var color = obj.close > obj.open;
-        html += `<span ></span>
-                <span class="orderFormSymbolName"id="${this.barDetailsId}"></span></br>
-                ${this._colorOHLC('O', obj.open, color)}
-                ${this._colorOHLC('H', obj.high, color)}
-                ${this._colorOHLC('L', obj.low, color)}
-                ${this._colorOHLC('C', obj.close, color)}
-                ${this._getPercentage(obj)}
-                <br/>`;
-      } else if (obj.title == "vol") {
-        var chunk = this._legendItemWrapper(_chartSeries, "Vol:", (0,_util__WEBPACK_IMPORTED_MODULE_3__.formatVolume)(obj.value));
-        ids.push(chunk);
-        html += chunk.html + "<br/>";
-      } else {
-        var chunk = this._legendItemWrapper(_chartSeries, obj.title, obj.value);
-        ids.push(chunk);
-        html += chunk.html + "<br/>";
-      }
-    });
-    $legend.empty();
-    $legend.append(html);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.barDetailsId}`).text(jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.barDetailsId}_`).text());
-    ids.forEach(obj => {
-      var _chartItem = _chartSeries[obj.title.toLowerCase().replace(':', '')];
-      this._legendBindings(_chartItem.obj, obj.actionId, obj.valueId);
-    });
-  }
-}
+
+
 class Chart {
   constructor(containerId, orderForm) {
     this.orderForm = orderForm;
     this.containerId = containerId;
-    this.header = new Header(this.containerId);
+    this.header = new _chartHeaderClass__WEBPACK_IMPORTED_MODULE_5__["default"](this.containerId);
     this.chart = (0,lightweight_charts__WEBPACK_IMPORTED_MODULE_1__.createChart)(this.containerId, {
       ..._charts_options__WEBPACK_IMPORTED_MODULE_2__.CHART_THEMES.defaultChart
     });
     this._setResizeListener();
     this._setCrosshairListener();
     this._setClickListener();
-    this.legend = new Legend(this.containerId, this.header);
+    this.legend = new _chartLegendClass__WEBPACK_IMPORTED_MODULE_4__["default"](this.containerId, this.header);
     this.lastBar = {};
     this.lastQuote = null;
     this.allBars = [];
     this.series = {};
     this.pl = 0;
+    this.color = {
+      success: "#0b9657",
+      primary: "#7289da",
+      secondary: "#99aab5"
+    };
     this.lastPriceClicked = null;
     this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
-    this.signals = new _datatables_simple__WEBPACK_IMPORTED_MODULE_5__.SimpleTableData({
-      title: "Signals",
-      containerID: "signals",
-      columns: (0,_datatables_myColumns_signals__WEBPACK_IMPORTED_MODULE_4__.getSignalColumns)(),
-      dom: 't'
-    });
+    this.addCandlestickSeries("bars");
+    this.addHistogramSeries("vol");
+    (0,_charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_6__.setMarketDataBarsAndStream)(this, this.header.symbol, this.header.params);
+    this._startQuoteStream();
+    const self = this;
+    setInterval(() => {
+      self.setHighLowMarkers();
+    }, 5000);
   }
   _chartHeight() {
     return parseInt(window.innerHeight * .8); //this.height;
@@ -603,11 +247,13 @@ class Chart {
       this.allBars.push(bar);
     }
   }
+  _startQuoteStream() {
+    (0,_charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_6__.setMarketDataQuotesAndStream)(this, this.header.symbol);
+  }
   setQuote(quote) {
     this.lastQuote = quote;
   }
   setStreamQuote(quote) {
-    // if (!this.lastQuote){
     let merged = {};
     Object.keys(this.lastQuote).forEach(key => {
       if (quote[key] !== undefined) {
@@ -617,15 +263,16 @@ class Chart {
       }
     });
     this.lastQuote = merged;
-    this.orderForm.updateQuote(merged);
-    // }
   }
   setBars(bars) {
     bars.forEach(bar => {
       this._pushBar(bar);
       this.setNextBar(bar);
     });
+    // this.setData(bars);
     this._setVisibleRange();
+    this.setHighLowMarkers();
+    this.setSessionHighlights();
   }
   setNextStreamBar(bar) {
     let mergedBar = {};
@@ -637,82 +284,25 @@ class Chart {
       }
     });
     this._pushBar(mergedBar);
-    this._message(this.lastBar, mergedBar);
     this.setNextBar(mergedBar);
   }
-  _message() {
-    var newArray = this.allBars.slice(-5);
-    var percentages = [];
-    newArray.forEach(bar => {
-      var pl = bar.close - bar.open;
-      percentages.push(pl / bar.close * 100);
-    });
-    var avgPerc = Math.abs((0,_util__WEBPACK_IMPORTED_MODULE_3__.getMean)(percentages));
-    var cur = this.allBars[this.allBars.length - 1];
-    var curPl = cur.close - cur.open;
-    var curPerc = Math.abs(curPl / cur.close * 100);
-    var prev = this.allBars[this.allBars.length - 2];
-    var isVolgtr = cur.volume > prev.volume;
-    var isCurUp = cur.close > cur.open;
-    var isPrevUp = prev.close > prev.open;
-    var msg = "";
-    var desc = "";
-    if (isVolgtr & !isPrevUp & isCurUp) {
-      msg = 'buy';
-      desc = "Volume is greater then prev, prev candle is down and cur is up.";
-    }
-    if (isVolgtr & isPrevUp & isCurUp) {
-      msg = 'buy';
-      desc = "Volume is greater then prev, prev is up and cur is up.";
-    }
-    if (!isVolgtr & !isPrevUp & !isCurUp) {
-      msg = "buy";
-      desc = "Volume is lower then prev, prev is down and cur is down.";
-    }
-    // Down
-    if (!isVolgtr & !isPrevUp & isCurUp) {
-      msg = "sell";
-      desc = "Volume is lower then prev, prev is down and cur is up.";
-    }
-    if (!isVolgtr & isPrevUp & !isCurUp) {
-      msg = "sell";
-      desc = "Volume is lower then prev, prev is up and cur is down.";
-    }
-    if (isVolgtr & !isPrevUp & !isCurUp) {
-      msg = "sell";
-      desc = "Volume is greater the prev, prev is down and cur is down.";
-    }
-    if (avgPerc < curPerc & isCurUp) {
-      msg = "buy";
-      desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is up.`;
-    }
-    if (avgPerc < curPerc & !isCurUp) {
-      msg = "sell";
-      desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is down.`;
-    }
-    var row = this.signals.getLastRowAdded();
-    if (row != null & msg == 'sell') {
-      if (row.action == 'buy') {
-        this.pl += cur.close - row.price;
-      }
-    }
-    var payload = [{
-      action: msg,
-      price: cur?.close.toFixed(2),
-      pl: this.pl.toFixed(2),
-      desc: desc
-    }];
-    if (msg !== "") {
-      if (row == null & msg !== 'sell') {
-        // init
-        this.signals.addRow(this.signals, payload);
-      } else if (row != null) {
-        if (msg !== row.action) {
-          this.signals.addRow(this.signals, payload);
-        }
-      }
-    }
-  }
+
+  // setData(bars){
+  //     Object.keys(this.series).forEach(name => {
+  //         var series = this.series[name];
+  //         if (series?.obj && name == 'volume'){
+  //             this.lastBar = bars[bars.length-1];
+  //             series.obj.setData(bars);
+  //         } else {
+  //             this.lastBar = bars[bars.length-1];
+  //             if (this.header.chartType == 'area' || this.header.chartType == 'line') {
+  //                 newBar.value = newBar?.close;
+  //             }
+  //             series.obj.setData(bars);
+  //         }
+  //     });
+  // }
+
   setNextBar(bar) {
     var newBar = this._processNextBar(bar);
     Object.keys(this.series).forEach(name => {
@@ -728,6 +318,16 @@ class Chart {
         series.obj.update(newBar);
       }
     });
+  }
+  setSessionHighlights() {
+    console.log(this.header.params);
+    if (this.header.params.sessiontemplate == 'USEQ24Hour') {
+      var bars = this.allBars;
+      if (bars.length > 1) {
+        var seriesObj = this.series['bars']?.obj;
+        seriesObj.attachPrimitive(new _plugins_session_highlighting_session_highlighting__WEBPACK_IMPORTED_MODULE_7__.SessionHighlighting(_util__WEBPACK_IMPORTED_MODULE_3__.sessionHighlighter));
+      }
+    }
   }
   setMarkersForOrders(orders) {
     // // TODO get legs
@@ -762,6 +362,437 @@ class Chart {
     //                     order?.FilledPrice).toFixed(2)}`}
     //     });
   }
+  setHighLowMarkers() {
+    // console.log("Markers");
+    try {
+      var bars = this.allBars;
+      if (bars.length > 1) {
+        var seriesObj = this.series['bars']?.obj;
+        var maxBar = (0,_util__WEBPACK_IMPORTED_MODULE_3__.maxJsonArrayVal)(bars, 'high');
+        var minBar = (0,_util__WEBPACK_IMPORTED_MODULE_3__.minJsonArrayVal)(bars, 'low');
+        // High
+        var high = {
+          id: 'high',
+          time: maxBar.time,
+          position: 'aboveBar',
+          color: this.color.secondary,
+          // shape: 'square',
+          size: .01,
+          text: `H @ ${maxBar.high.toFixed(2)}`
+          // price: maxBar.high
+        };
+        // L0w
+        var low = {
+          id: 'low',
+          time: minBar.time,
+          position: 'belowBar',
+          color: this.color.secondary,
+          // shape: 'square',
+          size: .01,
+          text: `L @ ${minBar.low.toFixed(2)}`
+          // price: minBar.low
+        };
+        this.addMarkers(seriesObj, [low, high]);
+      }
+    } catch (error) {
+      this.error(`setHighLowMarkers() - ${error}`);
+    }
+  }
+  addMarkers(seriesObj, array) {
+    if (seriesObj) {
+      var sortedArray = (0,_util__WEBPACK_IMPORTED_MODULE_3__.sortJsonArrayByKey)(array, 'time');
+      seriesObj.setMarkers(sortedArray);
+    }
+  }
+}
+
+/***/ }),
+
+/***/ "./src/charts/chartHeaderClass.js":
+/*!****************************************!*\
+  !*** ./src/charts/chartHeaderClass.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Header)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util */ "./src/util.js");
+
+
+class Header {
+  constructor(containerId) {
+    this.containerId = containerId;
+    this.headerId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(20)}`;
+    this.orderBtnId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(20)}`;
+    this.symbol = "";
+    this.chartType = "";
+    this.params = {};
+    this.frequencyArray = [];
+    this._setParamDefaults();
+    this._setHeader();
+    this.addSymbolInput();
+    this.addChartTypes();
+    this.addInterval();
+    this.addSession();
+  }
+  _setParamDefaults() {
+    this.symbol = "SPY";
+    this.chartType = "column";
+    this.params = {
+      interval: '5',
+      unit: 'Minute',
+      barsback: '100',
+      sessiontemplate: 'Default'
+    };
+    this.frequencyArray = [{
+      interval: '5',
+      name: '5m',
+      unit: 'Minute'
+    }, {
+      interval: '1',
+      name: '1m',
+      unit: 'Minute'
+    }, {
+      interval: '10',
+      name: '10m',
+      unit: 'Minute'
+    }, {
+      interval: '15',
+      name: '15m',
+      unit: 'Minute'
+    }, {
+      interval: '30',
+      name: '30m',
+      unit: 'Minute'
+    }, {
+      interval: '60',
+      name: '1hr',
+      unit: 'Minute'
+    }, {
+      interval: '1',
+      name: '1D',
+      unit: 'Daily'
+    }, {
+      interval: '1',
+      name: '1W',
+      unit: 'Weekly'
+    }, {
+      interval: '1',
+      name: '1M',
+      unit: 'Monthly'
+    }];
+    this._getParamsFromURL();
+  }
+  _processURLParams(paramCls, key) {
+    var param = paramCls.get(key);
+    var isSymbolOrChartType = this[key] && this[key] !== "";
+    return param !== null && param !== "" ? param : isSymbolOrChartType ? this[key] : this.params[key];
+  }
+  _getParamsFromURL() {
+    const urlP = new URLSearchParams(window.location.search);
+    this.symbol = this._processURLParams(urlP, 'symbol');
+    this.chartType = this._processURLParams(urlP, 'chartType');
+    this.params = {
+      interval: this._processURLParams(urlP, 'interval'),
+      unit: this._processURLParams(urlP, 'unit'),
+      barsback: this._processURLParams(urlP, 'barsback'),
+      sessiontemplate: this._processURLParams(urlP, 'sessiontemplate')
+    };
+  }
+  reloadPage() {
+    const urlparams = new URLSearchParams({
+      symbol: this.symbol,
+      chartType: this.chartType,
+      interval: this.params.interval,
+      unit: this.params.unit,
+      barsback: this.params.barsback,
+      sessiontemplate: this.params.sessiontemplate
+    }).toString();
+    window.location.href = `trade.html?${urlparams}`;
+  }
+  _setHeader() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).prepend(`
+            <div id="${this.headerId}" class="w-100">
+        </div>
+        `);
+  }
+  _addSymbolInputBindings() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).on('keypress', event => {
+      if (event.which == 13) {
+        var symbol = event.target.value;
+        if (symbol.trim() != "") {
+          this.symbol = symbol.toUpperCase();
+          this.reloadPage();
+        }
+      }
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} button`).on('click', () => {
+      // todo get all parameters in a function
+      var symbol = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId} input`).val();
+      if (symbol.trim() != "") {
+        this.symbol = symbol.toUpperCase();
+        this.reloadPage();
+      }
+    });
+  }
+  addSymbolInput() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+            <input 
+            class="text-uppercase p-1 rounded text-white font-weight-bold" 
+            value="${this.symbol}" 
+            placeholder="Symbol" 
+            type="search" 
+            style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;">
+            <button class="btn btn-sm btn-primary rounded mb-1 mr-2">
+                <i class="fa-solid fa-magnifying-glass fa-rotate-90"></i>
+            </button>
+        `);
+    this._addSymbolInputBindings();
+  }
+  addChartTypes() {
+    const chartTypeId = `chartType_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+            <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
+            <select id="${selectId}"
+                class="p-1 text-white font-weight-bold"
+                style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                >
+                <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
+                <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
+                <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
+                <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
+            </select>
+        `);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
+      this.chartType = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${chartTypeId}`).empty();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${chartTypeId}`).append(`<i class="fa-solid fa-chart-${this.chartType}"></i>`);
+      this.reloadPage();
+    });
+  }
+  getIntervalName() {
+    var str = "";
+    this.frequencyArray.forEach(obj => {
+      if (obj.interval == this.params.interval && obj.unit == this.params.unit) {
+        str = obj.name;
+      }
+    });
+    return str;
+  }
+  getDetailedSymbolName() {
+    return `${this.symbol}:${this.getIntervalName()}`;
+  }
+  addInterval() {
+    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    var optionsHtml = "";
+    this.frequencyArray.forEach(obj => {
+      optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
+                ${this.params.interval == obj?.interval && this.params.unit == obj?.unit ? 'selected' : ''}>${obj?.name}</option>`;
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+                <select id="${selectId}"
+                    class="p-1 text-white font-weight-bold"
+                    style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    >
+                    ${optionsHtml}
+                </select>
+            `);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
+      this.params.interval = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-interval');
+      this.params.unit = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-unit');
+      this.reloadPage();
+    });
+  }
+  addSession() {
+    const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
+                <select id="${selectId}"
+                    class="p-1 text-white font-weight-bold"
+                    style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                    >
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
+                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
+                </select>
+            `);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
+      this.params.sessiontemplate = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
+      console.log(this.params);
+      this.reloadPage();
+    });
+  }
+  hide() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).hide();
+  }
+  show() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).show();
+  }
+}
+
+/***/ }),
+
+/***/ "./src/charts/chartLegendClass.js":
+/*!****************************************!*\
+  !*** ./src/charts/chartLegendClass.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Legend)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util */ "./src/util.js");
+
+
+class Legend {
+  constructor(containerId, _header) {
+    this.containerId = containerId;
+    this.header = _header;
+    this.barDetailsId = `details_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    this._setLegend();
+    window.ts.symbol._setFullSymbolName(this.header.symbol);
+  }
+  _setLegend() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId} table div`).append(`<span class="fullSymbolName d-none"></span>
+            <span id="${this.containerId}_legend" style="z-index:2;" class="position-absolute"></span>`);
+  }
+  _legendItemWrapper(_chartSeries, title, val) {
+    var _chartItem = _chartSeries[title.toLowerCase().replace(':', '')].obj;
+    var isSeriesVisible = _chartItem._internal__series._private__options.visible;
+    var actionId = `action_${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    var valueId = `value_${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    var eye = `<span id="${actionId}_eye" 
+                style="cursor:pointer;"
+                class="text-muted pl-2">
+                <i class="fa-solid fa-eye${isSeriesVisible ? '' : '-slash'}"></i>
+            </span>`;
+    var trash = title.toLowerCase().replace(':', '') !== 'vol' ? `<span id="${actionId}_trash"
+                style="cursor:pointer;"
+                class="text-muted ml-1">
+                <i class="fa-solid fa-trash-can"></i>
+            </span>` : '';
+    var action = `<span id="${actionId}" class="text-muted">${title}${eye}${trash}</span>`;
+    var value = `<span id="${valueId}">${val}</span>`;
+    return {
+      html: `${action}${value}`,
+      title: title,
+      actionId: actionId,
+      valueId: valueId
+    };
+  }
+  _colorOHLC(char, val, condition) {
+    return `<span class="text-muted">${char}:</span>
+        <span class="text-${condition ? 'success' : 'primary'}">${val}</span>`;
+  }
+  _isEyeSlashed(actionId) {
+    return jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye svg`).hasClass('fa-eye-slash') || jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye i`).hasClass('fa-eye-slash');
+  }
+  _legendBindings(_chartItem, actionId, valueId) {
+    var $eye = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_eye`);
+    var $trash = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}_trash`);
+    $eye.hide();
+    $trash.hide();
+    // hover
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).on({
+      mouseenter: () => {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${valueId}`).hide();
+        $eye.show();
+        $trash.show();
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).addClass('rounded text-white');
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).css({
+          'background-color': 'rgba(0,0,0,1)'
+        });
+      },
+      mouseleave: () => {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${valueId}`).show();
+        $eye.hide();
+        $trash.hide();
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).removeClass('rounded text-white');
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${actionId}`).css({
+          'background-color': 'rgba(0,0,0,0.0)'
+        });
+      }
+    });
+    $eye.on('click', () => {
+      if (this._isEyeSlashed(actionId)) {
+        _chartItem.applyOptions({
+          visible: true
+        });
+        $eye.empty();
+        $eye.append(`<i class="fa-solid fa-eye"></i>`);
+      } else {
+        _chartItem.applyOptions({
+          visible: false
+        });
+        $eye.empty();
+        $eye.append(`<i class="fa-solid fa-eye-slash"></i>`);
+      }
+    });
+    $trash.on('click', () => {});
+  }
+  _getArrow(condition) {
+    var arrow = condition ? '270' : '90';
+    return `<i class="fa-solid fa-play fa-rotate-${arrow}"></i>`;
+  }
+  _getPlusOrMinus(condition) {
+    return condition ? '+' : '';
+  }
+  _getPercentage(bar) {
+    var condition = bar.close - bar.open >= 0;
+    var cls = `class="text-${condition ? 'success' : 'primary'}"`;
+    var pl = bar.close - bar.open;
+    return `<span ${cls}>
+        ${this._getPlusOrMinus(condition)}
+        ${(0,_util__WEBPACK_IMPORTED_MODULE_1__.formatCurrency)(pl.toFixed(2))}
+        ${this._getArrow(condition)}
+        ${(pl / bar.close * 100).toFixed(2)}%
+        </span>`;
+  }
+  update(_chartSeries, series) {
+    const $legend = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}_legend`);
+    var html = "";
+    var ids = [];
+    series.forEach(obj => {
+      if (obj.title == "bars") {
+        var color = obj.close > obj.open;
+        html += `<span ></span>
+                <span id="${this.barDetailsId}"></span></br>
+                ${this._colorOHLC('O', obj.open, color)}
+                ${this._colorOHLC('H', obj.high, color)}
+                ${this._colorOHLC('L', obj.low, color)}
+                ${this._colorOHLC('C', obj.close, color)}
+                ${this._getPercentage(obj)}
+                <br/>`;
+      } else if (obj.title == "vol") {
+        var chunk = this._legendItemWrapper(_chartSeries, "Vol:", (0,_util__WEBPACK_IMPORTED_MODULE_1__.formatVolume)(obj.value));
+        ids.push(chunk);
+        html += chunk.html + "<br/>";
+      } else {
+        var chunk = this._legendItemWrapper(_chartSeries, obj.title, obj.value);
+        ids.push(chunk);
+        html += chunk.html + "<br/>";
+      }
+    });
+    $legend.empty();
+    $legend.append(html);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.barDetailsId}`).empty();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.barDetailsId}`).append(jquery__WEBPACK_IMPORTED_MODULE_0___default()(`.fullSymbolName`).html());
+    ids.forEach(obj => {
+      var _chartItem = _chartSeries[obj.title.toLowerCase().replace(':', '')];
+      this._legendBindings(_chartItem.obj, obj.actionId, obj.valueId);
+    });
+  }
 }
 
 /***/ }),
@@ -779,10 +810,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   setMarketDataBarsAndStream: () => (/* binding */ setMarketDataBarsAndStream),
 /* harmony export */   setMarketDataQuotesAndStream: () => (/* binding */ setMarketDataQuotesAndStream)
 /* harmony export */ });
-function setMarketDataQuotesAndStream(chart, symbol) {
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../util */ "./src/util.js");
+
+function setMarketDataQuotesAndStream(cls, symbol) {
   window.ts.marketData.getQuoteSnapshots(symbol).then(quote => {
-    chart.setQuote(quote[0]);
-    window.ts.marketData.streamQuotes(chart, "quotes", symbol);
+    cls.setQuote(quote[0]);
+    window.ts.marketData.streamQuotes(cls, `q_${(0,_util__WEBPACK_IMPORTED_MODULE_0__.getRandomAlphaNum)(5)}`, symbol);
   }).catch(error => {
     console.log("[ERROR] setMarketDataQuotesAndStream " + error);
     setTimeout(() => {
@@ -791,7 +824,7 @@ function setMarketDataQuotesAndStream(chart, symbol) {
     }, 1000);
   });
 }
-function setMarketDataBarsAndStream(chart, symbol, params) {
+function setMarketDataBarsAndStream(cls, symbol, params) {
   var params = params ? params : {
     interval: '5',
     unit: 'Minute',
@@ -800,13 +833,13 @@ function setMarketDataBarsAndStream(chart, symbol, params) {
   };
   window.ts.marketData.getBars(symbol, params).then(bars => {
     var candles = window.ts.marketData.bars2Candles(bars);
-    chart.setBars(candles);
-    window.ts.marketData.streamBars(chart, "testing", symbol, params);
+    cls.setBars(candles);
+    window.ts.marketData.streamBars(cls, `c_${(0,_util__WEBPACK_IMPORTED_MODULE_0__.getRandomAlphaNum)(10)}`, symbol, params);
   }).catch(error => {
     console.log("[ERROR] setMarketDataBarsAndStream " + error);
     setTimeout(() => {
       console.log("[INFO] setMarketDataBarsAndStream trying again...");
-      setMarketDataBarsAndStream(chart, symbol, params);
+      setMarketDataBarsAndStream(cls, symbol, params);
     }, 1000);
   });
 }
@@ -4372,49 +4405,6 @@ const get_table_positions_columns = () => {
 
 /***/ }),
 
-/***/ "./src/datatables/myColumns/signals.js":
-/*!*********************************************!*\
-  !*** ./src/datatables/myColumns/signals.js ***!
-  \*********************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getSignalColumns: () => (/* binding */ getSignalColumns)
-/* harmony export */ });
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../util */ "./src/util.js");
-
-const getSignalColumns = () => {
-  return [{
-    data: 'action',
-    name: 'Action',
-    render: function (data, type, row) {
-      return data;
-    }
-  }, {
-    data: 'price',
-    name: 'Price',
-    render: function (data, type, row) {
-      return (0,_util__WEBPACK_IMPORTED_MODULE_0__.formatCurrency)(data);
-    }
-  }, {
-    data: 'pl',
-    name: 'PL',
-    render: function (data, type, row) {
-      return (0,_util__WEBPACK_IMPORTED_MODULE_0__.formatCurrency)(data);
-    }
-  }, {
-    data: 'desc',
-    name: 'Description',
-    render: function (data, type, row) {
-      return data;
-    }
-  }];
-};
-
-/***/ }),
-
 /***/ "./src/datatables/positionsTableClass.js":
 /*!***********************************************!*\
   !*** ./src/datatables/positionsTableClass.js ***!
@@ -6676,6 +6666,193 @@ class Nav {
 
 /***/ }),
 
+/***/ "./src/pages/components/orderFormClass.js":
+/*!************************************************!*\
+  !*** ./src/pages/components/orderFormClass.js ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ OrderForm)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../util */ "./src/util.js");
+/* harmony import */ var _charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../charts/customAPIBindings/getData */ "./src/charts/customAPIBindings/getData.js");
+
+
+
+class OrderForm {
+  constructor(containerId) {
+    this.containerId = containerId;
+    this.orderBtnId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(5)}`;
+    this.shares = 10;
+    this.type = "Market";
+    this.price = null;
+    this.lastQuote = null;
+    this._setForm();
+    this.updateType(this.type);
+    this.updateBuyButton();
+    this.updateSellButton();
+    this.updateOrderSummary(`Order ${this.shares} shares at market price.`);
+    this._bindSharesInput();
+  }
+  updateType(txt) {
+    this.type = txt;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormType").empty();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormType").append(`Type: <span class="text-white">${this.type}</span>`);
+  }
+  _buttonReset(action) {
+    this.updateType("Limit");
+    setTimeout(() => {
+      this.updateType("Market");
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.orderBtnId}_${action}`).text(`${action} ${this.shares} @ Mkt`);
+    }, 8000);
+  }
+  updateBuyButton(price) {
+    if (price) {
+      this.price = parseFloat(price.toFixed(3));
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.orderBtnId}_buy`).text(`Buy ${this.shares} @ ${this.price}`);
+      var total = this.shares * this.price;
+      this.updateOrderSummary(`
+            Buy ${this.shares} shares at ${(0,_util__WEBPACK_IMPORTED_MODULE_1__.formatCurrency)(price.toFixed(3))}.
+            <br/>For an estimated total of ${(0,_util__WEBPACK_IMPORTED_MODULE_1__.formatCurrency)(total.toFixed(2))}
+            `);
+      this._buttonReset("buy");
+    } else {
+      this.price = null;
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.orderBtnId}_buy`).text(`Buy ${this.shares} @ Mkt`);
+    }
+  }
+  updateSellButton(price) {
+    if (price) {
+      this.price = parseFloat(price.toFixed(3));
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.orderBtnId}_sell`).text(`Sell ${this.shares} @ ${this.price}`);
+      this._buttonReset("sell");
+    } else {
+      this.price = null;
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.orderBtnId}_sell`).text(`Sell ${this.shares} @ Mkt`);
+    }
+  }
+  _getQuoteColor(quote, key) {
+    var color = "muted";
+    if (this.lastQuote !== null) {
+      var _new = parseFloat(quote[key]);
+      var _old = parseFloat(this.lastQuote[key]);
+      color = _new > _old ? 'success' : _new < _old ? 'primary' : color;
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`.bg${key}`).addClass('bg-primary');
+    } else {}
+    return `text-${color}`;
+  }
+  _bgQuote(quote, key) {
+    if (this.lastQuote !== null) {
+      var _new = parseFloat(quote[key]);
+      var _old = parseFloat(this.lastQuote[key]);
+      if (_new !== _old) {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(`.bg${key}`).css({
+          'background-color': 'rgba(255,255,255,0.1)'
+        });
+      }
+    } else {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(`.bg${key}`).css({
+        'background-color': 'rgba(255,255,255,0.0)'
+      });
+    }
+  }
+  _elementQuoteUpdates(quote) {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormAsk').empty();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormBid').empty();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormAsk').append(`<span class="bgAsk rounded px-1">Ask: 
+            <span class="${this._getQuoteColor(quote, 'Ask')}">${quote?.Ask}</span></span>
+            <br/><span class="bgAskSize rounded px-1">Size: 
+            <span class="${this._getQuoteColor(quote, 'AskSize')}">${quote?.AskSize}</span></span>`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormBid').append(`<span class="bgBid rounded px-1">Bid: 
+            <span class="${this._getQuoteColor(quote, 'Bid')}">${quote?.Bid}</span></span>
+            <br/><span class="bgBidSize rounded px-1">Size: 
+            <span class="${this._getQuoteColor(quote, 'BidSize')}">${quote?.BidSize}</span></span>`);
+    this._bgQuote(quote, 'Ask');
+    this._bgQuote(quote, 'AskSize');
+    this._bgQuote(quote, 'Bid');
+    this._bgQuote(quote, 'BidSize');
+  }
+  startQuoteStream(symbol) {
+    window.ts.symbol._setFullSymbolName(symbol);
+    (0,_charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_2__.setMarketDataQuotesAndStream)(this, symbol);
+  }
+  setQuote(quote) {
+    this.lastQuote = quote;
+  }
+  setStreamQuote(quote) {
+    let merged = {};
+    Object.keys(this.lastQuote).forEach(key => {
+      if (quote[key] !== undefined) {
+        merged[key] = quote[key];
+      } else {
+        merged[key] = this.lastQuote[key];
+      }
+    });
+    this._elementQuoteUpdates(merged);
+    this.lastQuote = merged;
+  }
+  updateOrderSummary(msg) {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderSummary").empty();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderSummary").append(msg);
+  }
+  updateShareSize() {
+    var newVal = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormShares').val();
+    this.shares = parseInt(newVal);
+    this.updateSellButton();
+    this.updateBuyButton();
+    this.updateOrderSummary(`Order ${this.shares} shares at market price.`);
+  }
+  _bindSharesInput() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormShares").on('change', () => {
+      this.updateShareSize();
+    });
+  }
+  _setForm() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).append(`
+           <div class="container-fluid px-2">
+                <div class="row">
+                    <div class="fullSymbolName col-12 px-1 h5 text-center"></div>
+                    <div class="text-center col-6 text-muted">Shares:
+                    <input 
+                        class="orderFormShares text-center p-1 text-white  rounded font-weight-bold" 
+                        value="${this.shares}" 
+                        placeholder="shares" 
+                        type="number" 
+                        style="width: 70px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"></div>
+                    <div class="orderFormType text-center col-6 py-1 text-muted">Type: <span class="text-white">${this.type}</span></div>
+                    <div class="col-12 my-1"></div>
+                    <div class="col-6 px-1">
+                        <button style="font-size: 30px;height:100px;"  id="${this.orderBtnId}_buy" class="w-100 text-white btn btn-sm btn-success">
+                            Buy ${this.shares} @ mkt
+                        </button>
+                    </div>
+                    
+                    <div class="col-6 px-1">
+                        <button style="font-size: 30px;height:100px" id="${this.orderBtnId}_sell" class="w-100 text-white btn btn-sm btn-primary">
+                            Sell ${this.shares} @ mkt
+                        </button>
+                    </div>
+                    <div class="col-12 my-1"></div>
+                    
+                    <div class="orderFormAsk col-6 px-1 text-center text-muted"></div>
+                    <div class="orderFormBid col-6 px-1 text-center text-muted"></div>
+                    
+                    <div class="col-12 px-1 my-1 text-muted">
+                        <div style="background-color:rgba(255,255,255,0.1)" class="col-12 text-center orderSummary rounded px-1 py-1"></div>
+                    </div>
+                </div>
+           </div>
+        `);
+  }
+}
+
+/***/ }),
+
 /***/ "./src/tradestation/enpoints/accounts.js":
 /*!***********************************************!*\
   !*** ./src/tradestation/enpoints/accounts.js ***!
@@ -8078,7 +8255,7 @@ class MarketData {
    * @returns {Promise<QuoteStream>} - Promise resolving to the streamed Quote changes.
    */
 
-  async streamQuotes(chart, streamIdPrefix, symbols) {
+  async streamQuotes(cls, streamIdPrefix, symbols) {
     const streamId = `${streamIdPrefix}${symbols}`;
     if (!this.allStreams?.[streamId]) {
       this.refreshToken();
@@ -8109,7 +8286,7 @@ class MarketData {
               }
               const jsonString = new TextDecoder().decode(value);
               const q = JSON.parse(jsonString.trim());
-              chart.setStreamQuote(q);
+              cls.setStreamQuote(q);
             } catch (error) {
               const msg = error.message.toLowerCase();
               if ((0,_util__WEBPACK_IMPORTED_MODULE_1__.isSubStr)(msg, 'network')) {
@@ -8523,16 +8700,16 @@ class Symbols {
     });
     return response;
   }
-  _setSymbolDescrptionForId(id, symbol) {
+  _setFullSymbolName(symbol) {
     this.suggestSymbols(symbol).then(arr => {
       var detailsArray = arr.data;
       detailsArray.forEach(sym => {
         var cat = sym?.Category.toLowerCase();
         if (sym?.Name == symbol) {
           var title = `${sym?.Exchange}:${symbol} · ${sym?.Description}`;
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`#${id}`).text(title);
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).empty();
-          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.orderFormSymbolName`).append(`${sym?.Exchange}:${symbol} ·
+          // $(`#${id}`).text(title);
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.fullSymbolName`).empty();
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(`.fullSymbolName`).append(`${sym?.Exchange}:${symbol} ·
                       <span class="text-muted">${sym?.Description}</span>`);
         }
       });
@@ -8611,6 +8788,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   generateLineData: () => (/* binding */ generateLineData),
 /* harmony export */   generateRandomData: () => (/* binding */ generateRandomData),
 /* harmony export */   getAllFunctions: () => (/* binding */ getAllFunctions),
+/* harmony export */   getBarTimeDate: () => (/* binding */ getBarTimeDate),
 /* harmony export */   getCurrentTime: () => (/* binding */ getCurrentTime),
 /* harmony export */   getDateNDaysAgo: () => (/* binding */ getDateNDaysAgo),
 /* harmony export */   getFunctionParameters: () => (/* binding */ getFunctionParameters),
@@ -8627,11 +8805,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   isStringInArray: () => (/* binding */ isStringInArray),
 /* harmony export */   isSubStr: () => (/* binding */ isSubStr),
 /* harmony export */   jsonArrayToArrayByKey: () => (/* binding */ jsonArrayToArrayByKey),
+/* harmony export */   maxJsonArrayVal: () => (/* binding */ maxJsonArrayVal),
+/* harmony export */   minJsonArrayVal: () => (/* binding */ minJsonArrayVal),
 /* harmony export */   randNum: () => (/* binding */ randNum),
 /* harmony export */   removeDupsFromJsonArr: () => (/* binding */ removeDupsFromJsonArr),
 /* harmony export */   renameKey: () => (/* binding */ renameKey),
 /* harmony export */   resolveHtmlPath: () => (/* binding */ resolveHtmlPath),
 /* harmony export */   rgbColors: () => (/* binding */ rgbColors),
+/* harmony export */   sessionHighlighter: () => (/* binding */ sessionHighlighter),
+/* harmony export */   sortJsonArrayByKey: () => (/* binding */ sortJsonArrayByKey),
 /* harmony export */   strHas: () => (/* binding */ strHas),
 /* harmony export */   titleBarheight: () => (/* binding */ titleBarheight)
 /* harmony export */ });
@@ -8641,7 +8823,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! electron */ "electron");
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var lightweight_charts__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lightweight-charts */ "lightweight-charts");
+/* harmony import */ var lightweight_charts__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lightweight_charts__WEBPACK_IMPORTED_MODULE_3__);
 /* eslint import/prefer-default-export: off */
+
 
 
 
@@ -9132,6 +9317,57 @@ function getMean(arr) {
   let average = sum / arr.length;
   return average;
 }
+const sortJsonArrayByKey = (jsonArray, key) => {
+  return jsonArray.sort((a, b) => {
+    return a[key] - b[key];
+  });
+};
+function maxJsonArrayVal(jsonArray, key) {
+  let max = jsonArray[0][key]; // Start with the smallest possible number
+  let obj = jsonArray[0];
+  jsonArray.forEach(item => {
+    if (item[key] > max) {
+      max = item[key];
+      obj = item;
+    }
+  });
+  return obj;
+}
+function minJsonArrayVal(jsonArray, key) {
+  let min = jsonArray[0][key]; // Start with the largest possible number
+  let obj = jsonArray[0];
+  jsonArray.forEach(item => {
+    if (item[key] < min) {
+      min = item[key];
+      obj = item;
+    }
+  });
+  return obj;
+}
+function getBarTimeDate(time) {
+  if ((0,lightweight_charts__WEBPACK_IMPORTED_MODULE_3__.isUTCTimestamp)(time)) {
+    return new Date(time * 1000);
+  } else if (isBusinessDay(time)) {
+    return new Date(time.year, time.month, time.day);
+  } else {
+    return new Date(time);
+  }
+}
+const sessionHighlighter = time => {
+  const date = getBarTimeDate(time);
+  const offset = 4;
+  const hours = date.getHours();
+  const minute = date.getMinutes();
+  var isBeforeOpen = hours == 9 - offset && minute <= 30 || hours < 9 - offset;
+  var isAfterClose = hours >= 16 - offset;
+  if (isBeforeOpen) {
+    return 'rgba(41, 98, 255, 0.08)';
+  } else if (isAfterClose) {
+    return 'rgba(41, 98, 255, 0.08)';
+  } else {
+    return 'rgba(0, 0, 0, 0)';
+  }
+};
 
 /***/ }),
 
@@ -9782,6 +10018,145 @@ module.exports = require("path");
 "use strict";
 module.exports = require("url");
 
+/***/ }),
+
+/***/ "./src/charts/plugins/session-highlighting/session-highlighting.js":
+/*!*************************************************************************!*\
+  !*** ./src/charts/plugins/session-highlighting/session-highlighting.js ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   SessionHighlighting: () => (/* binding */ S)
+/* harmony export */ });
+var f = Object.defineProperty;
+var w = (i, t, e) => t in i ? f(i, t, {
+  enumerable: !0,
+  configurable: !0,
+  writable: !0,
+  value: e
+}) : i[t] = e;
+var a = (i, t, e) => (w(i, typeof t != "symbol" ? t + "" : t, e), e);
+function c(i) {
+  if (i === void 0) throw new Error("Value is undefined");
+  return i;
+}
+class m {
+  constructor() {
+    a(this, "_chart");
+    a(this, "_series");
+    a(this, "_requestUpdate");
+    // This method is a class property to maintain the
+    // lexical 'this' scope (due to the use of the arrow function)
+    // and to ensure its reference stays the same, so we can unsubscribe later.
+    a(this, "_fireDataUpdated", t => {
+      this.dataUpdated && this.dataUpdated(t);
+    });
+  }
+  requestUpdate() {
+    this._requestUpdate && this._requestUpdate();
+  }
+  attached({
+    chart: t,
+    series: e,
+    requestUpdate: s
+  }) {
+    this._chart = t, this._series = e, this._series.subscribeDataChanged(this._fireDataUpdated), this._requestUpdate = s, this.requestUpdate();
+  }
+  detached() {
+    var t;
+    (t = this._series) == null || t.unsubscribeDataChanged(this._fireDataUpdated), this._chart = void 0, this._series = void 0, this._requestUpdate = void 0;
+  }
+  get chart() {
+    return c(this._chart);
+  }
+  get series() {
+    return c(this._series);
+  }
+}
+class b {
+  constructor(t) {
+    a(this, "_viewData");
+    this._viewData = t;
+  }
+  draw(t) {
+    const e = this._viewData.data;
+    t.useBitmapCoordinateSpace(s => {
+      const d = s.context,
+        _ = 0,
+        u = s.bitmapSize.height,
+        r = s.horizontalPixelRatio * this._viewData.barWidth / 2,
+        l = -1 * (r + 1),
+        p = s.bitmapSize.width;
+      e.forEach(o => {
+        const h = o.x * s.horizontalPixelRatio;
+        if (h < l) return;
+        d.fillStyle = o.color || "rgba(0, 0, 0, 0)";
+        const n = Math.max(0, Math.round(h - r)),
+          g = Math.min(p, Math.round(h + r));
+        d.fillRect(n, _, g - n, u);
+      });
+    });
+  }
+}
+class x {
+  constructor(t) {
+    a(this, "_source");
+    a(this, "_data");
+    this._source = t, this._data = {
+      data: [],
+      barWidth: 6,
+      options: this._source._options
+    };
+  }
+  update() {
+    const t = this._source.chart.timeScale();
+    this._data.data = this._source._backgroundColors.map(e => ({
+      x: t.timeToCoordinate(e.time) ?? -100,
+      color: e.color
+    })), this._data.data.length > 1 ? this._data.barWidth = this._data.data[1].x - this._data.data[0].x : this._data.barWidth = 6;
+  }
+  renderer() {
+    return new b(this._data);
+  }
+  zOrder() {
+    return "bottom";
+  }
+}
+const U = {};
+class S extends m {
+  constructor(e, s = {}) {
+    super();
+    a(this, "_paneViews");
+    a(this, "_seriesData", []);
+    a(this, "_backgroundColors", []);
+    a(this, "_options");
+    a(this, "_highlighter");
+    this._highlighter = e, this._options = {
+      ...U,
+      ...s
+    }, this._paneViews = [new x(this)];
+  }
+  updateAllViews() {
+    this._paneViews.forEach(e => e.update());
+  }
+  paneViews() {
+    return this._paneViews;
+  }
+  attached(e) {
+    super.attached(e), this.dataUpdated("full");
+  }
+  dataUpdated(e) {
+    this._backgroundColors = this.series.data().map(s => ({
+      time: s.time,
+      color: this._highlighter(s.time)
+    })), this.requestUpdate();
+  }
+}
+
+
 /***/ })
 
 /******/ 	});
@@ -9869,15 +10244,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _css_bootstrap_discord_min_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./css/bootstrap-discord.min.css */ "./src/pages/css/bootstrap-discord.min.css");
 /* harmony import */ var _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../charts/chartClass */ "./src/charts/chartClass.js");
 /* harmony import */ var _charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../charts/customAPIBindings/getData */ "./src/charts/customAPIBindings/getData.js");
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../util */ "./src/util.js");
-/* harmony import */ var _datatables_myColumns_positions__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../datatables/myColumns/positions */ "./src/datatables/myColumns/positions.js");
-/* harmony import */ var _datatables_simple__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../datatables/simple */ "./src/datatables/simple.js");
-/* harmony import */ var _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../datatables/positionsTableClass */ "./src/datatables/positionsTableClass.js");
-/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! electron */ "electron");
-/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_8__);
-
-
-
+/* harmony import */ var _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../datatables/positionsTableClass */ "./src/datatables/positionsTableClass.js");
+/* harmony import */ var _components_orderFormClass__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/orderFormClass */ "./src/pages/components/orderFormClass.js");
 
 
 
@@ -9885,274 +10253,17 @@ __webpack_require__.r(__webpack_exports__);
 
 // import { secEdgarApi } from 'sec-edgar-api';
 
-class OrderForm {
-  constructor(containerId) {
-    this.containerId = containerId;
-    this.orderBtnId = `${this.containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_4__.getRandomAlphaNum)(5)}`;
-    this.shares = 10;
-    this.type = "Market";
-    this.price = null;
-    this.lastQuote = null;
-    this._setForm();
-    this.updateType(this.type);
-    this.updateBuyButton();
-    this.updateSellButton();
-    this.updateOrderSummary(`Order ${this.shares} shares at market price.`);
-    this._bindSharesInput();
-  }
-  updateType(txt) {
-    this.type = txt;
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".orderFormType").empty();
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".orderFormType").append(`Type: <span class="text-white">${this.type}</span>`);
-  }
-  _buttonReset(action) {
-    this.updateType("Limit");
-    setTimeout(() => {
-      this.updateType("Market");
-      (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${this.orderBtnId}_${action}`).text(`${action} ${this.shares} @ Mkt`);
-    }, 8000);
-  }
-  updateBuyButton(price) {
-    if (price) {
-      this.price = parseFloat(price.toFixed(3));
-      (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${this.orderBtnId}_buy`).text(`Buy ${this.shares} @ ${this.price}`);
-      var total = this.shares * this.price;
-      this.updateOrderSummary(`
-            Buy ${this.shares} shares at ${(0,_util__WEBPACK_IMPORTED_MODULE_4__.formatCurrency)(price.toFixed(3))}.
-            <br/>For an estimated total of ${(0,_util__WEBPACK_IMPORTED_MODULE_4__.formatCurrency)(total.toFixed(2))}
-            `);
-      this._buttonReset("Limit", "buy");
-    } else {
-      this.price = null;
-      (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${this.orderBtnId}_buy`).text(`Buy ${this.shares} @ Mkt`);
-    }
-  }
-  updateSellButton(price) {
-    if (price) {
-      this.price = parseFloat(price.toFixed(3));
-      (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${this.orderBtnId}_sell`).text(`Sell ${this.shares} @ ${this.price}`);
-      this._buttonReset("sell");
-    } else {
-      this.price = null;
-      (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${this.orderBtnId}_sell`).text(`Sell ${this.shares} @ Mkt`);
-    }
-  }
-  _getQuoteColor(quote, key) {
-    var color = "muted";
-    if (this.lastQuote !== null) {
-      var _new = parseFloat(quote[key]);
-      var _old = parseFloat(this.lastQuote[key]);
-      color = _new > _old ? 'success' : _new < _old ? 'primary' : color;
-      (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`.bg${key}`).addClass('bg-primary');
-    } else {}
-    return `text-${color}`;
-  }
-  _bgQuote(quote, key) {
-    if (this.lastQuote !== null) {
-      var _new = parseFloat(quote[key]);
-      var _old = parseFloat(this.lastQuote[key]);
-      if (_new !== _old) {
-        (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`.bg${key}`).css({
-          'background-color': 'rgba(255,255,255,0.1)'
-        });
-      }
-    } else {
-      (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`.bg${key}`).css({
-        'background-color': 'rgba(255,255,255,0.0)'
-      });
-    }
-  }
-  _elementQuoteUpdates(quote) {
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)('.orderFormAsk').empty();
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)('.orderFormBid').empty();
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)('.orderFormAsk').append(`<span class="bgAsk rounded px-1">Ask: 
-            <span class="${this._getQuoteColor(quote, 'Ask')}">${quote?.Ask}</span></span>
-            <br/><span class="bgAskSize rounded px-1">Size: 
-            <span class="${this._getQuoteColor(quote, 'AskSize')}">${quote?.AskSize}</span></span>`);
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)('.orderFormBid').append(`<span class="bgBid rounded px-1">Bid: 
-            <span class="${this._getQuoteColor(quote, 'Bid')}">${quote?.Bid}</span></span>
-            <br/><span class="bgBidSize rounded px-1">Size: 
-            <span class="${this._getQuoteColor(quote, 'BidSize')}">${quote?.BidSize}</span></span>`);
-    this._bgQuote(quote, 'Ask');
-    this._bgQuote(quote, 'AskSize');
-    this._bgQuote(quote, 'Bid');
-    this._bgQuote(quote, 'BidSize');
-  }
-  updateQuote(quote) {
-    this._elementQuoteUpdates(quote);
-    this.lastQuote = quote;
-    /**
-     * Ask: "138.19"
-    AskSize: "300"
-    Bid: "138.16"
-    BidSize: "100"
-    Close: "138.1687"
-    DailyOpenInterest: "0"
-    High: "140.75999"
-    High52Week: "136.33"
-    High52WeekTimestamp: "2024-06-18T00:00:00Z"
-    Last: "138.1687"
-    LastSize: "1050"
-    LastVenue: "TRF"
-    Low: "136.13"
-    Low52Week: "39.23001"
-    Low52WeekTimestamp: "2023-10-31T00:00:00Z"
-    MarketFlags: {IsDelayed: false, IsHardToBorrow: false, IsBats: false, IsHalted: false}
-    NetChange: "2.5887"
-    NetChangePct: "0.0191"
-    Open: "139.8"
-    PreviousClose: "135.58"
-    PreviousVolume: "294335054"
-    Symbol: "NVDA"
-    TickSizeTier: "0"
-    TradeTime: "2024-06-20T15:44:32Z"
-    VWAP: "138.954417998483"
-    Volume: "199978526"
-     */
-  }
-  updateOrderSummary(msg) {
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".orderSummary").empty();
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".orderSummary").append(msg);
-  }
-  updateShareSize() {
-    var newVal = (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)('.orderFormShares').val();
-    this.shares = parseInt(newVal);
-    this.updateSellButton();
-    this.updateBuyButton();
-    this.updateOrderSummary(`Order ${this.shares} shares at market price.`);
-  }
-  _bindSharesInput() {
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".orderFormShares").on('change', () => {
-      this.updateShareSize();
-    });
-  }
-  _setForm() {
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${this.containerId}`).append(`
-           <div class="container-fluid px-2">
-                <div class="row">
-                    <div class="orderFormSymbolName col-12 px-1 h5 text-center"></div>
-                    <div class="text-center col-6 text-muted">Shares:
-                    <input 
-                        class="orderFormShares text-center p-1 text-white  rounded font-weight-bold" 
-                        value="${this.shares}" 
-                        placeholder="shares" 
-                        type="number" 
-                        style="width: 70px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"></div>
-                    <div class="orderFormType text-center col-6 py-1 text-muted">Type: <span class="text-white">${this.type}</span></div>
-                    <div class="col-12 my-1"></div>
-                    <div class="col-6 px-1">
-                        <button style="font-size: 30px;height:100px;"  id="${this.orderBtnId}_buy" class="w-100 text-white btn btn-sm btn-success">
-                            Buy ${this.shares} @ mkt
-                        </button>
-                    </div>
-                    
-                    <div class="col-6 px-1">
-                        <button style="font-size: 30px;height:100px" id="${this.orderBtnId}_sell" class="w-100 text-white btn btn-sm btn-primary">
-                            Sell ${this.shares} @ mkt
-                        </button>
-                    </div>
-                    <div class="col-12 my-1"></div>
-                    
-                    <div class="orderFormAsk col-6 px-1 text-center text-muted"></div>
-                    <div class="orderFormBid col-6 px-1 text-center text-muted"></div>
-                    
-                    <div class="col-12 px-1 my-1 text-muted">
-                        <div style="background-color:rgba(255,255,255,0.1)" class="col-12 text-center orderSummary rounded px-1 py-1"></div>
-                    </div>
-                </div>
-           </div>
-        `);
-  }
-}
-function initAccountInfo() {
-  window.ts.account.getAccounts().then(accounts => {
-    const accountIds = accounts.map(item => item["AccountID"]);
-    // initAccountsTableIntervals(
-    //     setPositionsTableData,
-    //     initPositionsTable(),
-    //     accountIds, 10000);
-    // window.ts.account.streamPositions("_", accountIds);
-    setPositionsTableData(null, accountIds);
-  }).catch(error => {
-    console.log("[ERROR] initAccountInfo", error);
-    setTimeout(() => {
-      initAccountInfo();
-    }, 1000);
-  });
-}
-
-// function initPositionsTable() {
-//     return new SimpleTableData({
-//         title: "Positions",
-//         containerID: "positions",
-//         columns: get_table_positions_columns(),
-//         dom: 't',
-//     });
-// }
-
-function setPositionsTableData(table, accountIds) {
-  window.ts.account.getPositions(accountIds).then(array => {
-    // table.setData(table, array);
-    // setTimeout(()=>{
-    // window.ts.symbol._setSymbolDataToPositions(array);
-    // }, 500);
-    window.ts.account.streamPositions(array, "_", accountIds);
-  }).catch(error => {
-    console.log("[ERROR] setPositionsTableData", error);
-    setTimeout(() => {
-      setPositionsTableData(table, accountIds);
-    }, 1000);
-  });
-}
-
-// function initAccountsTableIntervals(mainfunc, table, accountIds, intervalSeconds) {
-//     mainfunc(table, accountIds);
-//     setInterval(() => {
-//         mainfunc(table, accountIds);
-//     }, intervalSeconds);
-// }
-
-// const reports = await secEdgarApi.getReports({ symbol: 'AAPL' });
-
 (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(() => {
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#nav_links").hide();
-  var orderForm = new OrderForm("orders");
-  var chart = new _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__.Chart("tradeChart", orderForm);
-  chart.addCandlestickSeries("bars");
-  chart.addHistogramSeries("vol");
-  const data = new _charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_3__.Data(chart);
-  data.startBarStream(chart.header.symbol, chart.header.params);
-  data.startQuoteStream(chart.header.symbol);
-  new _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_7__.PositionsTable("positions");
+  new _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_4__.PositionsTable("positions");
+  var orderForm = new _components_orderFormClass__WEBPACK_IMPORTED_MODULE_5__["default"]("orders");
+  var chart = new _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__["default"]("tradeChart", orderForm);
+  var symbol = chart.header.symbol;
 
-  // secReport(chart.header.symbol);
-  // getFMPData("jk8BGBSpU68K8J5MyeJkVhOBWLvc8tbY");
+  // data.startQuoteStream(symbol);
+
+  orderForm.startQuoteStream(symbol);
 });
-
-// function secReport(symbol){
-//     secEdgarApi.getReports({ symbol: symbol }).then(res => {
-//             console.log(res);
-//     }).catch(error => {
-//         console.log("[ERROR] secReport", error);
-//         setTimeout(() => {
-//             secReport(symbol);
-//         }, 1000);
-//     });
-// }
-// function getFMPData(key){
-//     $.ajax({
-//         url: `https://financialmodelingprep.com/api/v4/shares_float?symbol=AAPL&apikey=${key}`,
-//         type: 'GET',
-//         dataType: 'json',
-//         success: function(data) {
-//             console.log(data);
-//             // Process the data as needed
-//         },
-//         error: function(jqXHR, textStatus, errorThrown) {
-//             console.error(textStatus, errorThrown);
-//         }
-//     });
-// }
 })();
 
 /******/ })()

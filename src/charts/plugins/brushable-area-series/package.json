@@ -1,0 +1,13 @@
+{
+    "name": "brushable-area-series",
+    "type": "module",
+    "main": "./brushable-area-series.umd.cjs",
+    "module": "./brushable-area-series.js",
+    "exports": {
+        ".": {
+            "import": "./brushable-area-series.js",
+            "require": "./brushable-area-series.umd.cjs",
+            "types": "./brushable-area-series.d.ts"
+        }
+    }
+}

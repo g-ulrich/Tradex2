@@ -1,0 +1,13 @@
+{
+    "name": "stacked-bars-series",
+    "type": "module",
+    "main": "./stacked-bars-series.umd.cjs",
+    "module": "./stacked-bars-series.js",
+    "exports": {
+        ".": {
+            "import": "./stacked-bars-series.js",
+            "require": "./stacked-bars-series.umd.cjs",
+            "types": "./stacked-bars-series.d.ts"
+        }
+    }
+}

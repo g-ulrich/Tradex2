@@ -1,0 +1,13 @@
+{
+    "name": "stacked-area-series",
+    "type": "module",
+    "main": "./stacked-area-series.umd.cjs",
+    "module": "./stacked-area-series.js",
+    "exports": {
+        ".": {
+            "import": "./stacked-area-series.js",
+            "require": "./stacked-area-series.umd.cjs",
+            "types": "./stacked-area-series.d.ts"
+        }
+    }
+}

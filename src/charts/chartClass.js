@@ -1,380 +1,13 @@
 import $ from 'jquery';
 import { createChart, CrosshairMode } from "lightweight-charts";
 import {CHART_THEMES} from '../charts/options';
-import { getRandomAlphaNum, formatVolume, formatCurrency, getMean } from '../util';
-import { getSignalColumns } from '../datatables/myColumns/signals';
-import { SimpleTableData } from '../datatables/simple';
+import { sortJsonArrayByKey, getRandomAlphaNum, maxJsonArrayVal, minJsonArrayVal, sessionHighlighter} from '../util';
+import Legend from './chartLegendClass';
+import Header from './chartHeaderClass';
+import {setMarketDataBarsAndStream, setMarketDataQuotesAndStream} from '../charts/customAPIBindings/getData';
+import { SessionHighlighting } from './plugins/session-highlighting/session-highlighting';
 
-class Header{
-    constructor(containerId){
-        this.containerId = containerId;
-        this.headerId = `${this.containerId}_${getRandomAlphaNum(20)}`;
-        this.orderBtnId = `${this.containerId}_${getRandomAlphaNum(20)}`;
-        this.symbol = "";
-        this.chartType = "";
-        this.params = {};
-        this.frequencyArray = [];
-        this._setParamDefaults();
-        this._setHeader();
-        this.init();
-    }
-
-    _setParamDefaults(){
-        this.symbol = "SPY";
-        this.chartType = "column";
-        this.params = {
-            interval : '5',
-            unit : 'Minute',
-            barsback : '100',
-            sessiontemplate : 'Default'
-          };
-        this.frequencyArray = [{interval: '5', name: '5m', unit: 'Minute'},
-            {interval: '1', name: '1m', unit: 'Minute'},
-            {interval: '10', name: '10m', unit: 'Minute'},
-            {interval: '15', name: '15m', unit: 'Minute'},
-            {interval: '30', name: '30m', unit: 'Minute'},
-            {interval: '60', name: '1hr', unit: 'Minute'},
-            {interval: '1', name: '1D', unit: 'Daily'},
-            {interval: '1', name: '1W', unit: 'Weekly'},
-            {interval: '1', name: '1M', unit: 'Monthly'},
-          ];
-        this._getParamsFromURL();
-    }
-
-    _processURLParams(paramCls, key){
-        var param = paramCls.get(key);
-        var isSymbolOrChartType = this[key] && this[key] !== "";
-        return param !== null && param !== "" ? param : isSymbolOrChartType ? this[key] : this.params[key];
-    }
-
-    _getParamsFromURL(){
-        const urlP = new URLSearchParams(window.location.search);
-        this.symbol = this._processURLParams(urlP, 'symbol');
-        this.chartType = this._processURLParams(urlP, 'chartType');
-        this.params = {
-            interval : this._processURLParams(urlP, 'interval'),
-            unit : this._processURLParams(urlP, 'unit'),
-            barsback : this._processURLParams(urlP, 'barsback'),
-            sessiontemplate : this._processURLParams(urlP, 'sessiontemplate'),
-          };
-    }
-
-    reloadPage(){
-        const urlparams = new URLSearchParams({
-            symbol: this.symbol,
-            chartType: this.chartType,
-            interval: this.params.interval,
-            unit: this.params.unit,
-            barsback: this.params.barsback,
-            sessiontemplate: this.params.sessiontemplate,
-        }).toString();
-        window.location.href = `trade.html?${urlparams}`;
-    }
-
-    _setHeader(){
-        $(`#${this.containerId}`).prepend(`
-            <div id="${this.headerId}" class="w-100">
-        </div>
-        `);
-    }
-    
-    _addSymbolInputBindings(){
-        $(`#${this.headerId} input`).on('keypress', (event) => {
-            if (event.which == 13) {
-                var symbol = event.target.value;
-                if (symbol.trim() != "") {
-                    this.symbol = symbol.toUpperCase();
-                    this.reloadPage();
-                }
-            }
-        });
-        $(`#${this.headerId} button`).on('click', ()=>{
-            // todo get all parameters in a function
-            var symbol = $(`#${this.headerId} input`).val();
-            if (symbol.trim() != "") {
-                this.symbol = symbol.toUpperCase();
-                this.reloadPage();
-            }
-        });
-    }
-
-    addSymbolInput(){
-        $(`#${this.headerId}`).append(`
-            <input 
-            class="text-uppercase p-1 rounded text-white font-weight-bold" 
-            value="${this.symbol}" 
-            placeholder="Symbol" 
-            type="search" 
-            style="width: 100px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;">
-            <button class="btn btn-sm btn-primary rounded mb-1 mr-2">
-                <i class="fa-solid fa-magnifying-glass fa-rotate-90"></i>
-            </button>
-        `);
-        this._addSymbolInputBindings();
-    }
-
-    addChartTypes(){
-        const chartTypeId = `chartType_${this.headerId}_${getRandomAlphaNum(10)}`;
-        const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
-        $(`#${this.headerId}`).append(`
-            <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
-            <select id="${selectId}"
-                class="p-1 text-white font-weight-bold"
-                style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                >
-                <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
-                <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
-                <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
-                <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
-            </select>
-        `);
-        $(`#${selectId}`).on('change', () => {
-            this.chartType = $(`#${selectId}`).val();
-            $(`#${chartTypeId}`).empty();
-            $(`#${chartTypeId}`).append(`<i class="fa-solid fa-chart-${this.chartType}"></i>`);
-            this.reloadPage();
-        });
-    }
-
-    getIntervalName(){
-        var str = "";
-        this.frequencyArray.forEach((obj)=>{
-            if (obj.interval == this.params.interval && obj.unit == this.params.unit) {
-                str = obj.name;
-            }
-        });
-        return str;
-    }
-
-    getDetailedSymbolName(){
-        return `${this.symbol}:${this.getIntervalName()}`;
-    }
-
-    addInterval(){
-            const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
-            var optionsHtml = "";
-            this.frequencyArray.forEach((obj)=>{
-                optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
-                ${this.params.interval == obj?.interval && this.params.unit == obj?.unit ? 'selected':''}>${obj?.name}</option>`;
-            });
-            $(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    ${optionsHtml}
-                </select>
-            `);
-            $(`#${selectId}`).on('change', () => {
-                this.params.interval = $(`#${selectId}`).find('option:selected').attr('data-interval');
-                this.params.unit = $(`#${selectId}`).find('option:selected').attr('data-unit');
-                this.reloadPage();
-            });
-    }
-
-    addSession(){
-            const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
-    
-            $(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
-                </select>
-            `);
-            $(`#${selectId}`).on('change', () => {
-                this.params.sessiontemplate = $(`#${selectId}`).val();
-                console.log(this.params);
-                this.reloadPage();
-            });
-    }
-
-    
-    hide(){
-        $(`#${this.headerId}`).hide();
-    }
-
-    show(){
-        $(`#${this.headerId}`).show();
-    }
-
-    init(){
-        this.addSymbolInput();
-        this.addChartTypes();
-        this.addInterval();
-        this.addSession();
-        // $(`#${this.headerId}`).fadeIn();
-    }
-
-
-}
-
-class Legend{
-    constructor(containerId, _header){
-        this.containerId = containerId;
-        this.header = _header;
-        this.barDetailsId = `details_${getRandomAlphaNum(10)}`;
-        this._setLegend();
-        this._getSymbolDetails();
-    }
-
-    _getSymbolDetails(){
-            var symbol = this.header.symbol;
-            if (symbol){
-                this._prependSymbolInputToContainer();
-                window.ts.symbol._setSymbolDescrptionForId(`${this.barDetailsId}_`, symbol);
-            } else{
-                setTimeout(()=>{
-                    this._getSymbolDetails();
-                }, 500);
-            }
-    }
-
-    _prependSymbolInputToContainer(){
-        $(`#${this.containerId} table div`).prepend(
-            `<span id="${this.barDetailsId}_" class="d-none"></span>`
-        );
-    }
-
-    _setLegend(){
-        $(`#${this.containerId} table div`).append(
-            `<span id="${this.containerId}_legend" style="z-index:2;" class="position-absolute"></span>`
-        );
-    }
-
-    _legendItemWrapper(_chartSeries, title, val){
-        var _chartItem = _chartSeries[title.toLowerCase().replace(':', '')].obj;
-        var isSeriesVisible = _chartItem._internal__series._private__options.visible;
-        var actionId = `action_${this.containerId}_${getRandomAlphaNum(10)}`;
-        var valueId = `value_${this.containerId}_${getRandomAlphaNum(10)}`;
-        var eye = `<span id="${actionId}_eye" 
-                style="cursor:pointer;"
-                class="text-muted pl-2">
-                <i class="fa-solid fa-eye${isSeriesVisible ? '' : '-slash'}"></i>
-            </span>`;
-        var trash = title.toLowerCase().replace(':', '') !== 'vol' ? `<span id="${actionId}_trash"
-                style="cursor:pointer;"
-                class="text-muted ml-1">
-                <i class="fa-solid fa-trash-can"></i>
-            </span>` : '';
-        var action = `<span id="${actionId}" class="text-muted">${title}${eye}${trash}</span>`;
-        var value = `<span id="${valueId}">${val}</span>`;
-        return {html: `${action}${value}`, title:title, actionId: actionId, valueId: valueId};
-    }
-
-    _colorOHLC(char, val, condition){
-        return `<span class="text-muted">${char}:</span>
-        <span class="text-${condition ? 'success' : 'primary'}">${val}</span>`;
-    }
-
-
-    _isEyeSlashed(actionId){
-        return $(`#${actionId}_eye svg`).hasClass('fa-eye-slash') || 
-                $(`#${actionId}_eye i`).hasClass('fa-eye-slash');
-    }
-    _legendBindings(_chartItem, actionId, valueId){
-        var $eye = $(`#${actionId}_eye`);
-        var $trash = $(`#${actionId}_trash`);
-        $eye.hide();
-        $trash.hide();
-        // hover
-        $(`#${actionId}`).on({
-            mouseenter: () => {
-                $(`#${valueId}`).hide();
-                $eye.show();
-                $trash.show();
-                $(`#${actionId}`).addClass('rounded text-white');
-                $(`#${actionId}`).css({'background-color': 'rgba(0,0,0,1)'});
-            },
-            mouseleave: () => {
-                $(`#${valueId}`).show();
-                $eye.hide();
-                $trash.hide();
-                $(`#${actionId}`).removeClass('rounded text-white');
-                $(`#${actionId}`).css({'background-color': 'rgba(0,0,0,0.0)'});
-            }
-        });
-
-        $eye.on('click', ()=>{
-            if (this._isEyeSlashed(actionId)) {
-                _chartItem.applyOptions({visible:true});
-                $eye.empty();
-                $eye.append(`<i class="fa-solid fa-eye"></i>`);
-            } else {
-                _chartItem.applyOptions({visible:false});
-                $eye.empty();
-                $eye.append(`<i class="fa-solid fa-eye-slash"></i>`);
-            }
-        });
-
-        $trash.on('click', ()=>{
-
-        });
-    }
-
-    _getArrow(condition){
-        var arrow = condition ? '270' : '90';
-        return  `<i class="fa-solid fa-play fa-rotate-${arrow}"></i>`;
-    }
-
-    _getPlusOrMinus(condition){
-        return condition ? '+' : '';
-    }
-
-    _getPercentage(bar){
-        var condition = bar.close - bar.open >= 0;
-        var cls = `class="text-${condition ? 'success' : 'primary'}"`;
-        var pl = bar.close - bar.open;
-        return `<span ${cls}>
-        ${this._getPlusOrMinus(condition)}
-        ${formatCurrency(pl.toFixed(2))}
-        ${this._getArrow(condition)}
-        ${((pl / bar.close)*100).toFixed(2)}%
-        </span>`;
-    }
-
-    update(_chartSeries, series){
-        const $legend = $(`#${this.containerId}_legend`);
-        var html = "";
-        var ids = [];
-        series.forEach(obj => {
-            if (obj.title == "bars"){
-                var color = obj.close > obj.open;
-                html += `<span ></span>
-                <span class="orderFormSymbolName"id="${this.barDetailsId}"></span></br>
-                ${this._colorOHLC('O', obj.open, color)}
-                ${this._colorOHLC('H', obj.high, color)}
-                ${this._colorOHLC('L', obj.low, color)}
-                ${this._colorOHLC('C', obj.close, color)}
-                ${this._getPercentage(obj)}
-                <br/>`;
-            } else if (obj.title == "vol"){
-                var chunk = this._legendItemWrapper(_chartSeries, "Vol:", formatVolume(obj.value));
-                ids.push(chunk);
-                html +=  chunk.html + "<br/>";
-            } else {
-                var chunk = this._legendItemWrapper(_chartSeries, obj.title, obj.value);
-                ids.push(chunk);
-                html +=  chunk.html + "<br/>";
-            }
-        });
-        $legend.empty();
-        $legend.append(html);
-        $(`#${this.barDetailsId}`).text($(`#${this.barDetailsId}_`).text());
-        ids.forEach((obj)=>{
-            var _chartItem = _chartSeries[obj.title.toLowerCase().replace(':', '')];
-            this._legendBindings(_chartItem.obj, obj.actionId, obj.valueId);
-        });
-    }
-
-}
-
-export class Chart{
+export default class Chart{
     constructor(containerId, orderForm){
         this.orderForm = orderForm;
         this.containerId = containerId;
@@ -389,14 +22,19 @@ export class Chart{
         this.allBars = [];
         this.series = {};
         this.pl = 0;
+        this.color = {
+            success: "#0b9657",
+            primary: "#7289da",
+            secondary: "#99aab5"
+        };
         this.lastPriceClicked = null;   
         this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
-        this.signals = new SimpleTableData({
-            title: "Signals",
-            containerID: "signals",
-            columns: getSignalColumns(),
-            dom: 't',
-        });
+        this.addCandlestickSeries("bars");
+        this.addHistogramSeries("vol");
+        setMarketDataBarsAndStream(this, this.header.symbol, this.header.params);
+        this._startQuoteStream();
+        const self = this;
+        setInterval(()=>{self.setHighLowMarkers()}, 5000);
     }
 
     _chartHeight(){
@@ -586,23 +224,24 @@ export class Chart{
         }
     }
 
+    _startQuoteStream(){
+        setMarketDataQuotesAndStream(this, this.header.symbol)
+    }
+
     setQuote(quote){
         this.lastQuote = quote;
     }
 
     setStreamQuote(quote){
-        // if (!this.lastQuote){
-            let merged = { };
-            Object.keys(this.lastQuote).forEach(key => {
-                if (quote[key] !== undefined) {
-                    merged[key] = quote[key]; 
-                }else{
-                    merged[key] = this.lastQuote[key];
-                }
-            });
-            this.lastQuote = merged;
-            this.orderForm.updateQuote(merged);
-        // }
+        let merged = { };
+        Object.keys(this.lastQuote).forEach(key => {
+            if (quote[key] !== undefined) {
+                merged[key] = quote[key]; 
+            }else{
+                merged[key] = this.lastQuote[key];
+            }
+        });
+        this.lastQuote = merged;
     }
 
     setBars(bars){
@@ -610,7 +249,10 @@ export class Chart{
             this._pushBar(bar);
             this.setNextBar(bar);
         });
+        // this.setData(bars);
         this._setVisibleRange();
+        this.setHighLowMarkers();
+        this.setSessionHighlights();
     }
 
     setNextStreamBar(bar) {
@@ -623,86 +265,24 @@ export class Chart{
           }
         });
         this._pushBar(mergedBar);
-        this._message(this.lastBar, mergedBar);
         this.setNextBar(mergedBar);
       }
 
-    _message(){
-        var newArray = this.allBars.slice(-5);
-        var percentages = [];
-        newArray.forEach((bar)=>{
-            var pl = bar.close - bar.open;
-            percentages.push((pl / bar.close)*100);
-        });
-        var avgPerc = Math.abs(getMean(percentages));
-        var cur = this.allBars[this.allBars.length - 1];
-        var curPl = cur.close - cur.open;
-        var curPerc = Math.abs((curPl / cur.close) * 100);
-        var prev = this.allBars[this.allBars.length - 2];
-        var isVolgtr = cur.volume > prev.volume;
-        var isCurUp = cur.close > cur.open;
-        var isPrevUp = prev.close > prev.open;
-        var msg = "";
-        var desc = "";
-            if (isVolgtr & !isPrevUp & isCurUp){
-                msg = 'buy';
-                desc = "Volume is greater then prev, prev candle is down and cur is up."
-            } 
-            if (isVolgtr & isPrevUp & isCurUp){
-                msg = 'buy';
-                desc = "Volume is greater then prev, prev is up and cur is up.";
-            } 
-            if (!isVolgtr & !isPrevUp & !isCurUp) {
-                msg = "buy"
-                desc = "Volume is lower then prev, prev is down and cur is down.";
-            }
-        // Down
-        if (!isVolgtr & !isPrevUp & isCurUp) {
-            msg = "sell";
-            desc = "Volume is lower then prev, prev is down and cur is up.";
-        }
-        if (!isVolgtr & isPrevUp & !isCurUp) {
-            msg = "sell";
-            desc = "Volume is lower then prev, prev is up and cur is down.";
-        }
-        if (isVolgtr & !isPrevUp & !isCurUp) {
-            msg = "sell";
-            desc = "Volume is greater the prev, prev is down and cur is down.";
-        }
-
-        if (avgPerc < curPerc & isCurUp) {
-            msg = "buy";
-            desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is up.`
-        }
-        if (avgPerc < curPerc & !isCurUp) {
-            msg = "sell";
-            desc = `The averge gain of ${avgPerc.toFixed(2)}% is less than the current ${curPerc.toFixed(2)}% and the cur is down.`
-        }
-        
-    
-        var row = this.signals.getLastRowAdded();
-        if (row != null & msg == 'sell'){
-            if (row.action == 'buy'){
-                this.pl += cur.close - row.price;
-            }
-        }
-        var payload = [{
-            action: msg,
-            price: cur?.close.toFixed(2),
-            pl: this.pl.toFixed(2),
-            desc: desc
-            }];
-        if (msg !== "") {
-            if (row == null & msg !== 'sell') { // init
-                this.signals.addRow(this.signals, payload);
-            } else if (row != null) {
-                if (msg !== row.action){
-                    this.signals.addRow(this.signals, payload);
-
-                }
-            }
-        }
-    }
+    // setData(bars){
+    //     Object.keys(this.series).forEach(name => {
+    //         var series = this.series[name];
+    //         if (series?.obj && name == 'volume'){
+    //             this.lastBar = bars[bars.length-1];
+    //             series.obj.setData(bars);
+    //         } else {
+    //             this.lastBar = bars[bars.length-1];
+    //             if (this.header.chartType == 'area' || this.header.chartType == 'line') {
+    //                 newBar.value = newBar?.close;
+    //             }
+    //             series.obj.setData(bars);
+    //         }
+    //     });
+    // }
 
     setNextBar(bar){
         var newBar = this._processNextBar(bar);
@@ -718,9 +298,22 @@ export class Chart{
                 }
                 series.obj.update(newBar);
             }
-
         });
+        
     } 
+
+    setSessionHighlights(){
+        console.log(this.header.params);
+        if (this.header.params.sessiontemplate == 'USEQ24Hour'){
+            var bars = this.allBars;
+            if (bars.length > 1){
+                var seriesObj = this.series['bars']?.obj;
+                seriesObj.attachPrimitive(
+                    new SessionHighlighting(sessionHighlighter)
+                );
+            }
+        }
+    }
 
     setMarkersForOrders(orders){
         // // TODO get legs
@@ -754,9 +347,51 @@ export class Chart{
         //                     order?.LimitPrice :
         //                     order?.FilledPrice).toFixed(2)}`}
         //     });
+
     }
 
+    setHighLowMarkers(){
+        // console.log("Markers");
+        try {
+            var bars = this.allBars;
+            if (bars.length > 1){
+                var seriesObj = this.series['bars']?.obj;
+                var maxBar = maxJsonArrayVal(bars, 'high');
+                var minBar = minJsonArrayVal(bars, 'low');
+                // High
+                var high = {
+                    id: 'high',
+                    time: maxBar.time,
+                    position: 'aboveBar',
+                    color: this.color.secondary,
+                    // shape: 'square',
+                    size: .01,
+                    text: `H @ ${maxBar.high.toFixed(2)}`,
+                    // price: maxBar.high
+                };
+                // L0w
+                var low = {
+                    id: 'low',
+                    time: minBar.time,
+                    position: 'belowBar',
+                    color: this.color.secondary,
+                    // shape: 'square',
+                    size: .01,
+                    text: `L @ ${minBar.low.toFixed(2)}`,
+                    // price: minBar.low
+                };
+                this.addMarkers(seriesObj, [low, high]);
+            }
+        } catch (error) {
+            this.error(`setHighLowMarkers() - ${error}`);
+        }
+    }
 
-    
+    addMarkers(seriesObj, array){
+        if (seriesObj){
+            var sortedArray = sortJsonArrayByKey(array, 'time');
+            seriesObj.setMarkers(sortedArray);
+        }
+    }
     
 }

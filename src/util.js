@@ -2,6 +2,8 @@
 import { URL } from "url"
 import path from "path"
 import { ipcRenderer } from "electron";
+import { isUTCTimestamp } from "lightweight-charts";
+
 
 export function resolveHtmlPath(htmlFileName) {
   if (process.env.NODE_ENV === "development") {
@@ -545,3 +547,61 @@ export function getMean(arr) {
   let average = sum / arr.length;
   return average;
 }
+
+export const sortJsonArrayByKey = (jsonArray, key) => {
+  return jsonArray.sort((a, b) => {
+      return a[key] - b[key];
+  });
+}
+
+export function maxJsonArrayVal(jsonArray, key) {
+  let max = jsonArray[0][key]; // Start with the smallest possible number
+  let obj = jsonArray[0];
+  jsonArray.forEach(item => {
+      if (item[key] > max) {
+        max = item[key];
+        obj = item;
+      }
+  });
+  return obj;
+}
+
+export function minJsonArrayVal(jsonArray, key) {
+  let min = jsonArray[0][key]; // Start with the largest possible number
+  let obj = jsonArray[0];
+  jsonArray.forEach(item => {
+      if (item[key] < min) {
+        min = item[key];
+        obj = item;
+      }
+  });
+  return obj;
+}
+
+export function getBarTimeDate(time) {
+  if (isUTCTimestamp(time)) {
+      return new Date(time * 1000);
+  } else if (isBusinessDay(time)) {
+      return new Date(time.year, time.month, time.day);
+  } else {
+      return new Date(time);
+  }
+}
+
+
+
+export const sessionHighlighter = (time) => {
+  const date = getBarTimeDate(time); 
+  const offset = 4;
+  const hours = date.getHours();
+  const minute = date.getMinutes();
+  var isBeforeOpen = (hours == 9-offset && minute <= 30) || hours < 9-offset;
+  var isAfterClose = hours >= 16-offset;
+  if (isBeforeOpen) {
+      return 'rgba(41, 98, 255, 0.08)';
+  } else if (isAfterClose) {
+      return 'rgba(41, 98, 255, 0.08)';
+  } else {
+      return 'rgba(0, 0, 0, 0)'; 
+  }
+};

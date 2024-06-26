@@ -1,0 +1,13 @@
+{
+    "name": "session-highlighting",
+    "type": "module",
+    "main": "./session-highlighting.umd.cjs",
+    "module": "./session-highlighting.js",
+    "exports": {
+        ".": {
+            "import": "./session-highlighting.js",
+            "require": "./session-highlighting.umd.cjs",
+            "types": "./session-highlighting.d.ts"
+        }
+    }
+}

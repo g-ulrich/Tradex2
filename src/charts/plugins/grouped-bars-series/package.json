@@ -1,0 +1,13 @@
+{
+    "name": "grouped-bars-series",
+    "type": "module",
+    "main": "./grouped-bars-series.umd.cjs",
+    "module": "./grouped-bars-series.js",
+    "exports": {
+        ".": {
+            "import": "./grouped-bars-series.js",
+            "require": "./grouped-bars-series.umd.cjs",
+            "types": "./grouped-bars-series.d.ts"
+        }
+    }
+}

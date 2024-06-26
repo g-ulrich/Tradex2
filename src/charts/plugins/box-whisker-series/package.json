@@ -1,0 +1,13 @@
+{
+    "name": "box-whisker-series",
+    "type": "module",
+    "main": "./box-whisker-series.umd.cjs",
+    "module": "./box-whisker-series.js",
+    "exports": {
+        ".": {
+            "import": "./box-whisker-series.js",
+            "require": "./box-whisker-series.umd.cjs",
+            "types": "./box-whisker-series.d.ts"
+        }
+    }
+}

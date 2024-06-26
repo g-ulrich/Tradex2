@@ -1,0 +1,13 @@
+{
+    "name": "hlc-area-series",
+    "type": "module",
+    "main": "./hlc-area-series.umd.cjs",
+    "module": "./hlc-area-series.js",
+    "exports": {
+        ".": {
+            "import": "./hlc-area-series.js",
+            "require": "./hlc-area-series.umd.cjs",
+            "types": "./hlc-area-series.d.ts"
+        }
+    }
+}

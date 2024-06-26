@@ -1,0 +1,13 @@
+{
+    "name": "highlight-bar-crosshair",
+    "type": "module",
+    "main": "./highlight-bar-crosshair.umd.cjs",
+    "module": "./highlight-bar-crosshair.js",
+    "exports": {
+        ".": {
+            "import": "./highlight-bar-crosshair.js",
+            "require": "./highlight-bar-crosshair.umd.cjs",
+            "types": "./highlight-bar-crosshair.d.ts"
+        }
+    }
+}

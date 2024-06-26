@@ -83,16 +83,16 @@ export class Symbols {
     return response;
   }
 
-  _setSymbolDescrptionForId(id, symbol){
+  _setFullSymbolName(symbol){
     this.suggestSymbols(symbol).then(arr => {
         var detailsArray = arr.data;
             detailsArray.forEach((sym)=>{
               var cat = sym?.Category.toLowerCase();
                 if (sym?.Name == symbol){
                     var title = `${sym?.Exchange}:${symbol} · ${sym?.Description}`;
-                    $(`#${id}`).text(title);
-                    $(`.orderFormSymbolName`).empty();
-                    $(`.orderFormSymbolName`).append(
+                    // $(`#${id}`).text(title);
+                    $(`.fullSymbolName`).empty();
+                    $(`.fullSymbolName`).append(
                       `${sym?.Exchange}:${symbol} ·
                       <span class="text-muted">${sym?.Description}</span>`
                     );
