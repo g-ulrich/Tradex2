@@ -1,0 +1,24 @@
+.flex {
+    display: flex;
+    justify-content: space-between; /* Distributes items evenly across the main axis */
+}
+.grow {
+    flex-grow: 1;
+}
+.no-grow {
+    flex-grow: 0;
+}
+
+.gap-1{
+    gap: 1px;
+}
+
+.gap-5{
+    gap: 5px;
+}
+
+.gap-10{
+    gap: 10px;
+}
+
+

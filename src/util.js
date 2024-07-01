@@ -526,20 +526,24 @@ export function convertUTCToEST(utcTimestamp) {
 }
 
 export const formatVolume = (number) => {
+  number = parseFloat(number);
+  var isNeg = number < 0 ? true : false; 
   var suffix = "";
-  if (number > 999999999) {
+  var val = number;
+  if (Math.abs(number) > 999999999999) {
+    suffix = "T";
+    val = val / 999999999999;
+  }else if (Math.abs(number) > 999999999) {
     suffix = "B";
-  } else if (number > 999999) {
+    val = val / 999999999;
+  } else if (Math.abs(number) > 999999) {
     suffix = "M";
-  } else if (number > 9999) {
-    suffix = "K"
+    val = val / 999999;
+  } else if (Math.abs(number) > 999) {
+    suffix = "K";
+    val = val / 999;
   }
-  const suffixNum = Math.floor(("" + number).length / 3);
-  let shortNumber = parseFloat((suffixNum !== 0 ? (number / Math.pow(1000, suffixNum)) : number).toPrecision(5));
-  if (shortNumber % 1 !== 0) {
-    shortNumber = shortNumber.toFixed(3);
-  }
-  return shortNumber + suffix;
+  return formatCurrency(val.toFixed(3)) + suffix;
 }
 
 export function getMean(arr) {

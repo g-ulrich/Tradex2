@@ -29,6 +29,23 @@ export default class Chart{
         };
         this.lastPriceClicked = null;   
         this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
+
+
+//         const container = document.getElementById(this.containerId);
+// const background = document.createElement('div');
+// // place below the chart
+// background.style.zIndex = -1;
+// background.style.position = 'absolute';
+// // set size and position to match container
+// background.style.inset = '0px';
+// background.style.backgroundImage = `url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOTIiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjkyIDEyOCI++PC9zdmc+")`;
+// background.style.backgroundRepeat = 'no-repeat';
+// background.style.backgroundPosition = 'center';
+// background.style.opacity = '0.5';
+// container.appendChild(background);
+
+
+
         this.addCandlestickSeries("bars");
         this.addHistogramSeries("vol");
         setMarketDataBarsAndStream(this, this.header.symbol, this.header.params);
@@ -38,7 +55,7 @@ export default class Chart{
     }
 
     _chartHeight(){
-        return parseInt(window.innerHeight * .8);//this.height;
+        return $(`#${this.containerId}`).height();//parseInt(window.innerHeight * .8);//this.height;
     }
 
     info(msg){
@@ -74,16 +91,21 @@ export default class Chart{
         });
     }
 
-    _resizeChart(){
-        this.chart.resize($(`#${this.containerId}`).width(), this._chartHeight());
+    _resizeChart(w, h){
+        const $container = $(`#${this.containerId}`);
+        var hid = $(`#${this.header.headerId}`).height();
+        var w = w ? w : $container.width();
+        console.log(w);
+        var h = h ? h :$container.height() -hid;
+        this.chart.resize(w, h);
+        return {width: w, height: h};
     }
 
   
     _setResizeListener(){ 
-        const $container = $(`#${this.containerId}`);
-        this.chart.applyOptions({ width: $container.width(), height: this._chartHeight() });
+        this.chart.applyOptions(this._resizeChart());
         window.addEventListener("resize", ()=>{
-            this.chart.resize($container.width(), this._chartHeight());
+            this._resizeChart();
         });
     }
 
@@ -304,7 +326,8 @@ export default class Chart{
 
     setSessionHighlights(){
         console.log(this.header.params);
-        if (this.header.params.sessiontemplate == 'USEQ24Hour'){
+        var params = this.header.params;
+        if (params?.sessiontemplate == 'USEQ24Hour' && params?.unit == "Minute"){
             var bars = this.allBars;
             if (bars.length > 1){
                 var seriesObj = this.series['bars']?.obj;

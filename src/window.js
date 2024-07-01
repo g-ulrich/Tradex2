@@ -85,13 +85,14 @@ export default (name, options) => {
 
   win = new BrowserWindow(Object.assign(
   {
+    autoHideMenuBar: true,
     icon: getImagePath('icon.png'),
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color:  '#23272a',
-      symbolColor: '#ffffff',
-      height: 30
-    }
+    // titleBarStyle: 'hidden',
+    // titleBarOverlay: {
+    //   color:  '#23272a',
+    //   symbolColor: '#ffffff',
+    //   // height: 30
+    // }
   }, options, state));
   win.on("close", saveState);
 

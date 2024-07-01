@@ -176,7 +176,11 @@ export class SimpleTableData{
     setPollData(self, data){
         $(`#${self.tableId}_lastupdate`).empty();
         $(`#${self.tableId}_lastupdate`).append(`<i class="fa-solid fa-spinner fa-spin"></i>`);
-        self.table.clear();
+        try{
+            self.table.clear();
+        }catch(error){
+            console.error(error);
+        }
         self.table.rows.add(data).draw();
         setTimeout(()=>{
             $(`#${self.tableId}_lastupdate`).empty();

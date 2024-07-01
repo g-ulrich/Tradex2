@@ -44,8 +44,16 @@ const CHART_LAYOUTS = {
         color: chartColors.discord.darkestGray,
         type: ColorType.Solid,
     },
-    fontSize: 10,
-  }
+     fontSize: 10,
+  },
+  transparent: {
+    textColor: chartColors.white,
+    background: {
+        color: 'rgba(0,0,0,0.0)',
+        type: ColorType.Solid,
+    },
+     fontSize: 10,
+  },
 };
 
 const CHART_PRICE_SCALES = {
@@ -106,7 +114,7 @@ export const CHART_THEMES = {
     handleScale: false
   },
   defaultChart : {
-    layout: CHART_LAYOUTS.common,
+    layout: CHART_LAYOUTS.transparent,
     rightPriceScale: CHART_PRICE_SCALES.common_right,
     timeScale: { timeVisible: true, secondsVisible: true },
     crosshair: CHART_CROSSHAIR.common,

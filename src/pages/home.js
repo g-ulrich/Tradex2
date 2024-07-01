@@ -61,7 +61,7 @@ function initAccountsTableIntervals(mainfunc, table, accountIds, intervalSeconds
 function initAccountsTable() {
     return new SimpleTableData({
         title: "Accounts",
-        containerID: appendToRight("account"), //returns id
+        containerID: "account", //returns id
         columns: get_table_accounts_columns(),
         dom: 't',
     });
@@ -83,7 +83,7 @@ function setAccountsTableData(table, accountIds) {
 function initTodaysOrdersTable() {
     return new SimpleTableData({
         title: "Todays Orders",
-        containerID: appendToLeft("orders"),
+        containerID: "todayorders",
         columns: getOrderColumns(),
         dom: 't',
     });
@@ -105,7 +105,7 @@ function setTodaysOrdersTableData(table, accountIds) {
 function initOrdersTable() {
     return new SimpleTableData({
         title: "Historical Orders",
-        containerID: appendToLeft("orders"),
+        containerID: "orders",
         columns: getOrderColumns(),
         // dom: 't',
     });
@@ -135,6 +135,6 @@ $(() => {
 
 function initHome() {
     initAccountInfo();
-    new PositionsTable(appendToLeft("position"), true);
+    new PositionsTable("position", true);
 }
 

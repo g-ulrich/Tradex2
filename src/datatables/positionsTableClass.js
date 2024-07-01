@@ -9,7 +9,7 @@ function initAccountInfo(tableCls) {
     }).catch(error => {
         console.log("[ERROR] initAccountInfo", error);
         setTimeout(() => {
-            initAccountInfo();
+            initAccountInfo(tableCls);
         }, 1000);
     });
 }
@@ -21,7 +21,7 @@ function setPositionsTableData(tableCls, accountIds) {
     }).catch(error => {
         console.log("[ERROR] setPositionsTableData", error);
         setTimeout(() => {
-            setPositionsTableData(table, accountIds);
+            setPositionsTableData(tableCls, accountIds);
         }, 1000);
     });
 }

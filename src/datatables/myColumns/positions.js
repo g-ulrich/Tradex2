@@ -3,7 +3,8 @@ import { convertUTCToEST, formatCurrency} from '../../util';
 function renderArrow(data, condition){
     var cls = condition > 0 ? 'success' : 'primary';
     var arrow = condition > 0 ? '270' : '90';
-    return   `<span class="text-${cls}"><i class="fa-solid fa-play fa-rotate-${arrow}"></i> ${data}</span>`;
+    return   `<span class="text-${cls}">
+    <i class="fa-solid fa-play fa-rotate-${arrow}"></i> ${data}</span>`;
 }
 
 function getArrow(condition){
@@ -29,7 +30,7 @@ function renderColor(data, row, condition){
 export const get_table_positions_columns = () => {
     return [
         {
-            data: '', name: '', render: 
+            data: '', name: '', width: 55, render: 
             function (data, type, row, meta) {
                 return (
                     `<button data-symbol="${row?.Symbol}" class="tradeSymbol btn btn-sm btn-primary text-white">Trade</button>`
@@ -37,13 +38,15 @@ export const get_table_positions_columns = () => {
            }
         },
         {
-            data: 'Symbol', name: 'Symbol', render: 
+            data: 'Symbol', name: 'Symbol / Avg.', render: 
             function (symbol, type, row, meta) {
                 var shares = row?.Quantity;
                 var type = row?.AssetType;
+                // UnrealizedProfitLossQty
+                // var avgPrice = parseFloat(row?.Last)-parseFloat(row?.UnrealizedProfitLossQty)
                 return (
-                    `${symbol} · ${shares} Shares<br/>
-                    <span id="positions_table_${symbol}_exchange"></span> <span id="positions_table_${symbol}_desc" class="text-muted">-</span>`
+                    `${type}:${symbol}<br/>
+                    <span>${shares} Shares · ${parseFloat(row?.AveragePrice).toFixed(2)}</span>`
                 );
            }
         },
