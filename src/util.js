@@ -609,3 +609,25 @@ export const sessionHighlighter = (time) => {
       return 'rgba(0, 0, 0, 0)'; 
   }
 };
+
+export function getHorizontalTabHTML(){
+  return `
+            <div class="tab position-absolute bg-glass text-muted px-3 py-0" 
+                style="
+                z-index:2;top:0px;
+                line-height:0px;
+                left:50%;
+                margin-left:-23.5px;
+                margin-top:-9px;
+                ">
+                <i class="p-0 fa-solid fa-grip-lines"></i>
+            </div>    
+            `;
+}
+
+export function getVerticalTabHTML(){
+  return `<div class="tab position-absolute bg-glass text-muted py-3 px-1" 
+              style="z-index:2;right:0px;width:15px;top:50%;margin-right:-7.5px;">
+              <i class="fa-solid fa-grip-lines-vertical"></i>
+            </div>`;
+}

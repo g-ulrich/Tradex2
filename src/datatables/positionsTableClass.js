@@ -36,6 +36,7 @@ export class PositionsTable{
             containerID: this.containerId,
             columns: get_table_positions_columns(),
             dom: 't',
+            order: [[1, 'asc']]
         });
         initAccountInfo(this.table);
         this._bindings();

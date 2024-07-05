@@ -85,20 +85,51 @@ export default class OrderForm{
     }
 
     _elementQuoteUpdates(quote){
-        $('.orderFormAsk').empty();
-        $('.orderFormBid').empty();
-        $('.orderFormAsk').append(`<span class="bgAsk rounded px-1">Ask: 
-            <span class="${this._getQuoteColor(quote, 'Ask')}">${quote?.Ask}</span></span>
-            <br/><span class="bgAskSize rounded px-1">Size: 
-            <span class="${this._getQuoteColor(quote, 'AskSize')}">${quote?.AskSize}</span></span>`);
-        $('.orderFormBid').append(`<span class="bgBid rounded px-1">Bid: 
-            <span class="${this._getQuoteColor(quote, 'Bid')}">${quote?.Bid}</span></span>
-            <br/><span class="bgBidSize rounded px-1">Size: 
-            <span class="${this._getQuoteColor(quote, 'BidSize')}">${quote?.BidSize}</span></span>`);
-        this._bgQuote(quote, 'Ask');
-        this._bgQuote(quote, 'AskSize');
-        this._bgQuote(quote, 'Bid');
-        this._bgQuote(quote, 'BidSize');
+        /*
+        orderFormBid
+        orderFormAsk
+        orderFormLast
+        */
+    //     <div class="orderFormBid progress-bar bg-success text-end px-1" role="progressbar" 
+    //     style="width: 30%" 
+    //     aria-valuenow="30" 
+    //     aria-valuemin="0" 
+    //     aria-valuemax="100">
+    //  121.67 Bid
+    // </div>
+        var aP = 0;
+        var bP = 0;
+        var bSize = parseInt(quote?.BidSize);
+        var aSize = parseInt(quote?.AskSize);
+        if (aSize > bSize){
+            bP = parseInt((bSize/aSize)*100);
+            aP = 100 - bP;
+        }else {
+            aP = parseInt((aSize/bSize)*100);
+            bP = 100-aP;
+        }
+
+        $(".orderFormBid").css('width', `${bP}%`);
+        $(".orderFormBid").attr('aria-valuenow', `${bP}`);
+        $(".orderFormBid").text(`${formatCurrency(quote?.Bid)} Bid`);
+
+        $(".orderFormAsk").css('width', `${aP}%`);
+        $(".orderFormAsk").attr('aria-valuenow', `${aP}`);
+        $(".orderFormAsk").text(`Ask ${formatCurrency(quote?.Ask)}`);
+        // $('.orderFormAsk').empty();
+        // $('.orderFormBid').empty();
+        // $('.orderFormAsk').append(`<span class="bgAsk rounded px-1">Ask: 
+        //     <span class="${this._getQuoteColor(quote, 'Ask')}">${quote?.Ask}</span></span>
+        //     <br/><span class="bgAskSize rounded px-1">Size: 
+        //     <span class="${this._getQuoteColor(quote, 'AskSize')}">${quote?.AskSize}</span></span>`);
+        // $('.orderFormBid').append(`<span class="bgBid rounded px-1">Bid: 
+        //     <span class="${this._getQuoteColor(quote, 'Bid')}">${quote?.Bid}</span></span>
+        //     <br/><span class="bgBidSize rounded px-1">Size: 
+        //     <span class="${this._getQuoteColor(quote, 'BidSize')}">${quote?.BidSize}</span></span>`);
+        // this._bgQuote(quote, 'Ask');
+        // this._bgQuote(quote, 'AskSize');
+        // this._bgQuote(quote, 'Bid');
+        // this._bgQuote(quote, 'BidSize');
         }
 
     startQuoteStream(symbol){
@@ -156,6 +187,37 @@ export default class OrderForm{
                         style="width: 70px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"></div>
                     <div class="orderFormType text-center col-6 py-1 text-muted">Type: <span class="text-white">${this.type}</span></div>
                     <div class="col-12 my-1"></div>
+                    
+                    <div class="col-12 my-1 px-1">
+                    
+                        <div class="progress bg-dark">
+      
+                            <div class="orderFormAsk progress-bar text-success bg-glass px-1" role="progressbar" 
+                            style="width: 69%" 
+                            aria-valuenow="70" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                                Ask 121.69
+                            </div>
+                            
+                            
+                            <div class="orderFormBid progress-bar text-primary bg-glass px-1" role="progressbar" 
+                                style="width: 30%" 
+                                aria-valuenow="30" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                             121.67 Bid
+                            </div>
+
+                        </div>
+                    
+                    </div>
+                    
+                    
+                    <div class="col-12 px-1 my-1 text-muted">
+                        <div style="background-color:rgba(255,255,255,0.1)" class="col-12 text-center orderSummary rounded px-1 py-1"></div>
+                    </div>
+
                     <div class="col-6 px-1">
                         <button style="font-size: 30px;height:100px;"  id="${this.orderBtnId}_buy" class="w-100 text-white btn btn-sm btn-success">
                             Buy ${this.shares} @ mkt
@@ -167,17 +229,13 @@ export default class OrderForm{
                             Sell ${this.shares} @ mkt
                         </button>
                     </div>
-                    <div class="col-12 my-1"></div>
-                    
-                    <div class="orderFormAsk col-6 px-1 text-center text-muted"></div>
-                    <div class="orderFormBid col-6 px-1 text-center text-muted"></div>
-                    
-                    <div class="col-12 px-1 my-1 text-muted">
-                        <div style="background-color:rgba(255,255,255,0.1)" class="col-12 text-center orderSummary rounded px-1 py-1"></div>
-                    </div>
                 </div>
            </div>
         `);
+
+        // <div class="orderFormAsk col-6 px-1 text-center text-muted"></div>
+                    // <div class="orderFormBid col-6 px-1 text-center text-muted"></div>
+                    
     }
 
 }

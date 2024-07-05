@@ -5,7 +5,6 @@
   <meta charset="utf-8" />
   <title>Tradex2 | Home</title>
   <script src="trade.js"></script>
-  <!-- <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css"> -->
   <link rel="stylesheet" href="../src/jquery-ui-1.13.3/jquery-ui.min.css">
   <script src="../src/jquery-ui-1.13.3/jquery-ui.min.js"></script>
 </head>
@@ -17,22 +16,17 @@
       <!-- Beginning of page -->
       <div id="content" class="flex h-100">
 
-        <div id="leftcol" class="resize no-grow">
+        <div id="leftcol" class="resize no-grow" style="border-right:dashed 1px rgba(255,255,255,0.3);">
           <div id="tradeChart"  class=" w-100 h-100 p-1 bg-glass"></div>
-
-          <div class="tab position-absolute bg-glass text-muted py-3 px-1" 
-            style="z-index:2;right:0px;width:15px;top:50%;margin-right:-7.5px;">
-            <i class="fa-solid fa-grip-lines-vertical"></i>
-          </div>
+          <div id="news"  class="w-100 p-1 bg-glass"></div>
 
         </div>
 
         <div id="rightcol" class="sortable grow">
-            <div id="orders" style="min-width:400px" class="  p-1 bg-glass"></div>
-            <div id="positions"  style="min-width:400px" class=" p-1 bg-glass"></div>
-            <div id="edgar"  style="min-width:400px" class=" p-1 bg-glass"></div>
-
-          </div>
+            <div id="orders" style="min-width:100px" class="  p-1 bg-glass"></div>
+            <div id="positions"  style="min-width:100px" class=" p-1 bg-glass"></div>
+            <div id="edgar"  style="min-width:100px" class=" p-1 bg-glass"></div>
+        </div>
           
         </div>
  

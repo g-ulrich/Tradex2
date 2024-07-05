@@ -8,7 +8,9 @@ import '../../fontawesome/js/all.min';
 import '../css/scrollbar.css';
 import '../css/custom.css';
 import {TS} from '../../tradestation/enpoints/main';
+import Polygon from '../../polygon/main';
 window.ts = new TS();
+window.p = new Polygon()
 // import {Nav} from './nav';
 
 

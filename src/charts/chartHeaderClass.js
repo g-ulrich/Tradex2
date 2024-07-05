@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { getRandomAlphaNum } from '../util';
-
+import Dialog from '../pages/components/dialog';
 
 export default class Header{
     constructor(containerId){
@@ -118,16 +118,22 @@ export default class Header{
         const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
         $(`#${this.headerId}`).append(`
             <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
+        `);
+        
+        var d = new Dialog(chartTypeId, {relative: true, title:`<i class="fa-solid fa-chart-${this.chartType}"></i> Chart Type`});
+   
+        d.setbody(`
             <select id="${selectId}"
-                class="p-1 text-white font-weight-bold"
-                style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                class="w-100 p-1 text-white font-weight-bold"
+                style="font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                 >
                 <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
                 <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
                 <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
                 <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
-            </select>
+            </select>    
         `);
+
         $(`#${selectId}`).on('change', () => {
             this.chartType = $(`#${selectId}`).val();
             $(`#${chartTypeId}`).empty();
@@ -152,44 +158,53 @@ export default class Header{
 
     addInterval(){
             const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
-            var optionsHtml = "";
-            this.frequencyArray.forEach((obj)=>{
-                optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
-                ${this.params.interval == obj?.interval && this.params.unit == obj?.unit ? 'selected':''}>${obj?.name}</option>`;
-            });
+            
             $(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    ${optionsHtml}
-                </select>
+                <span id="${selectId}_icon" class="dialog-list-item px-1"><i class="fa-solid fa-timeline"></i></span>
             `);
-            $(`#${selectId}`).on('change', () => {
-                this.params.interval = $(`#${selectId}`).find('option:selected').attr('data-interval');
-                this.params.unit = $(`#${selectId}`).find('option:selected').attr('data-unit');
+
+            var d = new Dialog(`${selectId}_icon`, {relative: true, title:`Interval`});
+            var html = `<div id="${selectId}">`;
+            this.frequencyArray.forEach((obj)=>{
+                var cls = this.params.interval == obj?.interval && this.params.unit == obj?.unit ? '-selected' : '';
+                html += `<div class="px-1 dialog-list-item${cls}" 
+                    data-unit="${obj?.unit}" 
+                    data-interval="${obj?.interval}">
+                    ${obj?.name}</div>`;
+            });
+            html += `</div>`;
+            d.setbody(html);
+   
+            $(`#${selectId} div`).on('click', (e) => {
+                var data = e.target.dataset;
+                console.log(e, data);
+                this.params.interval = data.interval;
+                this.params.unit = data.unit;
                 this.reloadPage();
             });
     }
 
     addSession(){
             const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
-    
+
+            var sessions = ['Default', 'USEQ24Hour', 'USEQPre', 'USEQPost', 'USEQPreAndPost'];
+
             $(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
-                </select>
+                <span id="${selectId}_icon" class="dialog-list-item px-1" ><i class="fa-solid fa-clock"></i></span>
             `);
-            $(`#${selectId}`).on('change', () => {
-                this.params.sessiontemplate = $(`#${selectId}`).val();
-                console.log(this.params);
+
+            var dialog = new Dialog(`${selectId}_icon`, {relative: true, title: 'Session'});
+            // create html for dialog
+            var html = `<div id="${selectId}">`;
+            sessions.forEach((item)=>{
+                var cls = this.params.sessiontemplate == item ? '-selected' : ''
+                html += `<div class="px-1 dialog-list-item${cls}">${item}</div>`;
+            });
+            html += `</div>`;
+            dialog.setbody(html);
+
+            $(`#${selectId} div`).on('click', (e) => {
+                this.params.sessiontemplate = e.target.textContent;
                 this.reloadPage();
             });
     }

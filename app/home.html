@@ -3,26 +3,35 @@
   <head>
     <meta charset="utf-8" />
     <title>Tradex2 | Home</title>
-    <script defer src="home.js"></script>
-  
+    <script src="home.js"></script>
+    <link rel="stylesheet" href="../src/jquery-ui-1.13.3/jquery-ui.min.css">
+    <script src="../src/jquery-ui-1.13.3/jquery-ui.min.js"></script>
   </head>
   <body>
-    <div id="contentContainer" class=" flex border bg-gradient">
-      <div id="nav" class="no-grow bg-glass text-center p-2 m-1"></div>
-      <div id="body" class="grow overflow-auto">
+    <div id="contentContainer" class=" flex bg-gradient">
+      <div id="nav" class="no-grow bg-glass text-center p-2 my-1" style="margin-left:.25rem;"></div>
+      <div id="body" class="grow overflow-auto  m-1">
 
-        <div class="container-fluid">
-          <div id="content" class="row">
-            <div class="col-8 p-1">
-              <div id="position" class="w-100 bg-glass p-1 mb-2"></div>
-              <div id="todayorders" class="w-100 bg-glass p-1 mb-2"></div>
-              <div id="orders" class="w-100 bg-glass p-1 mb-2"></div>
-            </div>
-            <div  class="col-4 p-1">
-              <div id="account" class="w-100 bg-glass p-1 mb-2"></div>
-            </div>
+        <!-- Beginning of page -->
+      <div id="content" class="flex h-100">
+
+          <div id="leftcol" class="sortable resize no-grow" style="min-width:300px;border-right:dashed 1px rgba(255,255,255,0.3);">
+              <div id="position" class="w-100 bg-glass p-1"></div>
+              <div id="todayorders" class="w-100 bg-glass p-1"></div>
+              <div id="orders" class="w-100 bg-glass p-1"></div>
           </div>
+
+          <div id="rightcol" class="sortable grow" style="min-width:300px">
+            <div id="account" class="w-100 bg-glass p-1"></div>
+            <div id="news" class="w-100 bg-glass p-1"></div>
+          </div>
+          
         </div>
+ 
+
+        <div class="grow"></div>
+      </div>
+      <!-- End of page -->
         
       </div>
     </div>

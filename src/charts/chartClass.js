@@ -325,7 +325,6 @@ export default class Chart{
     } 
 
     setSessionHighlights(){
-        console.log(this.header.params);
         var params = this.header.params;
         if (params?.sessiontemplate == 'USEQ24Hour' && params?.unit == "Minute"){
             var bars = this.allBars;

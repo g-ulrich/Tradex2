@@ -8,7 +8,6 @@ import $ from 'jquery';
 function getEdgarReports(tableCls, symbol) {
     secEdgarApi.getReports({ symbol: symbol }).then(reports => {
         var r = reports.slice(-5);
-        console.log(r);
         tableCls.setPollData(tableCls, r);
     }).catch(error => {
         console.log("[ERROR] getEdgarReports", error);

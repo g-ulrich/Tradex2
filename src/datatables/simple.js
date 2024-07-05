@@ -119,6 +119,7 @@ export class SimpleTableAjax{
 
 export class SimpleTableData{
     constructor(params){
+        this.params = params;
         this.dom = params?.dom || "",
         this.title = params?.title || "";
         this.id = params?.containerID;
@@ -143,7 +144,8 @@ export class SimpleTableData{
         var html = `<thead><tr>`;
         this.cols.forEach((obj, i)=>{
             var cls = obj?.headerCls ? obj?.headerCls : '';
-            html += `<th class="text-muted ${cls}" style="font-weight:200;">${obj?.name}</th>`
+            var style = obj?.headerStyle ? obj?.headerStyle : '';
+            html += `<th class="text-muted ${cls}" style="font-weight:200;${style}">${obj?.name}</th>`
         });
         html += `</tr></thead>`;
         return html;
@@ -203,6 +205,7 @@ export class SimpleTableData{
             responsive: true,
             data: [],
             columns: this.cols,
+            order: this.params?.order ? this.params?.order : [[ 0, "asc"]],
             scrollX: true,
             // scrollY: 200
             rowCallback: function(row, data, index){

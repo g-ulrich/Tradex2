@@ -339,7 +339,6 @@ class Chart {
     });
   }
   setSessionHighlights() {
-    console.log(this.header.params);
     var params = this.header.params;
     if (params?.sessiontemplate == 'USEQ24Hour' && params?.unit == "Minute") {
       var bars = this.allBars;
@@ -442,6 +441,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util */ "./src/util.js");
+/* harmony import */ var _pages_components_dialog__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../pages/components/dialog */ "./src/pages/components/dialog.js");
+
 
 
 class Header {
@@ -579,15 +580,21 @@ class Header {
     const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
             <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
+        `);
+    var d = new _pages_components_dialog__WEBPACK_IMPORTED_MODULE_2__["default"](chartTypeId, {
+      relative: true,
+      title: `<i class="fa-solid fa-chart-${this.chartType}"></i> Chart Type`
+    });
+    d.setbody(`
             <select id="${selectId}"
-                class="p-1 text-white font-weight-bold"
-                style="width: 90px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
+                class="w-100 p-1 text-white font-weight-bold"
+                style="font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
                 >
                 <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
                 <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
                 <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
                 <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
-            </select>
+            </select>    
         `);
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
       this.chartType = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
@@ -610,42 +617,51 @@ class Header {
   }
   addInterval() {
     const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
-    var optionsHtml = "";
-    this.frequencyArray.forEach(obj => {
-      optionsHtml += `<option class="text-white bg-secondary" data-unit="${obj?.unit}" data-interval="${obj?.interval}"
-                ${this.params.interval == obj?.interval && this.params.unit == obj?.unit ? 'selected' : ''}>${obj?.name}</option>`;
-    });
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 65px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    ${optionsHtml}
-                </select>
+                <span id="${selectId}_icon" class="dialog-list-item px-1"><i class="fa-solid fa-timeline"></i></span>
             `);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
-      this.params.interval = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-interval');
-      this.params.unit = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).find('option:selected').attr('data-unit');
+    var d = new _pages_components_dialog__WEBPACK_IMPORTED_MODULE_2__["default"](`${selectId}_icon`, {
+      relative: true,
+      title: `Interval`
+    });
+    var html = `<div id="${selectId}">`;
+    this.frequencyArray.forEach(obj => {
+      var cls = this.params.interval == obj?.interval && this.params.unit == obj?.unit ? '-selected' : '';
+      html += `<div class="px-1 dialog-list-item${cls}" 
+                    data-unit="${obj?.unit}" 
+                    data-interval="${obj?.interval}">
+                    ${obj?.name}</div>`;
+    });
+    html += `</div>`;
+    d.setbody(html);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId} div`).on('click', e => {
+      var data = e.target.dataset;
+      console.log(e, data);
+      this.params.interval = data.interval;
+      this.params.unit = data.unit;
       this.reloadPage();
     });
   }
   addSession() {
     const selectId = `select_${this.headerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    var sessions = ['Default', 'USEQ24Hour', 'USEQPre', 'USEQPost', 'USEQPreAndPost'];
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.headerId}`).append(`
-                <select id="${selectId}"
-                    class="p-1 text-white font-weight-bold"
-                    style="width: 140px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                    >
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'Default' ? 'selected' : ''}>Default</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPre' ? 'selected' : ''}>USEQPre</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPost' ? 'selected' : ''}>USEQPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQPreAndPost' ? 'selected' : ''}>USEQPreAndPost</option>
-                    <option class="text-white bg-secondary" ${this.params.sessiontemplate == 'USEQ24Hour' ? 'selected' : ''}>USEQ24Hour</option>
-                </select>
+                <span id="${selectId}_icon" class="dialog-list-item px-1" ><i class="fa-solid fa-clock"></i></span>
             `);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).on('change', () => {
-      this.params.sessiontemplate = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId}`).val();
-      console.log(this.params);
+    var dialog = new _pages_components_dialog__WEBPACK_IMPORTED_MODULE_2__["default"](`${selectId}_icon`, {
+      relative: true,
+      title: 'Session'
+    });
+    // create html for dialog
+    var html = `<div id="${selectId}">`;
+    sessions.forEach(item => {
+      var cls = this.params.sessiontemplate == item ? '-selected' : '';
+      html += `<div class="px-1 dialog-list-item${cls}">${item}</div>`;
+    });
+    html += `</div>`;
+    dialog.setbody(html);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId} div`).on('click', e => {
+      this.params.sessiontemplate = e.target.textContent;
       this.reloadPage();
     });
   }
@@ -4280,7 +4296,6 @@ function getEdgarReports(tableCls, symbol) {
     symbol: symbol
   }).then(reports => {
     var r = reports.slice(-5);
-    console.log(r);
     tableCls.setPollData(tableCls, r);
   }).catch(error => {
     console.log("[ERROR] getEdgarReports", error);
@@ -4440,6 +4455,210 @@ revenueOperating: 32972000000
 revenueTotal: 60922000000
 sharesOutstanding: 2469000000
 sharesOutstandingDiluted: 2494000000
+
+*/
+
+/***/ }),
+
+/***/ "./src/datatables/myColumns/polygonNewsColumns.js":
+/*!********************************************************!*\
+  !*** ./src/datatables/myColumns/polygonNewsColumns.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getNewsColumns: () => (/* binding */ getNewsColumns)
+/* harmony export */ });
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../util */ "./src/util.js");
+
+function renderArrow(data, condition) {
+  var cls = condition > 0 ? 'success' : 'primary';
+  var arrow = condition > 0 ? '270' : '90';
+  return `<span class="text-${cls}">
+    <i class="fa-solid fa-play fa-rotate-${arrow}"></i> ${data}</span>`;
+}
+function getArrow(condition) {
+  var arrow = condition >= 0 ? '270' : '90';
+  return `<i class="fa-solid fa-play fa-rotate-${arrow}"></i>`;
+}
+function getPlusOrMinus(val) {
+  return val > 0 ? '+' : '';
+}
+function renderCurrency(data, row, key) {
+  var cls = parseInt(row[key]) > 0 ? 'success' : 'primary';
+  return `<span class="text-${cls}">$${(0,_util__WEBPACK_IMPORTED_MODULE_0__.formatCurrency)(data.toFixed(2))}</span>`;
+}
+function renderColor(data, row, condition) {
+  // TodaysProfitLoss
+  var cls = condition ? 'success' : 'primary';
+  return `<span class="text-${cls}">${data}</span>`;
+}
+const getNewsColumns = () => {
+  return [{
+    data: 'image_url',
+    name: '',
+    width: 150,
+    render: function (data, type, row, meta) {
+      var html = "";
+      var url = window.location.href;
+      row?.tickers.forEach((ticker, i) => {
+        var target = "";
+        var href = "";
+        if (!url.includes("trade")) {
+          target = `target="_blank"`;
+          href = `href="trade.html?symbol=${ticker}"`;
+        } else {
+          target = "";
+          const urlObj = new URL(url);
+          href = urlObj.searchParams.set('symbol', ticker);
+          console.log(href);
+          // href=`href="${href}"`;
+        }
+        html += `<a 
+                        ${target}
+                        ${href}
+                        class="bg-glass px-2 text-muted">
+                    ${ticker}</a>
+                    `;
+        // ${i % 2 === 0 && i != 0? '<br/>' : ''}
+      });
+      return `<div >
+                <a title="${row?.publisher.name}:${row?.article_url}"
+                    href="${row?.article_url}" target="_blank">
+                    <img style="width: 100%;height:auto" 
+                    class="rounded" 
+                    src="${data}"/>
+                </a>
+                <div 
+               style="
+               white-space:normal;"
+               class="text-center">${html}</div>
+               </div>`;
+    }
+  }, {
+    data: 'published_utc',
+    name: 'Title',
+    render: function (data, type, row, meta) {
+      var dt = new Date(data);
+      return `<div >
+               <span class="text-muted">${dt.toLocaleString()}</span>
+               <br/>
+                <span 
+                    style="white-space:normal;"
+                    class="h5 m-0" 
+                    title="${row?.title}">
+                    ${row?.title}
+                </span>
+                <br/>
+                <span 
+                    style="white-space:normal;"
+                    title="${row?.description}" 
+                    class="text-muted">
+                    ${row?.description}
+                </span>
+               </div>`;
+
+      /*
+       width: 500px;
+           white-space: nowrap;
+           overflow: hidden;
+           text-overflow: ellipsis;
+           display: block;
+           overflow: hidden;
+      */
+    }
+  }
+  // {
+  //     data: 'tickers', name: 'Symbols', headerCls: 'text-end', render: 
+  //     function (data, type, row, meta) {
+  //         var html = "";
+  //         var url = window.location.href;
+  //         data.forEach((ticker, i)=>{ 
+  //             var target= "";
+  //             var href ="";
+  //             if (!url.includes("trade")) {
+  //                 target = `target="_blank"`;
+  //                 href= `href="trade.html?symbol=${ticker}"`;
+  //             }else{
+  //                 target ="";
+  //                 const urlObj = new URL(url);
+  //                 href = urlObj.searchParams.set('symbol', ticker);
+  //             }
+  //             html += `<a 
+  //                 ${target}
+  //                 ${href}
+  //                 class="bg-glass px-2 text-muted">
+  //             ${ticker}</a>
+  //             ${i % 2 === 0 && i != 0? '<br/>' : ''}`
+  //         });
+  //        return `<div 
+  //        style="height: 50px;
+  //        overflow-y:auto;"
+  //        class="text-end">${html}</div>`;
+  //     }
+  // },
+  ];
+};
+
+/*
+{
+  "count": 1,
+  "next_url": "https://api.polygon.io:443/v2/reference/news?cursor=eyJsaW1pdCI6MSwic29ydCI6InB1Ymxpc2hlZF91dGMiLCJvcmRlciI6ImFzY2VuZGluZyIsInRpY2tlciI6e30sInB1Ymxpc2hlZF91dGMiOnsiZ3RlIjoiMjAyMS0wNC0yNiJ9LCJzZWFyY2hfYWZ0ZXIiOlsxNjE5NDA0Mzk3MDAwLG51bGxdfQ",
+  "request_id": "831afdb0b8078549fed053476984947a",
+  "results": [
+    {
+      "amp_url": "https://amp.benzinga.com/amp/content/20784086",
+      "article_url": "https://www.benzinga.com/markets/cryptocurrency/21/04/20784086/cathie-wood-adds-more-coinbase-skillz-trims-square",
+      "author": "Rachit  Vats",
+      "description": "<p>Cathie Wood-led Ark Investment Management on Friday snapped up another 221,167 shares of the cryptocurrency exchange <strong>Coinbase Global Inc </strong>(NASDAQ <a class=\"ticker\" href=\"https://www.benzinga.com/stock/coin#NASDAQ\">COIN</a>) worth about $64.49 million on the stock&rsquo;s Friday&rsquo;s dip and also its fourth-straight loss.</p>\n<p>The investment firm&rsquo;s <strong>Ark Innovation ETF</strong> (NYSE <a class=\" ticker\" href=\"https://www.benzinga.com/stock/arkk#NYSE\">ARKK</a>) bought the shares of the company that closed 0.63% lower at $291.60 on Friday, giving the cryptocurrency exchange a market cap of $58.09 billion. Coinbase&rsquo;s market cap has dropped from $85.8 billion on its blockbuster listing earlier this month.</p>\n<p>The New York-based company also added another 3,873 shares of the mobile gaming company <strong>Skillz Inc</strong> (NYSE <a class=\" ticker\" href=\"https://www.benzinga.com/stock/sklz#NYSE\">SKLZ</a>), <a href=\"http://www.benzinga.com/markets/cryptocurrency/21/04/20762794/cathie-woods-ark-loads-up-another-1-2-million-shares-in-skillz-also-adds-coinbase-draftkin\" >just a day after</a> snapping 1.2 million shares of the stock.</p>\n <p>ARKK bought the shares of the company which closed ...</p><p><a href=https://www.benzinga.com/markets/cryptocurrency/21/04/20784086/cathie-wood-adds-more-coinbase-skillz-trims-square alt=Cathie Wood Adds More Coinbase, Skillz, Trims Square>Full story available on Benzinga.com</a></p>",
+      "id": "nJsSJJdwViHZcw5367rZi7_qkXLfMzacXBfpv-vD9UA",
+      "image_url": "https://cdn2.benzinga.com/files/imagecache/og_image_social_share_1200x630/images/story/2012/andre-francois-mckenzie-auhr4gcqcce-unsplash.jpg?width=720",
+      "keywords": [
+        "Sector ETFs",
+        "Penny Stocks",
+        "Cryptocurrency",
+        "Small Cap",
+        "Markets",
+        "Trading Ideas",
+        "ETFs"
+      ],
+      "published_utc": "2021-04-26T02:33:17Z",
+      "publisher": {
+        "favicon_url": "https://s3.polygon.io/public/public/assets/news/favicons/benzinga.ico",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/public/assets/news/logos/benzinga.svg",
+        "name": "Benzinga"
+      },
+      "tickers": [
+        "DOCU",
+        "DDD",
+        "NIU",
+        "ARKF",
+        "NVDA",
+        "SKLZ",
+        "PCAR",
+        "MASS",
+        "PSTI",
+        "SPFR",
+        "TREE",
+        "PHR",
+        "IRDM",
+        "BEAM",
+        "ARKW",
+        "ARKK",
+        "ARKG",
+        "PSTG",
+        "SQ",
+        "IONS",
+        "SYRS"
+      ],
+      "title": "Cathie Wood Adds More Coinbase, Skillz, Trims Square"
+    }
+  ],
+  "status": "OK"
+}
 
 */
 
@@ -4629,6 +4848,54 @@ const get_table_positions_columns = () => {
 
 /***/ }),
 
+/***/ "./src/datatables/newsTableClass.js":
+/*!******************************************!*\
+  !*** ./src/datatables/newsTableClass.js ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   NewsTable: () => (/* binding */ NewsTable)
+/* harmony export */ });
+/* harmony import */ var _myColumns_polygonNewsColumns__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./myColumns/polygonNewsColumns */ "./src/datatables/myColumns/polygonNewsColumns.js");
+/* harmony import */ var _simple__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./simple */ "./src/datatables/simple.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! jquery */ "jquery");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_2__);
+// const reports = await secEdgarApi.getReports({ symbol: 'AAPL' })
+
+
+
+function setNews(tableCls, symbol) {
+  window.p.getNews(symbol).then(array => {
+    tableCls.setPollData(tableCls, array);
+  }).catch(error => {
+    console.log("[ERROR] setNews", error);
+    setTimeout(() => {
+      setNews();
+    }, 1000);
+  });
+}
+class NewsTable {
+  constructor(containerId, symbol) {
+    this.containerId = containerId;
+    this.symbol = symbol;
+    this.table = new _simple__WEBPACK_IMPORTED_MODULE_1__.SimpleTableData({
+      title: `${symbol ? symbol + ' ' : ''}News`,
+      containerID: this.containerId,
+      columns: (0,_myColumns_polygonNewsColumns__WEBPACK_IMPORTED_MODULE_0__.getNewsColumns)(),
+      dom: 't'
+    });
+    setNews(this.table, this.symbol);
+    setInterval(() => {
+      setNews(this.table, this.symbol);
+    }, 60 * 1000);
+  }
+}
+
+/***/ }),
+
 /***/ "./src/datatables/positionsTableClass.js":
 /*!***********************************************!*\
   !*** ./src/datatables/positionsTableClass.js ***!
@@ -4677,7 +4944,8 @@ class PositionsTable {
       title: "Positions",
       containerID: this.containerId,
       columns: (0,_myColumns_positions__WEBPACK_IMPORTED_MODULE_0__.get_table_positions_columns)(),
-      dom: 't'
+      dom: 't',
+      order: [[1, 'asc']]
     });
     initAccountInfo(this.table);
     this._bindings();
@@ -4833,6 +5101,7 @@ class SimpleTableAjax {
 }
 class SimpleTableData {
   constructor(params) {
+    this.params = params;
     this.dom = params?.dom || "", this.title = params?.title || "";
     this.id = params?.containerID;
     this.tableId = `${this.id}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
@@ -4854,7 +5123,8 @@ class SimpleTableData {
     var html = `<thead><tr>`;
     this.cols.forEach((obj, i) => {
       var cls = obj?.headerCls ? obj?.headerCls : '';
-      html += `<th class="text-muted ${cls}" style="font-weight:200;">${obj?.name}</th>`;
+      var style = obj?.headerStyle ? obj?.headerStyle : '';
+      html += `<th class="text-muted ${cls}" style="font-weight:200;${style}">${obj?.name}</th>`;
     });
     html += `</tr></thead>`;
     return html;
@@ -4907,6 +5177,7 @@ class SimpleTableData {
       responsive: true,
       data: [],
       columns: this.cols,
+      order: this.params?.order ? this.params?.order : [[0, "asc"]],
       scrollX: true,
       // scrollY: 200
       rowCallback: function (row, data, index) {
@@ -6765,6 +7036,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _css_scrollbar_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../css/scrollbar.css */ "./src/pages/css/scrollbar.css");
 /* harmony import */ var _css_custom_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../css/custom.css */ "./src/pages/css/custom.css");
 /* harmony import */ var _tradestation_enpoints_main__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../tradestation/enpoints/main */ "./src/tradestation/enpoints/main.js");
+/* harmony import */ var _polygon_main__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../polygon/main */ "./src/polygon/main.js");
 
 window.$ = (jquery__WEBPACK_IMPORTED_MODULE_0___default());
 window.jQuery = (jquery__WEBPACK_IMPORTED_MODULE_0___default());
@@ -6774,7 +7046,9 @@ window.jQuery = (jquery__WEBPACK_IMPORTED_MODULE_0___default());
 
 
 
+
 window.ts = new _tradestation_enpoints_main__WEBPACK_IMPORTED_MODULE_5__.TS();
+window.p = new _polygon_main__WEBPACK_IMPORTED_MODULE_6__["default"]();
 // import {Nav} from './nav';
 
 const TIMEOUT_MSECONDS = 500;
@@ -6842,6 +7116,110 @@ function addSpinnerClass() {
         class="position-absolute h1 p-5 bg-glass text-white">
         <i class="fa-solid fa-spinner fa-spin"></i>   
     </div>`);
+}
+
+/***/ }),
+
+/***/ "./src/pages/components/dialog.js":
+/*!****************************************!*\
+  !*** ./src/pages/components/dialog.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Dialog)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "jquery");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../util */ "./src/util.js");
+
+
+class Dialog {
+  constructor(containerId, params) {
+    this.containerId = containerId;
+    this.id = `${containerId}_${(0,_util__WEBPACK_IMPORTED_MODULE_1__.getRandomAlphaNum)(10)}`;
+    this.w = params?.width || '200';
+    this.h = params?.height || '';
+    this.title = params?.title || '';
+    // Position is relative to the containerId.
+    this.relative = params?.relative || false;
+    this._isRelative();
+    this._sethtml();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}`).draggable();
+    this._closeBindings();
+    this.hide();
+  }
+  show() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}`).show();
+  }
+  hide() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}`).hide();
+  }
+  _closeBindings() {
+    const id = `#${this.id}`;
+    const self = this;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on('click', e => {
+      var $target = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target);
+      if (!$target.closest(id).length && !$target.is(id) && jquery__WEBPACK_IMPORTED_MODULE_0___default()(id).is(":visible")) {
+        self.hide();
+      }
+    });
+
+    // Prevent clicks within the dialog from closing it
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(id).on('click', e => {
+      e.stopPropagation();
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}_x`).on('click', () => {
+      self.hide();
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).css('cursor', 'pointer');
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).on('click', e => {
+      e.stopPropagation();
+      self.show();
+    });
+  }
+  _isRelative() {
+    if (this.relative) {
+      const $_ = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`);
+      if (!$_.hasClass('position-relative')) {
+        $_.addClass('position-relative');
+      }
+    }
+  }
+  _getDialogStyling() {
+    var height = this.h != '' ? `height:${this.h}px;` : '';
+    var containerHeight = `${parseInt(jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).height() * 1.5)}px`;
+    return `
+                z-index:999;
+                width:${this.w}px;
+                margin-left:-${parseInt(this.w) / 2}px;
+                ${height}
+                top: ${this.relative ? containerHeight : '50%'};
+                left: ${this.relative ? '0px' : '50%'};
+                
+            `;
+    // ${this.relative ? '0px' : 'transform: translate(-50%, -50%);'}
+  }
+  _sethtml() {
+    const $_ = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`);
+    $_.append(`
+        <div id="${this.id}" 
+            class="bg-glass position-absolute shadow border"
+            style="${this._getDialogStyling()}">
+            <div style="cursor:all-scroll;" class="p-2 w-100 text-muted">${this.title} 
+                <div id="${this.id}_x" style="cursor:pointer;" class="px-1 dialog-list-item float-end mx-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+            <div class="p-1 w-100" id="${this.id}_body"></div>
+        </div>
+        `);
+  }
+  setbody(html) {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}_body`).append(html);
+  }
 }
 
 /***/ }),
@@ -6942,20 +7320,49 @@ class OrderForm {
     }
   }
   _elementQuoteUpdates(quote) {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormAsk').empty();
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormBid').empty();
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormAsk').append(`<span class="bgAsk rounded px-1">Ask: 
-            <span class="${this._getQuoteColor(quote, 'Ask')}">${quote?.Ask}</span></span>
-            <br/><span class="bgAskSize rounded px-1">Size: 
-            <span class="${this._getQuoteColor(quote, 'AskSize')}">${quote?.AskSize}</span></span>`);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.orderFormBid').append(`<span class="bgBid rounded px-1">Bid: 
-            <span class="${this._getQuoteColor(quote, 'Bid')}">${quote?.Bid}</span></span>
-            <br/><span class="bgBidSize rounded px-1">Size: 
-            <span class="${this._getQuoteColor(quote, 'BidSize')}">${quote?.BidSize}</span></span>`);
-    this._bgQuote(quote, 'Ask');
-    this._bgQuote(quote, 'AskSize');
-    this._bgQuote(quote, 'Bid');
-    this._bgQuote(quote, 'BidSize');
+    /*
+    orderFormBid
+    orderFormAsk
+    orderFormLast
+    */
+    //     <div class="orderFormBid progress-bar bg-success text-end px-1" role="progressbar" 
+    //     style="width: 30%" 
+    //     aria-valuenow="30" 
+    //     aria-valuemin="0" 
+    //     aria-valuemax="100">
+    //  121.67 Bid
+    // </div>
+    var aP = 0;
+    var bP = 0;
+    var bSize = parseInt(quote?.BidSize);
+    var aSize = parseInt(quote?.AskSize);
+    if (aSize > bSize) {
+      bP = parseInt(bSize / aSize * 100);
+      aP = 100 - bP;
+    } else {
+      aP = parseInt(aSize / bSize * 100);
+      bP = 100 - aP;
+    }
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormBid").css('width', `${bP}%`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormBid").attr('aria-valuenow', `${bP}`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormBid").text(`${(0,_util__WEBPACK_IMPORTED_MODULE_1__.formatCurrency)(quote?.Bid)} Bid`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormAsk").css('width', `${aP}%`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormAsk").attr('aria-valuenow', `${aP}`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormAsk").text(`Ask ${(0,_util__WEBPACK_IMPORTED_MODULE_1__.formatCurrency)(quote?.Ask)}`);
+    // $('.orderFormAsk').empty();
+    // $('.orderFormBid').empty();
+    // $('.orderFormAsk').append(`<span class="bgAsk rounded px-1">Ask: 
+    //     <span class="${this._getQuoteColor(quote, 'Ask')}">${quote?.Ask}</span></span>
+    //     <br/><span class="bgAskSize rounded px-1">Size: 
+    //     <span class="${this._getQuoteColor(quote, 'AskSize')}">${quote?.AskSize}</span></span>`);
+    // $('.orderFormBid').append(`<span class="bgBid rounded px-1">Bid: 
+    //     <span class="${this._getQuoteColor(quote, 'Bid')}">${quote?.Bid}</span></span>
+    //     <br/><span class="bgBidSize rounded px-1">Size: 
+    //     <span class="${this._getQuoteColor(quote, 'BidSize')}">${quote?.BidSize}</span></span>`);
+    // this._bgQuote(quote, 'Ask');
+    // this._bgQuote(quote, 'AskSize');
+    // this._bgQuote(quote, 'Bid');
+    // this._bgQuote(quote, 'BidSize');
   }
   startQuoteStream(symbol) {
     window.ts.symbol._setFullSymbolName(symbol);
@@ -7006,6 +7413,37 @@ class OrderForm {
                         style="width: 70px;font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"></div>
                     <div class="orderFormType text-center col-6 py-1 text-muted">Type: <span class="text-white">${this.type}</span></div>
                     <div class="col-12 my-1"></div>
+                    
+                    <div class="col-12 my-1 px-1">
+                    
+                        <div class="progress bg-dark">
+      
+                            <div class="orderFormAsk progress-bar text-success bg-glass px-1" role="progressbar" 
+                            style="width: 69%" 
+                            aria-valuenow="70" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                                Ask 121.69
+                            </div>
+                            
+                            
+                            <div class="orderFormBid progress-bar text-primary bg-glass px-1" role="progressbar" 
+                                style="width: 30%" 
+                                aria-valuenow="30" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                             121.67 Bid
+                            </div>
+
+                        </div>
+                    
+                    </div>
+                    
+                    
+                    <div class="col-12 px-1 my-1 text-muted">
+                        <div style="background-color:rgba(255,255,255,0.1)" class="col-12 text-center orderSummary rounded px-1 py-1"></div>
+                    </div>
+
                     <div class="col-6 px-1">
                         <button style="font-size: 30px;height:100px;"  id="${this.orderBtnId}_buy" class="w-100 text-white btn btn-sm btn-success">
                             Buy ${this.shares} @ mkt
@@ -7017,17 +7455,88 @@ class OrderForm {
                             Sell ${this.shares} @ mkt
                         </button>
                     </div>
-                    <div class="col-12 my-1"></div>
-                    
-                    <div class="orderFormAsk col-6 px-1 text-center text-muted"></div>
-                    <div class="orderFormBid col-6 px-1 text-center text-muted"></div>
-                    
-                    <div class="col-12 px-1 my-1 text-muted">
-                        <div style="background-color:rgba(255,255,255,0.1)" class="col-12 text-center orderSummary rounded px-1 py-1"></div>
-                    </div>
                 </div>
            </div>
         `);
+
+    // <div class="orderFormAsk col-6 px-1 text-center text-muted"></div>
+    // <div class="orderFormBid col-6 px-1 text-center text-muted"></div>
+  }
+}
+
+/***/ }),
+
+/***/ "./src/polygon/main.js":
+/*!*****************************!*\
+  !*** ./src/polygon/main.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Polygon)
+/* harmony export */ });
+/* harmony import */ var luxon__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! luxon */ "luxon");
+/* harmony import */ var luxon__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(luxon__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! electron */ "electron");
+/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "axios");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+class Polygon {
+  constructor() {
+    this.baseUrl = 'https://api.polygon.io';
+    this.apiSecondsLimit = 12;
+    this.lastPollTime = null;
+    this.key = null;
+    this._getKey();
+  }
+  _setKey(k) {
+    this.key = k;
+  }
+  async _getKey() {
+    electron__WEBPACK_IMPORTED_MODULE_1__.ipcRenderer.send('getPolygonToken');
+    electron__WEBPACK_IMPORTED_MODULE_1__.ipcRenderer.on('sendPolygonToken', (event, arg) => {
+      this._setKey(arg.key);
+    });
+  }
+  _isKey() {
+    return this.key !== null ? true : false;
+  }
+  _isLimitReached() {
+    if (this.lastPollTime !== null) {
+      const now = new Date();
+      const elapsedSeconds = Math.floor((now - this.lastPollTime) / 1000);
+      console.log(elapsedSeconds);
+      return elapsedSeconds <= this.apiSecondsLimit;
+    } else {
+      return false;
+    }
+  }
+  async getNews(ticker) {
+    if (!this._isLimitReached() && this._isKey()) {
+      const url = `${this.baseUrl}/v2/reference/news`;
+      const params = new URLSearchParams({
+        limit: 5,
+        apiKey: this.key
+      }).toString();
+      const symbol = ticker ? `&ticker=${ticker}` : '';
+      this.lastPollTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(`${url}?${params}${symbol}`, {}).then(response => response.data.results).catch(error => {
+        console.error(`getNews() - ${error}`);
+        throw error;
+      });
+      return response;
+    } else if (this._isLimitReached()) {
+      console.log("Waiting for news...");
+
+      // setTimeout(()=>{
+      //     this.getNews(ticker);
+      // }, 1000*this.apiSecondsLimit);
+    }
   }
 }
 
@@ -8973,10 +9482,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getDateNDaysAgo: () => (/* binding */ getDateNDaysAgo),
 /* harmony export */   getFunctionParameters: () => (/* binding */ getFunctionParameters),
 /* harmony export */   getHeightFromClass: () => (/* binding */ getHeightFromClass),
+/* harmony export */   getHorizontalTabHTML: () => (/* binding */ getHorizontalTabHTML),
 /* harmony export */   getIndexByVal: () => (/* binding */ getIndexByVal),
 /* harmony export */   getMean: () => (/* binding */ getMean),
 /* harmony export */   getRandomAlphaNum: () => (/* binding */ getRandomAlphaNum),
 /* harmony export */   getRandomRGB: () => (/* binding */ getRandomRGB),
+/* harmony export */   getVerticalTabHTML: () => (/* binding */ getVerticalTabHTML),
 /* harmony export */   hhmmss: () => (/* binding */ hhmmss),
 /* harmony export */   inArray: () => (/* binding */ inArray),
 /* harmony export */   inJsonArray: () => (/* binding */ inJsonArray),
@@ -9552,6 +10063,26 @@ const sessionHighlighter = time => {
     return 'rgba(0, 0, 0, 0)';
   }
 };
+function getHorizontalTabHTML() {
+  return `
+            <div class="tab position-absolute bg-glass text-muted px-3 py-0" 
+                style="
+                z-index:2;top:0px;
+                line-height:0px;
+                left:50%;
+                margin-left:-23.5px;
+                margin-top:-9px;
+                ">
+                <i class="p-0 fa-solid fa-grip-lines"></i>
+            </div>    
+            `;
+}
+function getVerticalTabHTML() {
+  return `<div class="tab position-absolute bg-glass text-muted py-3 px-1" 
+              style="z-index:2;right:0px;width:15px;top:50%;margin-right:-7.5px;">
+              <i class="fa-solid fa-grip-lines-vertical"></i>
+            </div>`;
+}
 
 /***/ }),
 
@@ -9629,7 +10160,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n\r\n", "",{"version":3,"sources":["webpack://./src/pages/css/custom.css"],"names":[],"mappings":"AAAA;IACI,aAAa;IACb,8BAA8B,EAAE,kDAAkD;AACtF;AACA;IACI,YAAY;AAChB;AACA;IACI,YAAY;AAChB;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,SAAS;AACb","sourcesContent":[".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n\r\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, ".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n.dialog-list-item {\r\n    border-radius: 5px;\r\n    color: #fff;\r\n}\r\n\r\n.dialog-list-item:hover {\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n\r\n.dialog-list-item-selected {\r\n    color: #fff;\r\n    border-radius: 5px;\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n", "",{"version":3,"sources":["webpack://./src/pages/css/custom.css"],"names":[],"mappings":"AAAA;IACI,aAAa;IACb,8BAA8B,EAAE,kDAAkD;AACtF;AACA;IACI,YAAY;AAChB;AACA;IACI,YAAY;AAChB;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,SAAS;AACb;;AAEA;IACI,kBAAkB;IAClB,WAAW;AACf;;AAEA;IACI,uCAAuC;AAC3C;;AAEA;IACI,WAAW;IACX,kBAAkB;IAClB,uCAAuC;AAC3C","sourcesContent":[".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n.dialog-list-item {\r\n    border-radius: 5px;\r\n    color: #fff;\r\n}\r\n\r\n.dialog-list-item:hover {\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n\r\n.dialog-list-item-selected {\r\n    color: #fff;\r\n    border-radius: 5px;\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -10239,6 +10770,17 @@ module.exports = require("lightweight-charts");
 
 /***/ }),
 
+/***/ "luxon":
+/*!************************!*\
+  !*** external "luxon" ***!
+  \************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("luxon");
+
+/***/ }),
+
 /***/ "sec-edgar-api":
 /*!********************************!*\
   !*** external "sec-edgar-api" ***!
@@ -10495,9 +11037,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./common/core */ "./src/pages/common/core.js");
 /* harmony import */ var _css_bootstrap_discord_min_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./css/bootstrap-discord.min.css */ "./src/pages/css/bootstrap-discord.min.css");
 /* harmony import */ var _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../charts/chartClass */ "./src/charts/chartClass.js");
-/* harmony import */ var _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../datatables/positionsTableClass */ "./src/datatables/positionsTableClass.js");
-/* harmony import */ var _datatables_edgarTableClass__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../datatables/edgarTableClass */ "./src/datatables/edgarTableClass.js");
-/* harmony import */ var _components_orderFormClass__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/orderFormClass */ "./src/pages/components/orderFormClass.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util */ "./src/util.js");
+/* harmony import */ var _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../datatables/positionsTableClass */ "./src/datatables/positionsTableClass.js");
+/* harmony import */ var _datatables_edgarTableClass__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../datatables/edgarTableClass */ "./src/datatables/edgarTableClass.js");
+/* harmony import */ var _components_orderFormClass__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/orderFormClass */ "./src/pages/components/orderFormClass.js");
+/* harmony import */ var _datatables_newsTableClass__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../datatables/newsTableClass */ "./src/datatables/newsTableClass.js");
+
+
 
 
 
@@ -10512,12 +11058,13 @@ __webpack_require__.r(__webpack_exports__);
     (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#spinner").fadeOut();
     (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#contentContainer").fadeIn();
     setColumnWidths();
-    var orderForm = new _components_orderFormClass__WEBPACK_IMPORTED_MODULE_5__["default"]("orders");
+    var orderForm = new _components_orderFormClass__WEBPACK_IMPORTED_MODULE_6__["default"]("orders");
     var chart = new _charts_chartClass__WEBPACK_IMPORTED_MODULE_2__["default"]("tradeChart", orderForm);
     var symbol = chart.header.symbol;
     orderForm.startQuoteStream(symbol);
-    new _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_3__.PositionsTable("positions");
-    new _datatables_edgarTableClass__WEBPACK_IMPORTED_MODULE_4__.EdgarTable("edgar", symbol);
+    new _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_4__.PositionsTable("positions");
+    new _datatables_edgarTableClass__WEBPACK_IMPORTED_MODULE_5__.EdgarTable("edgar", symbol);
+    new _datatables_newsTableClass__WEBPACK_IMPORTED_MODULE_7__.NewsTable("news", symbol);
     uiBindings(chart);
   }, 2000);
   window.addEventListener('resize', () => {
@@ -10537,6 +11084,7 @@ function uiBindings(chartCls) {
     },
     minWidth: 500
   });
+  (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".resize").append((0,_util__WEBPACK_IMPORTED_MODULE_3__.getVerticalTabHTML)());
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".sortable").sortable({
     start: function (e, ui) {
       var _id = e.target.id;
@@ -10547,23 +11095,7 @@ function uiBindings(chartCls) {
       (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#${_id} > div`).removeClass('border');
     }
   });
-  (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".sortable > div").prepend(`
-        <div class="tab position-absolute bg-glass text-muted px-3 py-0" 
-        style="
-        
-        z-index:2;top:0px;
-        line-height:0px;
-        left:50%;
-        margin-left:-23.5px;
-        margin-top:-9px;
-        "
-        >
-        <i class="p-0 fa-solid fa-grip-lines"></i>
-      </div>    
-    `);
-  (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".tab").css({
-    'cursor': 'all-scroll'
-  });
+  (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".sortable > div").prepend((0,_util__WEBPACK_IMPORTED_MODULE_3__.getHorizontalTabHTML)());
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(".tab").css({
     'cursor': 'all-scroll'
   });

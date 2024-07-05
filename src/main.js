@@ -31,6 +31,11 @@ const initIpc = () => {
   const tokenObj = await tsAuth.getNewAccessToken();
   event.reply('sendNewAccessToken', {ts: tokenObj});
   });
+
+  //polygon
+  ipcMain.on('getPolygonToken', async (event, _) => {
+    event.reply('sendPolygonToken', {key: process.env.POLYGON_API});
+  });
   // App
   ipcMain.on("need-app-path", (event, arg) => {
     event.reply("app-path", app.getAppPath());

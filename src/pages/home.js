@@ -1,24 +1,12 @@
-import { $, AccountsHandler, TSHandler, DataTable } from './common/core';
-import { formatCurrency, getRandomAlphaNum, getDateNDaysAgo } from '../util';
+import { $} from './common/core';
+import { getDateNDaysAgo, getVerticalTabHTML, getHorizontalTabHTML } from '../util';
 import { get_table_positions_columns } from '../datatables/myColumns/positions';
 import { get_table_accounts_columns } from '../datatables/myColumns/accounts';
 import { getOrderColumns } from '../datatables/myColumns/orders';
 import "./css/bootstrap-discord.min.css";
 import { SimpleTableData } from '../datatables/simple';
 import { PositionsTable } from '../datatables/positionsTableClass';
-
-
-function appendToLeft(id){
-    const eleId = `${id}_${getRandomAlphaNum(5)}`;
-    $("#left_container").append(`<div id="${eleId}" class="w-100 bg-dark rounded p-1 mb-2"></div>`);
-    return eleId;
-}
-
-function appendToRight(id){
-    const eleId = `${id}_${getRandomAlphaNum(5)}`;
-    $("#right_container").append(`<div id="${eleId}" class="w-100 bg-dark rounded p-1 mb-2"></div>`);
-    return eleId;
-}
+import {NewsTable} from '../datatables/newsTableClass';
 
 
 function initAccountInfo() {
@@ -104,15 +92,16 @@ function setTodaysOrdersTableData(table, accountIds) {
 // set order history
 function initOrdersTable() {
     return new SimpleTableData({
-        title: "Historical Orders",
+        title: "Historical Orders <span class='text-muted'>(30 days)</span>",
         containerID: "orders",
         columns: getOrderColumns(),
         // dom: 't',
+        order: [[2, "desc"]]
     });
 }
 
 function setOrdersTableData(table, accountIds) {
-    window.ts.account.getHistoricalOrders(accountIds, getDateNDaysAgo(10)).then(array => {
+    window.ts.account.getHistoricalOrders(accountIds, getDateNDaysAgo(30)).then(array => {
         // window.ts.account.configBalances(array)
         table.setPollData(table, array);
     }).catch(error => {
@@ -134,7 +123,58 @@ $(() => {
 });
 
 function initHome() {
-    initAccountInfo();
-    new PositionsTable("position", true);
+    $("#spinner").show();
+    $("#contentContainer").hide();
+    // $("#nav").hide();
+    setTimeout(()=>{
+        $("#spinner").fadeOut();
+        $("#contentContainer").fadeIn();
+        setColumnWidths();
+        initAccountInfo();
+        new PositionsTable("position", true);
+        new NewsTable("news");
+        uiBindings();
+        setNews();
+    }, 2000);
+
+
+    window.addEventListener('resize', () => {
+        setColumnWidths();
+    });
 }
 
+
+
+function setColumnWidths(){
+    var bodyWidth = $("#body").width();
+    $("#leftcol").css("width", bodyWidth*.5);
+    $("#rightcol").css("width", bodyWidth*.5);
+}
+
+function uiBindings(chartCls){
+    $("#leftcol").resizable({ 
+        handles: 'e',
+        // resize: function( e, ui ) {
+        //     chartCls._resizeChart();
+        // },
+        // minWidth: 500,
+    });
+    $(".resize").append(getVerticalTabHTML());
+    $(".sortable").sortable({
+        start: function( e, ui ) {
+            var _id = e.target.id;
+            $(`#${_id} > div`).addClass('border');
+        },
+        stop: function(e, ui) {
+            var _id = e.target.id;
+            $(`#${_id} > div`).removeClass('border');
+        }
+    });
+    $(".sortable").children('div').each(function() {
+        if (!$(this).hasClass('tab')){
+            $(this).append(getHorizontalTabHTML());
+        }
+      });
+   
+    $(".tab").css({'cursor': 'all-scroll'});
+}

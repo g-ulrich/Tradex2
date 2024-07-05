@@ -1840,6 +1840,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _css_scrollbar_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../css/scrollbar.css */ "./src/pages/css/scrollbar.css");
 /* harmony import */ var _css_custom_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../css/custom.css */ "./src/pages/css/custom.css");
 /* harmony import */ var _tradestation_enpoints_main__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../tradestation/enpoints/main */ "./src/tradestation/enpoints/main.js");
+/* harmony import */ var _polygon_main__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../polygon/main */ "./src/polygon/main.js");
 
 window.$ = (jquery__WEBPACK_IMPORTED_MODULE_0___default());
 window.jQuery = (jquery__WEBPACK_IMPORTED_MODULE_0___default());
@@ -1849,7 +1850,9 @@ window.jQuery = (jquery__WEBPACK_IMPORTED_MODULE_0___default());
 
 
 
+
 window.ts = new _tradestation_enpoints_main__WEBPACK_IMPORTED_MODULE_5__.TS();
+window.p = new _polygon_main__WEBPACK_IMPORTED_MODULE_6__["default"]();
 // import {Nav} from './nav';
 
 const TIMEOUT_MSECONDS = 500;
@@ -1917,6 +1920,82 @@ function addSpinnerClass() {
         class="position-absolute h1 p-5 bg-glass text-white">
         <i class="fa-solid fa-spinner fa-spin"></i>   
     </div>`);
+}
+
+/***/ }),
+
+/***/ "./src/polygon/main.js":
+/*!*****************************!*\
+  !*** ./src/polygon/main.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Polygon)
+/* harmony export */ });
+/* harmony import */ var luxon__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! luxon */ "luxon");
+/* harmony import */ var luxon__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(luxon__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! electron */ "electron");
+/* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "axios");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+class Polygon {
+  constructor() {
+    this.baseUrl = 'https://api.polygon.io';
+    this.apiSecondsLimit = 12;
+    this.lastPollTime = null;
+    this.key = null;
+    this._getKey();
+  }
+  _setKey(k) {
+    this.key = k;
+  }
+  async _getKey() {
+    electron__WEBPACK_IMPORTED_MODULE_1__.ipcRenderer.send('getPolygonToken');
+    electron__WEBPACK_IMPORTED_MODULE_1__.ipcRenderer.on('sendPolygonToken', (event, arg) => {
+      this._setKey(arg.key);
+    });
+  }
+  _isKey() {
+    return this.key !== null ? true : false;
+  }
+  _isLimitReached() {
+    if (this.lastPollTime !== null) {
+      const now = new Date();
+      const elapsedSeconds = Math.floor((now - this.lastPollTime) / 1000);
+      console.log(elapsedSeconds);
+      return elapsedSeconds <= this.apiSecondsLimit;
+    } else {
+      return false;
+    }
+  }
+  async getNews(ticker) {
+    if (!this._isLimitReached() && this._isKey()) {
+      const url = `${this.baseUrl}/v2/reference/news`;
+      const params = new URLSearchParams({
+        limit: 5,
+        apiKey: this.key
+      }).toString();
+      const symbol = ticker ? `&ticker=${ticker}` : '';
+      this.lastPollTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(`${url}?${params}${symbol}`, {}).then(response => response.data.results).catch(error => {
+        console.error(`getNews() - ${error}`);
+        throw error;
+      });
+      return response;
+    } else if (this._isLimitReached()) {
+      console.log("Waiting for news...");
+
+      // setTimeout(()=>{
+      //     this.getNews(ticker);
+      // }, 1000*this.apiSecondsLimit);
+    }
+  }
 }
 
 /***/ }),
@@ -3861,10 +3940,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getDateNDaysAgo: () => (/* binding */ getDateNDaysAgo),
 /* harmony export */   getFunctionParameters: () => (/* binding */ getFunctionParameters),
 /* harmony export */   getHeightFromClass: () => (/* binding */ getHeightFromClass),
+/* harmony export */   getHorizontalTabHTML: () => (/* binding */ getHorizontalTabHTML),
 /* harmony export */   getIndexByVal: () => (/* binding */ getIndexByVal),
 /* harmony export */   getMean: () => (/* binding */ getMean),
 /* harmony export */   getRandomAlphaNum: () => (/* binding */ getRandomAlphaNum),
 /* harmony export */   getRandomRGB: () => (/* binding */ getRandomRGB),
+/* harmony export */   getVerticalTabHTML: () => (/* binding */ getVerticalTabHTML),
 /* harmony export */   hhmmss: () => (/* binding */ hhmmss),
 /* harmony export */   inArray: () => (/* binding */ inArray),
 /* harmony export */   inJsonArray: () => (/* binding */ inJsonArray),
@@ -4440,6 +4521,26 @@ const sessionHighlighter = time => {
     return 'rgba(0, 0, 0, 0)';
   }
 };
+function getHorizontalTabHTML() {
+  return `
+            <div class="tab position-absolute bg-glass text-muted px-3 py-0" 
+                style="
+                z-index:2;top:0px;
+                line-height:0px;
+                left:50%;
+                margin-left:-23.5px;
+                margin-top:-9px;
+                ">
+                <i class="p-0 fa-solid fa-grip-lines"></i>
+            </div>    
+            `;
+}
+function getVerticalTabHTML() {
+  return `<div class="tab position-absolute bg-glass text-muted py-3 px-1" 
+              style="z-index:2;right:0px;width:15px;top:50%;margin-right:-7.5px;">
+              <i class="fa-solid fa-grip-lines-vertical"></i>
+            </div>`;
+}
 
 /***/ }),
 
@@ -4490,7 +4591,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n\r\n", "",{"version":3,"sources":["webpack://./src/pages/css/custom.css"],"names":[],"mappings":"AAAA;IACI,aAAa;IACb,8BAA8B,EAAE,kDAAkD;AACtF;AACA;IACI,YAAY;AAChB;AACA;IACI,YAAY;AAChB;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,SAAS;AACb","sourcesContent":[".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n\r\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, ".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n.dialog-list-item {\r\n    border-radius: 5px;\r\n    color: #fff;\r\n}\r\n\r\n.dialog-list-item:hover {\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n\r\n.dialog-list-item-selected {\r\n    color: #fff;\r\n    border-radius: 5px;\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n", "",{"version":3,"sources":["webpack://./src/pages/css/custom.css"],"names":[],"mappings":"AAAA;IACI,aAAa;IACb,8BAA8B,EAAE,kDAAkD;AACtF;AACA;IACI,YAAY;AAChB;AACA;IACI,YAAY;AAChB;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,QAAQ;AACZ;;AAEA;IACI,SAAS;AACb;;AAEA;IACI,kBAAkB;IAClB,WAAW;AACf;;AAEA;IACI,uCAAuC;AAC3C;;AAEA;IACI,WAAW;IACX,kBAAkB;IAClB,uCAAuC;AAC3C","sourcesContent":[".flex {\r\n    display: flex;\r\n    justify-content: space-between; /* Distributes items evenly across the main axis */\r\n}\r\n.grow {\r\n    flex-grow: 1;\r\n}\r\n.no-grow {\r\n    flex-grow: 0;\r\n}\r\n\r\n.gap-1{\r\n    gap: 1px;\r\n}\r\n\r\n.gap-5{\r\n    gap: 5px;\r\n}\r\n\r\n.gap-10{\r\n    gap: 10px;\r\n}\r\n\r\n.dialog-list-item {\r\n    border-radius: 5px;\r\n    color: #fff;\r\n}\r\n\r\n.dialog-list-item:hover {\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n\r\n.dialog-list-item-selected {\r\n    color: #fff;\r\n    border-radius: 5px;\r\n    background-color: rgba(255,255,255,0.1);\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -5056,6 +5157,17 @@ module.exports = require("jquery");
 
 "use strict";
 module.exports = require("lightweight-charts");
+
+/***/ }),
+
+/***/ "luxon":
+/*!************************!*\
+  !*** external "luxon" ***!
+  \************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("luxon");
 
 /***/ }),
 

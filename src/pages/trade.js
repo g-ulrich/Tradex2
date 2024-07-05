@@ -1,10 +1,11 @@
 import {$} from './common/core';
 import "./css/bootstrap-discord.min.css";
 import Chart from "../charts/chartClass";
+import { getVerticalTabHTML, getHorizontalTabHTML } from '../util';
 import { PositionsTable } from '../datatables/positionsTableClass';
 import { EdgarTable } from '../datatables/edgarTableClass';
-
 import OrderForm from './components/orderFormClass';
+import {NewsTable} from '../datatables/newsTableClass';
 
 
 
@@ -22,6 +23,7 @@ $(()=>{
         orderForm.startQuoteStream(symbol);
         new PositionsTable("positions");
         new EdgarTable("edgar", symbol);
+        new NewsTable("news", symbol);
         uiBindings(chart);
         
     }, 2000);
@@ -45,6 +47,7 @@ function uiBindings(chartCls){
         },
         minWidth: 500,
     });
+    $(".resize").append(getVerticalTabHTML());
     $(".sortable").sortable({
         start: function( e, ui ) {
             var _id = e.target.id;
@@ -55,20 +58,6 @@ function uiBindings(chartCls){
             $(`#${_id} > div`).removeClass('border');
         }
     });
-    $(".sortable > div").prepend(`
-        <div class="tab position-absolute bg-glass text-muted px-3 py-0" 
-        style="
-        
-        z-index:2;top:0px;
-        line-height:0px;
-        left:50%;
-        margin-left:-23.5px;
-        margin-top:-9px;
-        "
-        >
-        <i class="p-0 fa-solid fa-grip-lines"></i>
-      </div>    
-    `);
-    $(".tab").css({'cursor': 'all-scroll'});
+    $(".sortable > div").prepend(getHorizontalTabHTML());
     $(".tab").css({'cursor': 'all-scroll'});
 }
