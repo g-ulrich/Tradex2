@@ -27,55 +27,76 @@ function renderColor(data, row, condition){
     return `<span class="text-${cls}">${data}</span>`;
 }
 
+function getTickerHtml(row){
+    var html = "";
+    var url = window.location.href;
+    row?.tickers.forEach((ticker, i)=>{ 
+        var target= "";
+        var href ="";
+        if (!url.includes("trade")) {
+            target = `target="_blank"`;
+            href= `href="trade.html?symbol=${ticker}"`;
+        }else{
+            target ="";
+            const url = new URL(url);
+            href="";
+            // const params = new URLSearchParams(url.search);
+            // href = `href="${url.replace(params.get('symbol'), ticker)}"`;
+        }
+        html += `<a 
+            ${target}
+            ${href}
+            class="bg-glass px-2 text-muted">
+        ${ticker}</a>
+        `
+        // ${i % 2 === 0 && i != 0? '<br/>' : ''}
+    });
+return html;
+}
+
 export const getNewsColumns = () => {
     return [
-        {
-            data: 'image_url', name: '', width: 150, render: 
+//         {
+//             data: 'image_url', name: '', width: 200, render: 
             
-            function (data, type, row, meta) {
-                var html = "";
-                var url = window.location.href;
-                row?.tickers.forEach((ticker, i)=>{ 
-                    var target= "";
-                    var href ="";
-                    if (!url.includes("trade")) {
-                        target = `target="_blank"`;
-                        href= `href="trade.html?symbol=${ticker}"`;
-                    }else{
-                        target ="";
-                        const urlObj = new URL(url);
-                        href = urlObj.searchParams.set('symbol', ticker);
-                        console.log(href);
-                        // href=`href="${href}"`;
-                    }
-                    html += `<a 
-                        ${target}
-                        ${href}
-                        class="bg-glass px-2 text-muted">
-                    ${ticker}</a>
-                    `
-                    // ${i % 2 === 0 && i != 0? '<br/>' : ''}
-                });
-               return `<div >
-                <a title="${row?.publisher.name}:${row?.article_url}"
-                    href="${row?.article_url}" target="_blank">
-                    <img style="width: 100%;height:auto" 
-                    class="rounded" 
-                    src="${data}"/>
-                </a>
-                <div 
-               style="
-               white-space:normal;"
-               class="text-center">${html}</div>
-               </div>`;
-            }
-        },
+//             function (data, type, row, meta) {
+//                 /*<a title="${row?.publisher.name}:${row?.article_url}"
+//                     href="${row?.article_url}" target="_blank">
+//  </a>
+//                 */
+//                return `
+               
+//                     <div style="display: flex;
+//                     align-items: center;
+//                     justify-content: center;
+//                     overflow: hidden;
+//                     width:199px;
+//                     max-height:350px;
+//                     " 
+//                     class="">
+//                         <img style="object-fit: cover;" 
+//                         class="rounded"
+//                         src="${data}"/>
+//                     </div>
+//               `;
+//             }
+//         },
         {
             data: 'published_utc', name: 'Title', render: 
             function (data, type, row, meta) {
-            var dt = new Date(data);
-               return `<div >
-               <span class="text-muted">${dt.toLocaleString()}</span>
+                var html = getTickerHtml(row);
+                var dt = new Date(data);
+               return `<div>
+               <span class="text-muted">
+                <span style="background-color:rgba(255,255,255,0.1);margin-right: .25rem" 
+                    class="px-1 py-1 rounded">
+                    <a title="${row?.publisher.name}:${row?.article_url}"
+                    href="${row?.article_url}" target="_blank">
+                        <img height="14"src="${row?.publisher.logo_url}" />
+                    </a>
+                </span>
+                 ${dt.toLocaleString()}
+               </span>
                <br/>
                 <span 
                     style="white-space:normal;"
@@ -90,6 +111,8 @@ export const getNewsColumns = () => {
                     class="text-muted">
                     ${row?.description}
                 </span>
+                <div style="white-space:normal;"
+                    class="text-start">${html}</div>
                </div>`;
 
                /*

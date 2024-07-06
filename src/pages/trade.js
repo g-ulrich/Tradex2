@@ -23,10 +23,13 @@ $(()=>{
         orderForm.startQuoteStream(symbol);
         new PositionsTable("positions");
         new EdgarTable("edgar", symbol);
-        new NewsTable("news", symbol);
         uiBindings(chart);
         
     }, 2000);
+
+    setTimeout(()=>{
+        new NewsTable("news");
+    }, 3000);
 
     window.addEventListener('resize', () => {
         setColumnWidths();

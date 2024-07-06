@@ -10,7 +10,7 @@ import '../css/custom.css';
 import {TS} from '../../tradestation/enpoints/main';
 import Polygon from '../../polygon/main';
 window.ts = new TS();
-window.p = new Polygon()
+window.p = new Polygon();
 // import {Nav} from './nav';
 
 

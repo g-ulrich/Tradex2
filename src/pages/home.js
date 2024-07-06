@@ -132,9 +132,18 @@ function initHome() {
         setColumnWidths();
         initAccountInfo();
         new PositionsTable("position", true);
-        new NewsTable("news");
+        // new NewsTable("news");
         uiBindings();
-        setNews();
+
+        window.p.getMarketStatus().then(array => {
+            console.log(typeof array, array);
+        }).catch(error => {
+            console.log("[ERROR] getMarketStatus", error);
+            // setTimeout(() => {
+            //     setAccountsTableData(table, accountIds);
+            // }, 1000);
+        });
+
     }, 2000);
 
 

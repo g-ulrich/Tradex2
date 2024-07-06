@@ -1947,8 +1947,7 @@ __webpack_require__.r(__webpack_exports__);
 class Polygon {
   constructor() {
     this.baseUrl = 'https://api.polygon.io';
-    this.apiSecondsLimit = 12;
-    this.lastPollTime = null;
+    this.pollCount = [];
     this.key = null;
     this._getKey();
   }
@@ -1964,36 +1963,60 @@ class Polygon {
   _isKey() {
     return this.key !== null ? true : false;
   }
-  _isLimitReached() {
-    if (this.lastPollTime !== null) {
-      const now = new Date();
-      const elapsedSeconds = Math.floor((now - this.lastPollTime) / 1000);
-      console.log(elapsedSeconds);
-      return elapsedSeconds <= this.apiSecondsLimit;
+  _updatePollCount() {
+    console.log(this.pollCount);
+    /*
+        Can make api request 5 times every minute on free.
+    */
+    if (this.pollCount.length > 0) {
+      var first = this.pollCount[0];
+      var last = this.pollCount[this.pollCount.length - 1];
+      const elapsedSeconds = Math.floor((last.time - first.time) / 1000);
+      if (elapsedSeconds > 60) {
+        this.pollCount = [];
+      }
+    }
+    this.pollCount.push({
+      id: this.pollCount.length,
+      time: luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now()
+    });
+  }
+  _canProceed() {
+    if (this.pollCount.length < 5 && this._isKey()) {
+      return true;
     } else {
       return false;
     }
   }
+  async getMarketStatus() {
+    if (this._canProceed()) {
+      const url = `${this.baseUrl}/v1/marketstatus/now?apiKey=${this.key}`;
+      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(url, {}).then(response => {
+        this._updatePollCount();
+        return response.data;
+      }).catch(error => {
+        console.error(`getMarketStatus() - ${error}`);
+        throw error;
+      });
+      return response;
+    }
+  }
   async getNews(ticker) {
-    if (!this._isLimitReached() && this._isKey()) {
+    if (this._canProceed()) {
       const url = `${this.baseUrl}/v2/reference/news`;
       const params = new URLSearchParams({
         limit: 5,
         apiKey: this.key
       }).toString();
       const symbol = ticker ? `&ticker=${ticker}` : '';
-      this.lastPollTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(`${url}?${params}${symbol}`, {}).then(response => response.data.results).catch(error => {
+      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(`${url}?${params}${symbol}`, {}).then(response => {
+        this._updatePollCount();
+        return response.data.results;
+      }).catch(error => {
         console.error(`getNews() - ${error}`);
         throw error;
       });
       return response;
-    } else if (this._isLimitReached()) {
-      console.log("Waiting for news...");
-
-      // setTimeout(()=>{
-      //     this.getNews(ticker);
-      // }, 1000*this.apiSecondsLimit);
     }
   }
 }

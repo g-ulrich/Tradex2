@@ -4495,55 +4495,76 @@ function renderColor(data, row, condition) {
   var cls = condition ? 'success' : 'primary';
   return `<span class="text-${cls}">${data}</span>`;
 }
-const getNewsColumns = () => {
-  return [{
-    data: 'image_url',
-    name: '',
-    width: 150,
-    render: function (data, type, row, meta) {
-      var html = "";
-      var url = window.location.href;
-      row?.tickers.forEach((ticker, i) => {
-        var target = "";
-        var href = "";
-        if (!url.includes("trade")) {
-          target = `target="_blank"`;
-          href = `href="trade.html?symbol=${ticker}"`;
-        } else {
-          target = "";
-          const urlObj = new URL(url);
-          href = urlObj.searchParams.set('symbol', ticker);
-          console.log(href);
-          // href=`href="${href}"`;
-        }
-        html += `<a 
-                        ${target}
-                        ${href}
-                        class="bg-glass px-2 text-muted">
-                    ${ticker}</a>
-                    `;
-        // ${i % 2 === 0 && i != 0? '<br/>' : ''}
-      });
-      return `<div >
-                <a title="${row?.publisher.name}:${row?.article_url}"
-                    href="${row?.article_url}" target="_blank">
-                    <img style="width: 100%;height:auto" 
-                    class="rounded" 
-                    src="${data}"/>
-                </a>
-                <div 
-               style="
-               white-space:normal;"
-               class="text-center">${html}</div>
-               </div>`;
+function getTickerHtml(row) {
+  var html = "";
+  var url = window.location.href;
+  row?.tickers.forEach((ticker, i) => {
+    var target = "";
+    var href = "";
+    if (!url.includes("trade")) {
+      target = `target="_blank"`;
+      href = `href="trade.html?symbol=${ticker}"`;
+    } else {
+      target = "";
+      const url = new URL(url);
+      href = "";
+      // const params = new URLSearchParams(url.search);
+      // href = `href="${url.replace(params.get('symbol'), ticker)}"`;
     }
-  }, {
+    html += `<a 
+            ${target}
+            ${href}
+            class="bg-glass px-2 text-muted">
+        ${ticker}</a>
+        `;
+    // ${i % 2 === 0 && i != 0? '<br/>' : ''}
+  });
+  return html;
+}
+const getNewsColumns = () => {
+  return [
+  //         {
+  //             data: 'image_url', name: '', width: 200, render: 
+
+  //             function (data, type, row, meta) {
+  //                 /*<a title="${row?.publisher.name}:${row?.article_url}"
+  //                     href="${row?.article_url}" target="_blank">
+  //  </a>
+  //                 */
+  //                return `
+
+  //                     <div style="display: flex;
+  //                     align-items: center;
+  //                     justify-content: center;
+  //                     overflow: hidden;
+  //                     width:199px;
+  //                     max-height:350px;
+  //                     " 
+  //                     class="">
+  //                         <img style="object-fit: cover;" 
+  //                         class="rounded"
+  //                         src="${data}"/>
+  //                     </div>
+  //               `;
+  //             }
+  //         },
+  {
     data: 'published_utc',
     name: 'Title',
     render: function (data, type, row, meta) {
+      var html = getTickerHtml(row);
       var dt = new Date(data);
-      return `<div >
-               <span class="text-muted">${dt.toLocaleString()}</span>
+      return `<div>
+               <span class="text-muted">
+                <span style="background-color:rgba(255,255,255,0.1);margin-right: .25rem" 
+                    class="px-1 py-1 rounded">
+                    <a title="${row?.publisher.name}:${row?.article_url}"
+                    href="${row?.article_url}" target="_blank">
+                        <img height="14"src="${row?.publisher.logo_url}" />
+                    </a>
+                </span>
+                 ${dt.toLocaleString()}
+               </span>
                <br/>
                 <span 
                     style="white-space:normal;"
@@ -4558,6 +4579,8 @@ const getNewsColumns = () => {
                     class="text-muted">
                     ${row?.description}
                 </span>
+                <div style="white-space:normal;"
+                    class="text-start">${html}</div>
                </div>`;
 
       /*
@@ -7489,8 +7512,7 @@ __webpack_require__.r(__webpack_exports__);
 class Polygon {
   constructor() {
     this.baseUrl = 'https://api.polygon.io';
-    this.apiSecondsLimit = 12;
-    this.lastPollTime = null;
+    this.pollCount = [];
     this.key = null;
     this._getKey();
   }
@@ -7506,36 +7528,60 @@ class Polygon {
   _isKey() {
     return this.key !== null ? true : false;
   }
-  _isLimitReached() {
-    if (this.lastPollTime !== null) {
-      const now = new Date();
-      const elapsedSeconds = Math.floor((now - this.lastPollTime) / 1000);
-      console.log(elapsedSeconds);
-      return elapsedSeconds <= this.apiSecondsLimit;
+  _updatePollCount() {
+    console.log(this.pollCount);
+    /*
+        Can make api request 5 times every minute on free.
+    */
+    if (this.pollCount.length > 0) {
+      var first = this.pollCount[0];
+      var last = this.pollCount[this.pollCount.length - 1];
+      const elapsedSeconds = Math.floor((last.time - first.time) / 1000);
+      if (elapsedSeconds > 60) {
+        this.pollCount = [];
+      }
+    }
+    this.pollCount.push({
+      id: this.pollCount.length,
+      time: luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now()
+    });
+  }
+  _canProceed() {
+    if (this.pollCount.length < 5 && this._isKey()) {
+      return true;
     } else {
       return false;
     }
   }
+  async getMarketStatus() {
+    if (this._canProceed()) {
+      const url = `${this.baseUrl}/v1/marketstatus/now?apiKey=${this.key}`;
+      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(url, {}).then(response => {
+        this._updatePollCount();
+        return response.data;
+      }).catch(error => {
+        console.error(`getMarketStatus() - ${error}`);
+        throw error;
+      });
+      return response;
+    }
+  }
   async getNews(ticker) {
-    if (!this._isLimitReached() && this._isKey()) {
+    if (this._canProceed()) {
       const url = `${this.baseUrl}/v2/reference/news`;
       const params = new URLSearchParams({
         limit: 5,
         apiKey: this.key
       }).toString();
       const symbol = ticker ? `&ticker=${ticker}` : '';
-      this.lastPollTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(`${url}?${params}${symbol}`, {}).then(response => response.data.results).catch(error => {
+      const response = await axios__WEBPACK_IMPORTED_MODULE_2___default().get(`${url}?${params}${symbol}`, {}).then(response => {
+        this._updatePollCount();
+        return response.data.results;
+      }).catch(error => {
         console.error(`getNews() - ${error}`);
         throw error;
       });
       return response;
-    } else if (this._isLimitReached()) {
-      console.log("Waiting for news...");
-
-      // setTimeout(()=>{
-      //     this.getNews(ticker);
-      // }, 1000*this.apiSecondsLimit);
     }
   }
 }
@@ -11064,9 +11110,11 @@ __webpack_require__.r(__webpack_exports__);
     orderForm.startQuoteStream(symbol);
     new _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_4__.PositionsTable("positions");
     new _datatables_edgarTableClass__WEBPACK_IMPORTED_MODULE_5__.EdgarTable("edgar", symbol);
-    new _datatables_newsTableClass__WEBPACK_IMPORTED_MODULE_7__.NewsTable("news", symbol);
     uiBindings(chart);
   }, 2000);
+  setTimeout(() => {
+    new _datatables_newsTableClass__WEBPACK_IMPORTED_MODULE_7__.NewsTable("news");
+  }, 3000);
   window.addEventListener('resize', () => {
     setColumnWidths();
   });
