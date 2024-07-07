@@ -4498,6 +4498,7 @@ function renderColor(data, row, condition) {
 function getTickerHtml(row) {
   var html = "";
   var url = window.location.href;
+  url = url.href;
   row?.tickers.forEach((ticker, i) => {
     var target = "";
     var href = "";
@@ -4506,10 +4507,10 @@ function getTickerHtml(row) {
       href = `href="trade.html?symbol=${ticker}"`;
     } else {
       target = "";
-      const url = new URL(url);
-      href = "";
-      // const params = new URLSearchParams(url.search);
-      // href = `href="${url.replace(params.get('symbol'), ticker)}"`;
+      url = new URL(url);
+      const params = new URLSearchParams(url.search);
+      url = url.href;
+      href = `href="${url.replace(params.get('symbol'), ticker)}"`;
     }
     html += `<a 
             ${target}
@@ -11110,11 +11111,9 @@ __webpack_require__.r(__webpack_exports__);
     orderForm.startQuoteStream(symbol);
     new _datatables_positionsTableClass__WEBPACK_IMPORTED_MODULE_4__.PositionsTable("positions");
     new _datatables_edgarTableClass__WEBPACK_IMPORTED_MODULE_5__.EdgarTable("edgar", symbol);
+    new _datatables_newsTableClass__WEBPACK_IMPORTED_MODULE_7__.NewsTable("news");
     uiBindings(chart);
   }, 2000);
-  setTimeout(() => {
-    new _datatables_newsTableClass__WEBPACK_IMPORTED_MODULE_7__.NewsTable("news");
-  }, 3000);
   window.addEventListener('resize', () => {
     setColumnWidths();
   });

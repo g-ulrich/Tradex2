@@ -132,7 +132,7 @@ function initHome() {
         setColumnWidths();
         initAccountInfo();
         new PositionsTable("position", true);
-        // new NewsTable("news");
+        new NewsTable("news");
         uiBindings();
 
         window.p.getMarketStatus().then(array => {

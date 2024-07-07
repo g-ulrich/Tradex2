@@ -30,19 +30,21 @@ function renderColor(data, row, condition){
 function getTickerHtml(row){
     var html = "";
     var url = window.location.href;
+    url = url.href;
+    console.log(url);
     row?.tickers.forEach((ticker, i)=>{ 
         var target= "";
         var href ="";
-        if (!url.includes("trade")) {
-            target = `target="_blank"`;
-            href= `href="trade.html?symbol=${ticker}"`;
-        }else{
-            target ="";
-            const url = new URL(url);
-            href="";
-            // const params = new URLSearchParams(url.search);
-            // href = `href="${url.replace(params.get('symbol'), ticker)}"`;
-        }
+        // if (!url.includes("trade")) {
+        //     target = `target="_blank"`;
+        //     href= `href="trade.html?symbol=${ticker}"`;
+        // }else{
+        //     target ="";
+        //     url = new URL(url);
+        //     const params = new URLSearchParams(url.search);
+        //     url = url.href;
+        //     href = `href="${url.replace(params.get('symbol'), ticker)}"`;
+        // }
         html += `<a 
             ${target}
             ${href}
