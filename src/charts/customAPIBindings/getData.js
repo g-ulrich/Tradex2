@@ -8,7 +8,7 @@ export function setMarketDataQuotesAndStream(cls, symbol){
         console.log("[ERROR] setMarketDataQuotesAndStream " + error);
         setTimeout(() => {
             console.log("[INFO] setMarketDataQuotesAndStream trying again...");
-            setMarketDataQuotesAndStream(chart, symbol);
+            setMarketDataQuotesAndStream(cls, symbol);
         }, 1000);
     });
 }

@@ -17,6 +17,11 @@ export default class Header{
         this.addChartTypes();
         this.addInterval();
         this.addSession();
+        this._setPageTitle();
+    }
+
+    _setPageTitle(){
+        document.title = this.getDetailedSymbolName();
     }
 
     _setParamDefaults(){
@@ -116,28 +121,34 @@ export default class Header{
     addChartTypes(){
         const chartTypeId = `chartType_${this.headerId}_${getRandomAlphaNum(10)}`;
         const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
+        var chartTypes = [{icon: 'column', title: 'Candle'},
+            {icon: 'gantt', title: 'Bar'},
+            // {name: 'line', icon: ''},
+            // {name: 'area', icon: ''}
+        ];
         $(`#${this.headerId}`).append(`
-            <span id="${chartTypeId}"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
+            <span id="${chartTypeId}" class="dialog-list-item py-1 px-2 text-center"><i class="fa-solid fa-chart-${this.chartType}"></i></span>
         `);
         
-        var d = new Dialog(chartTypeId, {relative: true, title:`<i class="fa-solid fa-chart-${this.chartType}"></i> Chart Type`});
+        var dialog = new Dialog(chartTypeId, {relative: true, title:`<i class="fa-solid fa-chart-${this.chartType}"></i> Chart Type`});
    
-        d.setbody(`
-            <select id="${selectId}"
-                class="w-100 p-1 text-white font-weight-bold"
-                style="font-weight: 700;outline: 0;background-color:rgba(255,255,255,0.05);border:0px;"
-                >
-                <option class="text-white bg-secondary"${this.chartType == 'column' ? 'selected' : ''}>column</option>
-                <option class="text-white bg-secondary"${this.chartType == 'line' ? 'selected' : ''}>line</option>
-                <option class="text-white bg-secondary"${this.chartType == 'gantt' ? 'selected' : ''}>gantt</option>
-                <option class="text-white bg-secondary"${this.chartType == 'area' ? 'selected' : ''}>area</option>
-            </select>    
-        `);
+       // create html for dialog
+       var html = `<div id="${selectId}">`;
+       chartTypes.forEach((item)=>{
+           var cls = this.chartType == item.icon ? '-selected' : ''
+           html += `<div class="px-1 dialog-list-item${cls}"
+           data-name="${item.icon}">
+           <i class="fa-solid fa-chart-${item.icon}"></i> 
+           ${item.title}</div>`;
+       });
+       html += `</div>`;
+       dialog.setbody(html);
 
-        $(`#${selectId}`).on('change', () => {
-            this.chartType = $(`#${selectId}`).val();
+        $(`#${selectId}`).on('click', (e) => {
+            var data = e.target.dataset;
+            this.chartType = data.name;
             $(`#${chartTypeId}`).empty();
-            $(`#${chartTypeId}`).append(`<i class="fa-solid fa-chart-${this.chartType}"></i>`);
+            $(`#${chartTypeId}`).append(`<i class="fa-solid fa-chart-${data.name}"></i>`);
             this.reloadPage();
         });
     }
@@ -160,7 +171,7 @@ export default class Header{
             const selectId = `select_${this.headerId}_${getRandomAlphaNum(10)}`;
             
             $(`#${this.headerId}`).append(`
-                <span id="${selectId}_icon" class="dialog-list-item px-1"><i class="fa-solid fa-timeline"></i></span>
+                <span id="${selectId}_icon" class="dialog-list-item py-1 px-2 text-center"><i class="fa-solid fa-timeline"></i></span>
             `);
 
             var d = new Dialog(`${selectId}_icon`, {relative: true, title:`Interval`});
@@ -190,7 +201,7 @@ export default class Header{
             var sessions = ['Default', 'USEQ24Hour', 'USEQPre', 'USEQPost', 'USEQPreAndPost'];
 
             $(`#${this.headerId}`).append(`
-                <span id="${selectId}_icon" class="dialog-list-item px-1" ><i class="fa-solid fa-clock"></i></span>
+                <span id="${selectId}_icon" class="dialog-list-item py-1 px-2 text-center" ><i class="fa-solid fa-clock"></i></span>
             `);
 
             var dialog = new Dialog(`${selectId}_icon`, {relative: true, title: 'Session'});

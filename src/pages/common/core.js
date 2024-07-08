@@ -20,6 +20,14 @@ $(()=>{
     new InitRenderer();
 });
 
+export function setColumnWidths(w1, w2){
+    w1 = w1?w1:.5;
+    w2=w2?w2:.5;
+    var bodyWidth = $("#content").width();
+    $("#leftcol").css("width", bodyWidth*w1);
+    $("#rightcol").css("width", bodyWidth*w2);
+}
+
 class InitRenderer {
     constructor(){
         this.isTokenLiveInterval = null;
@@ -39,6 +47,7 @@ class InitRenderer {
         <a href="trade.html" target="_blank"><i class="fa-solid fa-building-columns"></i></a>
         <br/>
         <a href="settings.html"><i class="fa-solid fa-gear"></i></a>   
+       
         `);
         window.addEventListener('resize', () => {
             $("#contentContainer").css('height', window.innerHeight);

@@ -5409,11 +5409,12 @@ fieldset:disabled .btn {
 
 .progress {
     display: flex;
-    height: 1rem;
+    /* height: 1rem; */
+    height: .5rem;
     overflow: hidden;
     font-size: .75rem;
     background-color: #c2cace;
-    border-radius: .25rem
+    /* border-radius: .25rem */
 }
 
 .progress-bar {
@@ -7474,6 +7475,10 @@ fieldset:disabled .btn {
     height: 75% !important
 }
 
+.h-90 {
+    height: 90% !important
+}
+
 .h-100 {
     height: 100% !important
 }
@@ -8261,12 +8266,20 @@ fieldset:disabled .btn {
     background-color: #7289da !important
 }
 
+.bg-primary-soft {
+    background-color: rgba(114, 137, 218, .3) !important
+}
+
 .bg-secondary {
     background-color: #99aab5 !important
 }
 
 .bg-success {
     background-color: #0b9657 !important
+}
+
+.bg-success-soft {
+    background-color: rgba(11, 150, 87, 0.3) !important
 }
 
 .bg-info {
@@ -8298,6 +8311,13 @@ fieldset:disabled .btn {
     -webkit-backdrop-filter: blur(2px) saturate(87%);
     background-color: rgba(17, 25, 40, 0.69);
     border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+.bg-glass-not-rounded{
+    backdrop-filter: blur(2px) saturate(87%);
+    -webkit-backdrop-filter: blur(2px) saturate(87%);
+    background-color: rgba(17, 25, 40, 0.69);
     border: 1px solid rgba(255, 255, 255, 0.125);
 }
 
@@ -8362,6 +8382,54 @@ fieldset:disabled .btn {
 
 .rounded {
     border-radius: .25rem !important
+}
+
+.rounded-sm {
+    border-radius: .125rem !important
+}
+
+.rounded-md {
+    border-radius: .50rem !important
+}
+
+.rounded-lg {
+    border-radius: 1rem !important
+}
+
+.rounded-bottom-left{
+    border-bottom-left-radius: .25rem !important;
+}
+
+.rounded-bottom-right{
+    border-bottom-right-radius: .25rem !important;
+}
+
+.rounded-bottom{
+    border-bottom-right-radius: .25rem !important;
+    border-bottom-left-radius: .25rem !important;
+}
+
+.rounded-top-right {
+    border-top-right-radius: .25rem !important;
+}
+
+.rounded-top-left {
+    border-top-left-radius: .25rem !important;
+}
+
+.rounded-top {
+    border-top-right-radius: .25rem !important;
+    border-top-left-radius: .25rem !important;
+}
+
+.rounded-right {
+    border-top-right-radius: .25rem !important;
+    border-bottom-right-radius: .25rem !important;
+}
+
+.rounded-left {
+    border-top-left-radius: .25rem !important;
+    border-bottom-right-radius: .25rem !important;
 }
 
 .rounded-0 {

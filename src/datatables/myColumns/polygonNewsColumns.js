@@ -36,8 +36,8 @@ function getTickerHtml(row){
         var target= "";
         var href ="";
         // if (!url.includes("trade")) {
-        //     target = `target="_blank"`;
-        //     href= `href="trade.html?symbol=${ticker}"`;
+            target = `target="_blank"`;
+            href= `href="trade.html?symbol=${ticker}"`;
         // }else{
         //     target ="";
         //     url = new URL(url);
@@ -84,14 +84,14 @@ export const getNewsColumns = () => {
 //             }
 //         },
         {
-            data: 'published_utc', name: 'Title', render: 
+            data: 'published_utc', name: 'Articles', render: 
             function (data, type, row, meta) {
                 var html = getTickerHtml(row);
                 var dt = new Date(data);
                return `<div>
                <span class="text-muted">
                 <span style="background-color:rgba(255,255,255,0.1);margin-right: .25rem" 
-                    class="px-1 py-1 rounded">
+                    class="px-1 py-1 rounded float-end">
                     <a title="${row?.publisher.name}:${row?.article_url}"
                     href="${row?.article_url}" target="_blank">
                         <img height="14"src="${row?.publisher.logo_url}" />
@@ -104,7 +104,9 @@ export const getNewsColumns = () => {
                     style="white-space:normal;"
                     class="h5 m-0" 
                     title="${row?.title}">
-                    ${row?.title}
+                   <a class="text-white"
+                    title="${row?.publisher.name}:${row?.article_url}"
+                    href="${row?.article_url}" target="_blank"> ${row?.title} </a>
                 </span>
                 <br/>
                 <span 

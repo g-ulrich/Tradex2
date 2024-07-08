@@ -1,4 +1,4 @@
-import { $} from './common/core';
+import { $, setColumnWidths} from './common/core';
 import { getDateNDaysAgo, getVerticalTabHTML, getHorizontalTabHTML } from '../util';
 import { get_table_positions_columns } from '../datatables/myColumns/positions';
 import { get_table_accounts_columns } from '../datatables/myColumns/accounts';
@@ -129,7 +129,7 @@ function initHome() {
     setTimeout(()=>{
         $("#spinner").fadeOut();
         $("#contentContainer").fadeIn();
-        setColumnWidths();
+        setColumnWidths(.5, .5);
         initAccountInfo();
         new PositionsTable("position", true);
         new NewsTable("news");
@@ -152,13 +152,6 @@ function initHome() {
     });
 }
 
-
-
-function setColumnWidths(){
-    var bodyWidth = $("#body").width();
-    $("#leftcol").css("width", bodyWidth*.5);
-    $("#rightcol").css("width", bodyWidth*.5);
-}
 
 function uiBindings(chartCls){
     $("#leftcol").resizable({ 

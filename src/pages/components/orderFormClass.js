@@ -84,54 +84,6 @@ export default class OrderForm{
         }
     }
 
-    _elementQuoteUpdates(quote){
-        /*
-        orderFormBid
-        orderFormAsk
-        orderFormLast
-        */
-    //     <div class="orderFormBid progress-bar bg-success text-end px-1" role="progressbar" 
-    //     style="width: 30%" 
-    //     aria-valuenow="30" 
-    //     aria-valuemin="0" 
-    //     aria-valuemax="100">
-    //  121.67 Bid
-    // </div>
-        var aP = 0;
-        var bP = 0;
-        var bSize = parseInt(quote?.BidSize);
-        var aSize = parseInt(quote?.AskSize);
-        if (aSize > bSize){
-            bP = parseInt((bSize/aSize)*100);
-            aP = 100 - bP;
-        }else {
-            aP = parseInt((aSize/bSize)*100);
-            bP = 100-aP;
-        }
-
-        $(".orderFormBid").css('width', `${bP}%`);
-        $(".orderFormBid").attr('aria-valuenow', `${bP}`);
-        $(".orderFormBid").text(`${formatCurrency(quote?.Bid)} Bid`);
-
-        $(".orderFormAsk").css('width', `${aP}%`);
-        $(".orderFormAsk").attr('aria-valuenow', `${aP}`);
-        $(".orderFormAsk").text(`Ask ${formatCurrency(quote?.Ask)}`);
-        // $('.orderFormAsk').empty();
-        // $('.orderFormBid').empty();
-        // $('.orderFormAsk').append(`<span class="bgAsk rounded px-1">Ask: 
-        //     <span class="${this._getQuoteColor(quote, 'Ask')}">${quote?.Ask}</span></span>
-        //     <br/><span class="bgAskSize rounded px-1">Size: 
-        //     <span class="${this._getQuoteColor(quote, 'AskSize')}">${quote?.AskSize}</span></span>`);
-        // $('.orderFormBid').append(`<span class="bgBid rounded px-1">Bid: 
-        //     <span class="${this._getQuoteColor(quote, 'Bid')}">${quote?.Bid}</span></span>
-        //     <br/><span class="bgBidSize rounded px-1">Size: 
-        //     <span class="${this._getQuoteColor(quote, 'BidSize')}">${quote?.BidSize}</span></span>`);
-        // this._bgQuote(quote, 'Ask');
-        // this._bgQuote(quote, 'AskSize');
-        // this._bgQuote(quote, 'Bid');
-        // this._bgQuote(quote, 'BidSize');
-        }
-
     startQuoteStream(symbol){
         window.ts.symbol._setFullSymbolName(symbol);
         setMarketDataQuotesAndStream(this, symbol);
@@ -150,7 +102,6 @@ export default class OrderForm{
                 merged[key] = this.lastQuote[key];
             }
         });
-        this._elementQuoteUpdates(merged);
         this.lastQuote = merged;
     }
 
@@ -188,30 +139,7 @@ export default class OrderForm{
                     <div class="orderFormType text-center col-6 py-1 text-muted">Type: <span class="text-white">${this.type}</span></div>
                     <div class="col-12 my-1"></div>
                     
-                    <div class="col-12 my-1 px-1">
                     
-                        <div class="progress bg-dark">
-      
-                            <div class="orderFormAsk progress-bar text-success bg-glass px-1" role="progressbar" 
-                            style="width: 69%" 
-                            aria-valuenow="70" 
-                            aria-valuemin="0" 
-                            aria-valuemax="100">
-                                Ask 121.69
-                            </div>
-                            
-                            
-                            <div class="orderFormBid progress-bar text-primary bg-glass px-1" role="progressbar" 
-                                style="width: 30%" 
-                                aria-valuenow="30" 
-                                aria-valuemin="0" 
-                                aria-valuemax="100">
-                             121.67 Bid
-                            </div>
-
-                        </div>
-                    
-                    </div>
                     
                     
                     <div class="col-12 px-1 my-1 text-muted">

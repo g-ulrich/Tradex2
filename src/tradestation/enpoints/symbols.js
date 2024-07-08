@@ -96,6 +96,7 @@ export class Symbols {
                       `${sym?.Exchange}:${symbol} ·
                       <span class="text-muted">${sym?.Description}</span>`
                     );
+                    document.title = `${sym?.Exchange} : ${symbol} · ${sym?.Description}`
                 }
             });
         

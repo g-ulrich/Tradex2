@@ -1,4 +1,4 @@
-import {$} from './common/core';
+import {$, setColumnWidths} from './common/core';
 import "./css/bootstrap-discord.min.css";
 import Chart from "../charts/chartClass";
 import { getVerticalTabHTML, getHorizontalTabHTML } from '../util';
@@ -6,37 +6,40 @@ import { PositionsTable } from '../datatables/positionsTableClass';
 import { EdgarTable } from '../datatables/edgarTableClass';
 import OrderForm from './components/orderFormClass';
 import {NewsTable} from '../datatables/newsTableClass';
+import OrderBookLevel1 from './components/orderBookLevel1Class';
+import addTabs from './components/toggleTabs';
 
 
 
 $(()=>{
+    $("title").attr("title", "Tradex2 | Trade");
     $("#spinner").show();
     $("#contentContainer").hide();
+    
     // $("#nav").hide();
     setTimeout(()=>{
         $("#spinner").fadeOut();
         $("#contentContainer").fadeIn();
-        setColumnWidths();
         var orderForm = new OrderForm("orders");
+        setColumnWidths(.6,.4);
         var chart = new Chart("tradeChart", orderForm);
         var symbol = chart.header.symbol;
         orderForm.startQuoteStream(symbol);
         new PositionsTable("positions");
         new EdgarTable("edgar", symbol);
-        new NewsTable("news");
+        new NewsTable("news", symbol);
+        new OrderBookLevel1("orderBookLevel1", symbol);
         uiBindings(chart);
-        
+        $(`#news`).hide();
+        $(`#orders`).hide();
+        addTabs(['orderBookLevel1', 'orders', 'positions', 'edgar', 'news']);
     }, 2000);
     window.addEventListener('resize', () => {
         setColumnWidths();
     });
 });
 
-function setColumnWidths(){
-    var bodyWidth = $("#body").width();
-    $("#leftcol").css("width", bodyWidth*.7);
-    $("#rightcol").css("width", bodyWidth*.3);
-}
+
 
 function uiBindings(chartCls){
     $("#leftcol").resizable({ 
