@@ -26,6 +26,10 @@ export default class Dialog{
         $(`#${this.id}`).hide();
     }
 
+    _hideAllOtherDialogs(){
+        $("._dialog").fadeOut();
+    }
+
     _closeBindings(){
         const id = `#${this.id}`;
         const self = this;
@@ -51,6 +55,7 @@ export default class Dialog{
 
           $(`#${this.containerId}`).on('click', (e) => {
             e.stopPropagation();
+            self._hideAllOtherDialogs();
             self.show();
           });
 
@@ -84,7 +89,7 @@ export default class Dialog{
         const $_ = $(`#${this.containerId}`);
         $_.append(`
         <div id="${this.id}" 
-            class="bg-glass position-absolute shadow border"
+            class="_dialog bg-glass position-absolute shadow border"
             style="${this._getDialogStyling()}">
             <div style="cursor:all-scroll;" class="p-2 w-100 text-muted">${this.title} 
                 <div id="${this.id}_x" style="cursor:pointer;" class="px-1 dialog-list-item float-end mx-2">

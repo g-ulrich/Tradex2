@@ -26,7 +26,6 @@ export default class Polygon{
     }
 
     _updatePollCount(){
-        console.log( this.pollCount);
         /*
             Can make api request 5 times every minute on free.
         */

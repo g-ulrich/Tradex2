@@ -115,7 +115,6 @@ class Chart {
     const $container = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`);
     var hid = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.header.headerId}`).height();
     var w = w ? w : $container.width();
-    console.log(w);
     var h = h ? h : $container.height() - hid;
     this.chart.resize(w, h);
     return {
@@ -382,7 +381,6 @@ class Chart {
     //     });
   }
   setHighLowMarkers() {
-    // console.log("Markers");
     try {
       var bars = this.allBars;
       if (bars.length > 1) {
@@ -652,7 +650,6 @@ class Header {
     d.setbody(html);
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${selectId} div`).on('click', e => {
       var data = e.target.dataset;
-      console.log(e, data);
       this.params.interval = data.interval;
       this.params.unit = data.unit;
       this.reloadPage();
@@ -4842,8 +4839,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _myColumns_positions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./myColumns/positions */ "./src/datatables/myColumns/positions.js");
 /* harmony import */ var _simple__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./simple */ "./src/datatables/simple.js");
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! jquery */ "jquery");
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util */ "./src/util.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! jquery */ "jquery");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -4885,14 +4884,14 @@ class PositionsTable {
   }
   _bindings() {
     const self = this;
-    jquery__WEBPACK_IMPORTED_MODULE_2___default()(document).on('click', '.tradeSymbol', function () {
+    jquery__WEBPACK_IMPORTED_MODULE_3___default()(document).on('click', '.tradeSymbol', function () {
       const urlparams = new URLSearchParams({
-        symbol: jquery__WEBPACK_IMPORTED_MODULE_2___default()(this).attr('data-symbol'),
+        symbol: jquery__WEBPACK_IMPORTED_MODULE_3___default()(this).attr('data-symbol'),
         chartType: "",
         interval: "",
         unit: "",
         barsback: "",
-        sessiontemplate: ""
+        sessiontemplate: (0,_util__WEBPACK_IMPORTED_MODULE_2__.isMarketOpen)() == 'pre' || (0,_util__WEBPACK_IMPORTED_MODULE_2__.isMarketOpen)() == 'post' ? 'USEQ24Hour' : 'Default'
       }).toString();
       if (self.target) {
         window.open(`trade.html?${urlparams}`, '_blank');
@@ -7015,6 +7014,8 @@ class InitRenderer {
         <a href="trade.html" target="_blank"><i class="fa-solid fa-building-columns"></i></a>
         <br/>
         <a href="settings.html"><i class="fa-solid fa-gear"></i></a>   
+        <br/>
+        <a href="news.html" target="_blank"><i class="fa-solid fa-newspaper"></i></a>
        
         `);
     window.addEventListener('resize', () => {
@@ -7099,6 +7100,9 @@ class Dialog {
   hide() {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.id}`).hide();
   }
+  _hideAllOtherDialogs() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()("._dialog").fadeOut();
+  }
   _closeBindings() {
     const id = `#${this.id}`;
     const self = this;
@@ -7119,6 +7123,7 @@ class Dialog {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).css('cursor', 'pointer');
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`).on('click', e => {
       e.stopPropagation();
+      self._hideAllOtherDialogs();
       self.show();
     });
   }
@@ -7148,7 +7153,7 @@ class Dialog {
     const $_ = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`#${this.containerId}`);
     $_.append(`
         <div id="${this.id}" 
-            class="bg-glass position-absolute shadow border"
+            class="_dialog bg-glass position-absolute shadow border"
             style="${this._getDialogStyling()}">
             <div style="cursor:all-scroll;" class="p-2 w-100 text-muted">${this.title} 
                 <div id="${this.id}_x" style="cursor:pointer;" class="px-1 dialog-list-item float-end mx-2">
@@ -7566,7 +7571,6 @@ class Polygon {
     return this.key !== null ? true : false;
   }
   _updatePollCount() {
-    console.log(this.pollCount);
     /*
         Can make api request 5 times every minute on free.
     */
@@ -10172,24 +10176,12 @@ function isMarketOpen() {
   const now = new Date();
   const hr = now.getHours();
   const min = now.getMinutes();
-  var isPre = hr >= 7 && min >= 30 && hr <= 9 && min <= 30;
-
-  // Pre-market hours: 7:30 AM to 9:30 AM
-  if (hr === 7 && min >= 30 || hr === 8 && min >= 30 || hr === 9) {
-    return 'Pre-Market';
-  }
-  // Regular market hours: 9:30 AM to 4:00 PM
-  else if (hr >= 9 && hr < 16) {
-    return 'Regular Market';
-  }
-  // Post-market hours: 4:00 PM to 8:00 PM
-  else if (hr >= 16 && hr <= 20) {
-    return 'Post-Market';
-  }
-  // Outside of market hours
-  else {
-    return 'Closed';
-  }
+  const t = parseInt(`${hr}${min}`);
+  var isPre = t >= 730 && t < 930;
+  var isReg = t >= 930 && hr <= 16;
+  var isPost = hr > 16 && hr <= 20;
+  var status = isPre ? 'pre' : isReg ? 'reg' : isPost ? 'post' : 'closed';
+  return status;
 }
 
 /***/ }),
@@ -11163,8 +11155,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(() => {
-  console.log("Market open: ", (0,_util__WEBPACK_IMPORTED_MODULE_3__.isMarketOpen)());
-  (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("title").attr("title", "Tradex2 | Trade");
+  window.title = "Tradex2 | Trade";
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#spinner").show();
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#contentContainer").hide();
 
@@ -11182,9 +11173,8 @@ __webpack_require__.r(__webpack_exports__);
     new _datatables_newsTableClass__WEBPACK_IMPORTED_MODULE_7__.NewsTable("news", symbol);
     new _components_orderBookLevel1Class__WEBPACK_IMPORTED_MODULE_8__["default"]("orderBookLevel1", symbol);
     uiBindings(chart);
-    (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#news`).hide();
     (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(`#orders`).hide();
-    (0,_components_toggleTabs__WEBPACK_IMPORTED_MODULE_9__["default"])(['orderBookLevel1', 'orders', 'positions', 'edgar', 'news']);
+    (0,_components_toggleTabs__WEBPACK_IMPORTED_MODULE_9__["default"])(['orderBookLevel1', 'orders', 'positions', 'edgar']);
   }, 2000);
   window.addEventListener('resize', () => {
     (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.setColumnWidths)();

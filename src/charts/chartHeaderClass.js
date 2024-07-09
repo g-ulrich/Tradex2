@@ -188,7 +188,6 @@ export default class Header{
    
             $(`#${selectId} div`).on('click', (e) => {
                 var data = e.target.dataset;
-                console.log(e, data);
                 this.params.interval = data.interval;
                 this.params.unit = data.unit;
                 this.reloadPage();

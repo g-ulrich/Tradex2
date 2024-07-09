@@ -12,8 +12,7 @@ import addTabs from './components/toggleTabs';
 
 
 $(()=>{
-    console.log("Market open: ", isMarketOpen());
-    $("title").attr("title", "Tradex2 | Trade");
+    window.title = "Tradex2 | Trade";
     $("#spinner").show();
     $("#contentContainer").hide();
     
@@ -31,9 +30,8 @@ $(()=>{
         new NewsTable("news", symbol);
         new OrderBookLevel1("orderBookLevel1", symbol);
         uiBindings(chart);
-        $(`#news`).hide();
         $(`#orders`).hide();
-        addTabs(['orderBookLevel1', 'orders', 'positions', 'edgar', 'news']);
+        addTabs(['orderBookLevel1', 'orders', 'positions', 'edgar']);
     }, 2000);
     window.addEventListener('resize', () => {
         setColumnWidths();

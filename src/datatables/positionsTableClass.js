@@ -1,5 +1,6 @@
 import { get_table_positions_columns } from './myColumns/positions';
 import {SimpleTableData} from './simple'
+import {isMarketOpen} from '../util';
 import $ from 'jquery';
 
 function initAccountInfo(tableCls) {
@@ -52,11 +53,10 @@ export class PositionsTable{
                 interval: "",
                 unit: "",
                 barsback: "",
-                sessiontemplate: ""
+                sessiontemplate: isMarketOpen() == 'pre' || isMarketOpen() == 'post' ? 'USEQ24Hour' : 'Default'
               }).toString();
               if (self.target){
                 window.open(`trade.html?${urlparams}`, '_blank');
-
               }else{
                 window.location.href = `trade.html?${urlparams}`;
               }

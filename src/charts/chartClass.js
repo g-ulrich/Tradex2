@@ -95,7 +95,6 @@ export default class Chart{
         const $container = $(`#${this.containerId}`);
         var hid = $(`#${this.header.headerId}`).height();
         var w = w ? w : $container.width();
-        console.log(w);
         var h = h ? h :$container.height() -hid;
         this.chart.resize(w, h);
         return {width: w, height: h};
@@ -373,7 +372,6 @@ export default class Chart{
     }
 
     setHighLowMarkers(){
-        // console.log("Markers");
         try {
             var bars = this.allBars;
             if (bars.length > 1){

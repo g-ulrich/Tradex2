@@ -47,6 +47,8 @@ class InitRenderer {
         <a href="trade.html" target="_blank"><i class="fa-solid fa-building-columns"></i></a>
         <br/>
         <a href="settings.html"><i class="fa-solid fa-gear"></i></a>   
+        <br/>
+        <a href="news.html" target="_blank"><i class="fa-solid fa-newspaper"></i></a>
        
         `);
         window.addEventListener('resize', () => {
