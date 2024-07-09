@@ -130,10 +130,14 @@ export class SimpleTableData{
         this.lastRowAdded= null;
     }
 
+    updateTitle(txt){
+        $(`#${this.id}_title_txt`).text(txt);
+    }
+
     createTitleContainer(){
         if (this.title !== "") {
             $(`#${this.id}`).prepend(`<div id="${this.id}_title" class="w-100 px-1">
-                <h4 class="m-0">${this.title}
+                <h4 class="m-0"><span id="${this.id}_title_txt">${this.title}</span>
                     <span id="${this.tableId}_lastupdate" class="float-end text-muted h6 mb-0 mt-1">${hhmmss()}</span>
                 </h4>
             </div>`);

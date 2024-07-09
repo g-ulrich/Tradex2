@@ -9,7 +9,8 @@ module.exports = env => {
       main: "./src/main.js",
       home: "./src/pages/home.js",
       trade: "./src/pages/trade.js",
-      settings: "./src/pages/settings.js"
+      settings: "./src/pages/settings.js",
+      news: "./src/pages/news.js"
     },
     output: {
       filename: "[name].js",

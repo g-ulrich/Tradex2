@@ -67,7 +67,7 @@ export default class Polygon{
     async getNews(ticker) {
         if (this._canProceed()) {
             const url = `${this.baseUrl}/v2/reference/news`;
-            const params = new URLSearchParams({limit: 5, apiKey: this.key,}).toString();
+            const params = new URLSearchParams({limit: 20, apiKey: this.key,}).toString();
             const symbol = ticker ? `&ticker=${ticker}` : '';
             const response = await axios.get(`${url}?${params}${symbol}`, {})
                 .then(response => {

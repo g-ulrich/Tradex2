@@ -4,7 +4,7 @@ import {CHART_THEMES} from '../charts/options';
 import { sortJsonArrayByKey, getRandomAlphaNum, maxJsonArrayVal, minJsonArrayVal, sessionHighlighter} from '../util';
 import Legend from './chartLegendClass';
 import Header from './chartHeaderClass';
-import {setMarketDataBarsAndStream, setMarketDataQuotesAndStream} from '../charts/customAPIBindings/getData';
+import {setMarketDataBarsAndStream, setMarketDataQuotesAndStream, prependMarketDataBars} from '../charts/customAPIBindings/getData';
 import { SessionHighlighting } from './plugins/session-highlighting/session-highlighting';
 
 export default class Chart{
@@ -16,6 +16,9 @@ export default class Chart{
         this._setResizeListener();
         this._setCrosshairListener();
         this._setClickListener();
+        this.lastRange = null;
+        this.loadingNewRangeData = false;
+        this._setRangeListener();
         this.legend = new Legend(this.containerId, this.header);
         this.lastBar = {};
         this.lastQuote = null;
@@ -77,6 +80,30 @@ export default class Chart{
             this.lastPriceClicked = price;
             // this.addPriceLine("buy", price);
         });
+    }
+
+    _setRangeListener(){
+        setTimeout(()=>{
+            this.chart.timeScale().subscribeVisibleTimeRangeChange(
+                (range) =>{
+                    if (this.lastRange !== null && this.allBars.length > 0){
+                        var needData = range.from == this.lastRange.from && this.allBars[0].time == range.from  ? true : false;
+                        if (needData && !this.loadingNewRangeData){
+                            this.loadingNewRangeData = true;
+                            prependMarketDataBars(this, this.header.params);
+                            setTimeout(()=>{
+                                this.loadingNewRangeData = false;
+                            }, 5000);
+                            // .then(newData => {
+                            //     // Prepend new data to the existing series
+                            //     // lineSeries.setData([ ...newData, ...lineSeries.data() ]);
+                            // });
+                            console.log(needData, this.lastRange, range);
+                        }
+                    }
+                    this.lastRange = range;
+                });
+        }, 2000);
     }
   
     _setCrosshairListener(){

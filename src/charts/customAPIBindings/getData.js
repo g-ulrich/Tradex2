@@ -1,4 +1,4 @@
-import {getRandomAlphaNum} from '../../util';
+import {getRandomAlphaNum, formatDateWithPrecision} from '../../util';
 
 export function setMarketDataQuotesAndStream(cls, symbol){
     window.ts.marketData.getQuoteSnapshots(symbol).then(quote => {
@@ -33,6 +33,30 @@ export function setMarketDataBarsAndStream(cls, symbol, params){
         }, 1000);
     });
 }   
+
+
+export function prependMarketDataBars(cls, symbol, params) {
+    var params = params ? params : {
+        interval : '5',
+        unit : 'Minute',
+        barsback : '25',
+        sessiontemplate : 'Default'
+      };
+    params.barsback = '25';
+    var time = new Date(cls.allBars[0].time * 1000).toISOString();
+    params.lastdate = time.replace('.000Z', '.00Z');
+    window.ts.marketData.getBarsByLastDate(symbol, params).then(bars => {
+        var candles = window.ts.marketData.bars2Candles(bars);
+        console.log(candles);
+        // cls.setBars([...candles, ...cls.allBars]);
+    }).catch(error => {
+        console.log("[ERROR] prependMarketDataBars " + error);
+        // setTimeout(() => {
+        //     console.log("[INFO] prependMarketDataBars trying again...");
+        //     prependMarketDataBars(cls, range, symbol, params);
+        // }, 1000);
+    });
+}
 
 export class Data{
     constructor(chartClass){

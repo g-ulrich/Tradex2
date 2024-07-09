@@ -2015,7 +2015,7 @@ class Polygon {
     if (this._canProceed()) {
       const url = `${this.baseUrl}/v2/reference/news`;
       const params = new URLSearchParams({
-        limit: 5,
+        limit: 20,
         apiKey: this.key
       }).toString();
       const symbol = ticker ? `&ticker=${ticker}` : '';
@@ -3095,6 +3095,41 @@ class MarketData {
       throw error;
     }
   }
+  async getBarsByLastDate(symbol, params) {
+    this.refreshToken();
+    const interval = params?.interval || '1';
+    const unit = params?.unit || 'Daily';
+    const barsback = params?.barsback || '1';
+    // const firstdate = params?.firstdate || '';
+    const lastdate = params?.lastdate || new Date().toISOString();
+    const sessiontemplate = params?.sessiontemplate || 'Default';
+    const url = `${this.baseUrl}/barcharts/${symbol}`;
+    const options = {
+      params: {
+        interval,
+        unit,
+        barsback,
+        // firstdate,
+        lastdate,
+        sessiontemplate
+      },
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`
+      }
+    };
+    console.log(symbol, options);
+    try {
+      const response = await axios__WEBPACK_IMPORTED_MODULE_0___default().get(url, options);
+      const bars = response.data.Bars;
+      const newBars = bars.map(bar => {
+        return this.fixBar(bar);
+      });
+      return newBars;
+    } catch (error) {
+      this.error(`getBarsByLastDate() - ${error}`);
+      throw error;
+    }
+  }
   setBars(setter, symbol, params) {
     (async () => {
       try {
@@ -3963,6 +3998,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   findObjectById: () => (/* binding */ findObjectById),
 /* harmony export */   findObjectByVal: () => (/* binding */ findObjectByVal),
 /* harmony export */   formatCurrency: () => (/* binding */ formatCurrency),
+/* harmony export */   formatDateWithPrecision: () => (/* binding */ formatDateWithPrecision),
 /* harmony export */   formatVolume: () => (/* binding */ formatVolume),
 /* harmony export */   generateAlphaNumString: () => (/* binding */ generateAlphaNumString),
 /* harmony export */   generateCandleData: () => (/* binding */ generateCandleData),
@@ -4587,6 +4623,19 @@ function isMarketOpen() {
   var status = isPre ? 'pre' : isReg ? 'reg' : isPost ? 'post' : 'closed';
   return status;
 }
+function formatDateWithPrecision(dateString) {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so we add 1 and pad with leading zeros if necessary
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  // Extracting only the first two digits of milliseconds
+  const milliseconds = String(date.getMilliseconds()).padStart(3, '0').substring(0, 2);
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+}
 
 /***/ }),
 
@@ -4664,7 +4713,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\r\n::-webkit-scrollbar {\r\n    width: 20px;\r\n}\r\n::-webkit-scrollbar-corner {\r\n    background: rgba(0,0,0,0);\r\n}\r\n::-webkit-scrollbar-thumb {\r\n    background-color: #5f5858;\r\n    border-radius: 6px;\r\n    border: 4px solid rgba(0,0,0,0);\r\n    background-clip: content-box;\r\n    min-width: 32px;\r\n    min-height: 32px;\r\n}\r\n::-webkit-scrollbar-track {\r\n    background-color: rgba(0,0,0,0);\r\n}\r\n", "",{"version":3,"sources":["webpack://./src/pages/css/scrollbar.css"],"names":[],"mappings":";AACA;IACI,WAAW;AACf;AACA;IACI,yBAAyB;AAC7B;AACA;IACI,yBAAyB;IACzB,kBAAkB;IAClB,+BAA+B;IAC/B,4BAA4B;IAC5B,eAAe;IACf,gBAAgB;AACpB;AACA;IACI,+BAA+B;AACnC","sourcesContent":["\r\n::-webkit-scrollbar {\r\n    width: 20px;\r\n}\r\n::-webkit-scrollbar-corner {\r\n    background: rgba(0,0,0,0);\r\n}\r\n::-webkit-scrollbar-thumb {\r\n    background-color: #5f5858;\r\n    border-radius: 6px;\r\n    border: 4px solid rgba(0,0,0,0);\r\n    background-clip: content-box;\r\n    min-width: 32px;\r\n    min-height: 32px;\r\n}\r\n::-webkit-scrollbar-track {\r\n    background-color: rgba(0,0,0,0);\r\n}\r\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "\r\n::-webkit-scrollbar {\r\n    width: 10px;\r\n}\r\n::-webkit-scrollbar-corner {\r\n    background: rgba(0,0,0,0);\r\n}\r\n::-webkit-scrollbar-thumb {\r\n    background-color: #5f5858;\r\n    border-radius: 3px;\r\n    border: 2px solid rgba(0,0,0,0);\r\n    background-clip: content-box;\r\n    min-width: 7px;\r\n    min-height: 7px;\r\n}\r\n::-webkit-scrollbar-track {\r\n    background-color: rgba(0,0,0,0);\r\n}\r\n", "",{"version":3,"sources":["webpack://./src/pages/css/scrollbar.css"],"names":[],"mappings":";AACA;IACI,WAAW;AACf;AACA;IACI,yBAAyB;AAC7B;AACA;IACI,yBAAyB;IACzB,kBAAkB;IAClB,+BAA+B;IAC/B,4BAA4B;IAC5B,cAAc;IACd,eAAe;AACnB;AACA;IACI,+BAA+B;AACnC","sourcesContent":["\r\n::-webkit-scrollbar {\r\n    width: 10px;\r\n}\r\n::-webkit-scrollbar-corner {\r\n    background: rgba(0,0,0,0);\r\n}\r\n::-webkit-scrollbar-thumb {\r\n    background-color: #5f5858;\r\n    border-radius: 3px;\r\n    border: 2px solid rgba(0,0,0,0);\r\n    background-clip: content-box;\r\n    min-width: 7px;\r\n    min-height: 7px;\r\n}\r\n::-webkit-scrollbar-track {\r\n    background-color: rgba(0,0,0,0);\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

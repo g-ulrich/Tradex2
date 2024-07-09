@@ -200,6 +200,44 @@ export class MarketData {
     }
   }
 
+  async getBarsByLastDate(symbol, params) {
+    this.refreshToken();
+    const interval = params?.interval || '1';
+    const unit = params?.unit || 'Daily';
+    const barsback = params?.barsback || '1';
+    // const firstdate = params?.firstdate || '';
+    const lastdate = params?.lastdate || new Date().toISOString();
+    const sessiontemplate = params?.sessiontemplate || 'Default';
+
+    const url = `${this.baseUrl}/barcharts/${symbol}`;
+    const options = {
+      params: {
+        interval,
+        unit,
+        barsback,
+        // firstdate,
+        lastdate,
+        sessiontemplate,
+      },
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+    };
+    console.log(symbol, options);
+    try {
+      const response = await axios.get(url, options);
+      const bars = response.data.Bars;
+
+      const newBars = bars.map((bar)=>{
+        return this.fixBar(bar);
+      });
+      return newBars;
+    } catch (error) {
+      this.error(`getBarsByLastDate() - ${error}`);
+      throw error;
+    }
+  }
+
   setBars(setter, symbol, params){
     (async () => {
       try {

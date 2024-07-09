@@ -12,7 +12,7 @@ $(()=>{
     setTimeout(()=>{
         $("#spinner").fadeOut();
         $("#contentContainer").fadeIn();
-        new NewsTable("news", symbol);
+        new NewsTable("news");
     }, 2000);
 });
 

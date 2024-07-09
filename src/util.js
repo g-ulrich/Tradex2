@@ -643,3 +643,19 @@ export function isMarketOpen() {
   var status = isPre ? 'pre' : isReg ? 'reg' : isPost ? 'post' : 'closed';
   return status;
 }
+
+
+export function formatDateWithPrecision(dateString) {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so we add 1 and pad with leading zeros if necessary
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  // Extracting only the first two digits of milliseconds
+  const milliseconds = String(date.getMilliseconds()).padStart(3, '0').substring(0, 2);
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+}

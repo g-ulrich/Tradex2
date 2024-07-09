@@ -15,8 +15,7 @@ export default function addTabs(ids){
         $id.append(
             `<span class="${item} bg-glass p-1 text-muted" 
             style="cursor:pointer;"
-            data-eye="fa-eye"><i class="fa-solid fa-${iconName}"></i> 
-            ${item}</span>`
+            data-eye="fa-eye"><i class="fa-solid fa-${iconName}"></i>${item}</span>`
         );
         $(`.${item}`).on('click', (e)=>{
             var data = e.target.dataset;
