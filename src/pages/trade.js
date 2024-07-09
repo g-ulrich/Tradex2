@@ -1,7 +1,7 @@
 import {$, setColumnWidths} from './common/core';
 import "./css/bootstrap-discord.min.css";
 import Chart from "../charts/chartClass";
-import { getVerticalTabHTML, getHorizontalTabHTML } from '../util';
+import { getVerticalTabHTML, getHorizontalTabHTML, isMarketOpen } from '../util';
 import { PositionsTable } from '../datatables/positionsTableClass';
 import { EdgarTable } from '../datatables/edgarTableClass';
 import OrderForm from './components/orderFormClass';
@@ -12,6 +12,7 @@ import addTabs from './components/toggleTabs';
 
 
 $(()=>{
+    console.log("Market open: ", isMarketOpen());
     $("title").attr("title", "Tradex2 | Trade");
     $("#spinner").show();
     $("#contentContainer").hide();

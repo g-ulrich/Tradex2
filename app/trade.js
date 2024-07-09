@@ -4513,29 +4513,18 @@ function renderColor(data, row, condition) {
 }
 function getTickerHtml(row) {
   var html = "";
-  var url = window.location.href;
-  url = url.href;
-  console.log(url);
+  // var url = window.location.href;
+  // url = url.href;
   row?.tickers.forEach((ticker, i) => {
     var target = "";
     var href = "";
-    // if (!url.includes("trade")) {
     target = `target="_blank"`;
     href = `href="trade.html?symbol=${ticker}"`;
-    // }else{
-    //     target ="";
-    //     url = new URL(url);
-    //     const params = new URLSearchParams(url.search);
-    //     url = url.href;
-    //     href = `href="${url.replace(params.get('symbol'), ticker)}"`;
-    // }
     html += `<a 
             ${target}
             ${href}
             class="bg-glass px-2 text-muted">
-        ${ticker}</a>
-        `;
-    // ${i % 2 === 0 && i != 0? '<br/>' : ''}
+        ${ticker}</a>`;
   });
   return html;
 }
@@ -4602,108 +4591,9 @@ const getNewsColumns = () => {
                 <div style="white-space:normal;"
                     class="text-start">${html}</div>
                </div>`;
-
-      /*
-       width: 500px;
-           white-space: nowrap;
-           overflow: hidden;
-           text-overflow: ellipsis;
-           display: block;
-           overflow: hidden;
-      */
     }
-  }
-  // {
-  //     data: 'tickers', name: 'Symbols', headerCls: 'text-end', render: 
-  //     function (data, type, row, meta) {
-  //         var html = "";
-  //         var url = window.location.href;
-  //         data.forEach((ticker, i)=>{ 
-  //             var target= "";
-  //             var href ="";
-  //             if (!url.includes("trade")) {
-  //                 target = `target="_blank"`;
-  //                 href= `href="trade.html?symbol=${ticker}"`;
-  //             }else{
-  //                 target ="";
-  //                 const urlObj = new URL(url);
-  //                 href = urlObj.searchParams.set('symbol', ticker);
-  //             }
-  //             html += `<a 
-  //                 ${target}
-  //                 ${href}
-  //                 class="bg-glass px-2 text-muted">
-  //             ${ticker}</a>
-  //             ${i % 2 === 0 && i != 0? '<br/>' : ''}`
-  //         });
-  //        return `<div 
-  //        style="height: 50px;
-  //        overflow-y:auto;"
-  //        class="text-end">${html}</div>`;
-  //     }
-  // },
-  ];
+  }];
 };
-
-/*
-{
-  "count": 1,
-  "next_url": "https://api.polygon.io:443/v2/reference/news?cursor=eyJsaW1pdCI6MSwic29ydCI6InB1Ymxpc2hlZF91dGMiLCJvcmRlciI6ImFzY2VuZGluZyIsInRpY2tlciI6e30sInB1Ymxpc2hlZF91dGMiOnsiZ3RlIjoiMjAyMS0wNC0yNiJ9LCJzZWFyY2hfYWZ0ZXIiOlsxNjE5NDA0Mzk3MDAwLG51bGxdfQ",
-  "request_id": "831afdb0b8078549fed053476984947a",
-  "results": [
-    {
-      "amp_url": "https://amp.benzinga.com/amp/content/20784086",
-      "article_url": "https://www.benzinga.com/markets/cryptocurrency/21/04/20784086/cathie-wood-adds-more-coinbase-skillz-trims-square",
-      "author": "Rachit  Vats",
-      "description": "<p>Cathie Wood-led Ark Investment Management on Friday snapped up another 221,167 shares of the cryptocurrency exchange <strong>Coinbase Global Inc </strong>(NASDAQ <a class=\"ticker\" href=\"https://www.benzinga.com/stock/coin#NASDAQ\">COIN</a>) worth about $64.49 million on the stock&rsquo;s Friday&rsquo;s dip and also its fourth-straight loss.</p>\n<p>The investment firm&rsquo;s <strong>Ark Innovation ETF</strong> (NYSE <a class=\" ticker\" href=\"https://www.benzinga.com/stock/arkk#NYSE\">ARKK</a>) bought the shares of the company that closed 0.63% lower at $291.60 on Friday, giving the cryptocurrency exchange a market cap of $58.09 billion. Coinbase&rsquo;s market cap has dropped from $85.8 billion on its blockbuster listing earlier this month.</p>\n<p>The New York-based company also added another 3,873 shares of the mobile gaming company <strong>Skillz Inc</strong> (NYSE <a class=\" ticker\" href=\"https://www.benzinga.com/stock/sklz#NYSE\">SKLZ</a>), <a href=\"http://www.benzinga.com/markets/cryptocurrency/21/04/20762794/cathie-woods-ark-loads-up-another-1-2-million-shares-in-skillz-also-adds-coinbase-draftkin\" >just a day after</a> snapping 1.2 million shares of the stock.</p>\n <p>ARKK bought the shares of the company which closed ...</p><p><a href=https://www.benzinga.com/markets/cryptocurrency/21/04/20784086/cathie-wood-adds-more-coinbase-skillz-trims-square alt=Cathie Wood Adds More Coinbase, Skillz, Trims Square>Full story available on Benzinga.com</a></p>",
-      "id": "nJsSJJdwViHZcw5367rZi7_qkXLfMzacXBfpv-vD9UA",
-      "image_url": "https://cdn2.benzinga.com/files/imagecache/og_image_social_share_1200x630/images/story/2012/andre-francois-mckenzie-auhr4gcqcce-unsplash.jpg?width=720",
-      "keywords": [
-        "Sector ETFs",
-        "Penny Stocks",
-        "Cryptocurrency",
-        "Small Cap",
-        "Markets",
-        "Trading Ideas",
-        "ETFs"
-      ],
-      "published_utc": "2021-04-26T02:33:17Z",
-      "publisher": {
-        "favicon_url": "https://s3.polygon.io/public/public/assets/news/favicons/benzinga.ico",
-        "homepage_url": "https://www.benzinga.com/",
-        "logo_url": "https://s3.polygon.io/public/public/assets/news/logos/benzinga.svg",
-        "name": "Benzinga"
-      },
-      "tickers": [
-        "DOCU",
-        "DDD",
-        "NIU",
-        "ARKF",
-        "NVDA",
-        "SKLZ",
-        "PCAR",
-        "MASS",
-        "PSTI",
-        "SPFR",
-        "TREE",
-        "PHR",
-        "IRDM",
-        "BEAM",
-        "ARKW",
-        "ARKK",
-        "ARKG",
-        "PSTG",
-        "SQ",
-        "IONS",
-        "SYRS"
-      ],
-      "title": "Cathie Wood Adds More Coinbase, Skillz, Trims Square"
-    }
-  ],
-  "status": "OK"
-}
-
-*/
 
 /***/ }),
 
@@ -7333,12 +7223,11 @@ class OrderBookLevel1 {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(".bidSize").text(quote?.BidSize);
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormAsk").css('width', `${aP}%`);
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(".orderFormAsk").attr('aria-valuenow', `${aP}`);
-    // $(".orderFormAsk").text(`Ask ${formatCurrency(quote?.Ask)}`);
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(".askPrice").text(parseFloat(quote?.Ask).toFixed(2));
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(".askSize").text(quote?.AskSize);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".halted").addClass(quote?.MarketFlags.IsHalted ? 'text-danger' : 'text-success'); //text(`Halted : ${quote?.MarketFlags.IsHalted}`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".halted").addClass(quote?.MarketFlags.IsHalted ? 'text-danger' : 'text-muted');
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(".halted").attr('title', quote?.MarketFlags.IsHalted ? 'Is halted' : 'Is not halted');
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".delayed").addClass(quote?.MarketFlags.IsDelayed ? 'text-danger' : 'text-success'); //text(`Delayed : ${quote?.MarketFlags.IsDelayed}`);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".delayed").addClass(quote?.MarketFlags.IsDelayed ? 'text-danger' : 'text-muted');
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(".delayed").attr('title', quote?.MarketFlags.IsDelayed ? 'Is delayed' : 'Is not delayed');
   }
   startQuoteStream(symbol) {
@@ -9688,6 +9577,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   inJsonArray: () => (/* binding */ inJsonArray),
 /* harmony export */   isCurTimeDivisibleByMinsWithTolerance: () => (/* binding */ isCurTimeDivisibleByMinsWithTolerance),
 /* harmony export */   isFloat: () => (/* binding */ isFloat),
+/* harmony export */   isMarketOpen: () => (/* binding */ isMarketOpen),
 /* harmony export */   isStringInArray: () => (/* binding */ isStringInArray),
 /* harmony export */   isSubStr: () => (/* binding */ isSubStr),
 /* harmony export */   jsonArrayToArrayByKey: () => (/* binding */ jsonArrayToArrayByKey),
@@ -10277,6 +10167,29 @@ function getVerticalTabHTML() {
               style="z-index:2;right:0px;width:15px;top:50%;margin-right:-7.5px;">
               <i class="fa-solid fa-grip-lines-vertical"></i>
             </div>`;
+}
+function isMarketOpen() {
+  const now = new Date();
+  const hr = now.getHours();
+  const min = now.getMinutes();
+  var isPre = hr >= 7 && min >= 30 && hr <= 9 && min <= 30;
+
+  // Pre-market hours: 7:30 AM to 9:30 AM
+  if (hr === 7 && min >= 30 || hr === 8 && min >= 30 || hr === 9) {
+    return 'Pre-Market';
+  }
+  // Regular market hours: 9:30 AM to 4:00 PM
+  else if (hr >= 9 && hr < 16) {
+    return 'Regular Market';
+  }
+  // Post-market hours: 4:00 PM to 8:00 PM
+  else if (hr >= 16 && hr <= 20) {
+    return 'Post-Market';
+  }
+  // Outside of market hours
+  else {
+    return 'Closed';
+  }
 }
 
 /***/ }),
@@ -11250,6 +11163,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)(() => {
+  console.log("Market open: ", (0,_util__WEBPACK_IMPORTED_MODULE_3__.isMarketOpen)());
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("title").attr("title", "Tradex2 | Trade");
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#spinner").show();
   (0,_common_core__WEBPACK_IMPORTED_MODULE_0__.$)("#contentContainer").hide();

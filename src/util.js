@@ -631,3 +631,27 @@ export function getVerticalTabHTML(){
               <i class="fa-solid fa-grip-lines-vertical"></i>
             </div>`;
 }
+
+export function isMarketOpen() {
+  const now = new Date();
+  const hr = now.getHours();
+  const min = now.getMinutes();
+  var isPre = (hr >= 7 && min >= 30) && (hr <= 9 && min <= 30);
+
+  // Pre-market hours: 7:30 AM to 9:30 AM
+  if ((hr === 7 && min >= 30) || (hr === 8 && min >= 30) || (hr === 9)) {
+      return 'Pre-Market';
+  }
+  // Regular market hours: 9:30 AM to 4:00 PM
+  else if (hr >= 9 && hr < 16) {
+      return 'Regular Market';
+  }
+  // Post-market hours: 4:00 PM to 8:00 PM
+  else if (hr >= 16 && hr <= 20) {
+      return 'Post-Market';
+  }
+  // Outside of market hours
+  else {
+      return 'Closed';
+  }
+}

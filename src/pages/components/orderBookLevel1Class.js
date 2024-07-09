@@ -46,13 +46,12 @@ export default class OrderBookLevel1{
 
         $(".orderFormAsk").css('width', `${aP}%`);
         $(".orderFormAsk").attr('aria-valuenow', `${aP}`);
-        // $(".orderFormAsk").text(`Ask ${formatCurrency(quote?.Ask)}`);
         $(".askPrice").text(parseFloat(quote?.Ask).toFixed(2));
         $(".askSize").text(quote?.AskSize);
 
-        $(".halted").addClass(quote?.MarketFlags.IsHalted ? 'text-danger' : 'text-success'); //text(`Halted : ${quote?.MarketFlags.IsHalted}`);
+        $(".halted").addClass(quote?.MarketFlags.IsHalted ? 'text-danger' : 'text-muted'); 
         $(".halted").attr('title', quote?.MarketFlags.IsHalted ? 'Is halted' : 'Is not halted')
-        $(".delayed").addClass(quote?.MarketFlags.IsDelayed ? 'text-danger' : 'text-success'); //text(`Delayed : ${quote?.MarketFlags.IsDelayed}`);
+        $(".delayed").addClass(quote?.MarketFlags.IsDelayed ? 'text-danger' : 'text-muted'); 
         $(".delayed").attr('title', quote?.MarketFlags.IsDelayed ? 'Is delayed' : 'Is not delayed')
 
     }
