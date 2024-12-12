@@ -742,6 +742,8 @@ setHistoricalOrdersBySymbol(setter, symbol, accounts, since, pageSize, nextToken
                   await this.delay(1000 * 5);
                 }else if (isSubStr(msg, 'whitespace')){
                   this.info("None-whitespace Error");
+                }else if (isSubStr(msg, 'syntaxerror')) {
+                  this.info("SyntaxError");
                 } else {
                   this.error(`streamPositions() while ${error}`);
                 }

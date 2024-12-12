@@ -24,7 +24,6 @@ export default class Chart{
         this.lastQuote = null;
         this.allBars = [];
         this.series = {};
-        this.pl = 0;
         this.color = {
             success: "#0b9657",
             primary: "#7289da",
@@ -32,23 +31,6 @@ export default class Chart{
         };
         this.lastPriceClicked = null;   
         this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
-
-
-//         const container = document.getElementById(this.containerId);
-// const background = document.createElement('div');
-// // place below the chart
-// background.style.zIndex = -1;
-// background.style.position = 'absolute';
-// // set size and position to match container
-// background.style.inset = '0px';
-// background.style.backgroundImage = `url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOTIiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjkyIDEyOCI++PC9zdmc+")`;
-// background.style.backgroundRepeat = 'no-repeat';
-// background.style.backgroundPosition = 'center';
-// background.style.opacity = '0.5';
-// container.appendChild(background);
-
-
-
         this.addCandlestickSeries("bars");
         this.addHistogramSeries("vol");
         setMarketDataBarsAndStream(this, this.header.symbol, this.header.params);
@@ -86,20 +68,20 @@ export default class Chart{
         setTimeout(()=>{
             this.chart.timeScale().subscribeVisibleTimeRangeChange(
                 (range) =>{
-                    if (this.lastRange !== null && this.allBars.length > 0){
-                        var needData = range.from == this.lastRange.from && this.allBars[0].time == range.from  ? true : false;
-                        if (needData && !this.loadingNewRangeData){
-                            this.loadingNewRangeData = true;
-                            prependMarketDataBars(this, this.header.params);
-                            setTimeout(()=>{
-                                this.loadingNewRangeData = false;
-                            }, 5000);
-                            // .then(newData => {
-                            //     // Prepend new data to the existing series
-                            //     // lineSeries.setData([ ...newData, ...lineSeries.data() ]);
-                            // });
-                            console.log(needData, this.lastRange, range);
-                        }
+                    var canRange = range!== null && this.lastRange !== null;
+                    if (canRange && this.allBars.length > 0){
+                            
+
+                            var needData = range.from == this.lastRange.from && this.allBars[0].time == range.from  ? true : false;
+                           
+                            if (needData && !this.loadingNewRangeData){
+                                this.loadingNewRangeData = true;
+                                prependMarketDataBars(this, this.header.symbol, this.header.params);
+                                setTimeout(()=>{
+                                    this._setRangeBy(range);
+                                    this.loadingNewRangeData = false;
+                                }, 1000);
+                            }
                     }
                     this.lastRange = range;
                 });
@@ -252,11 +234,34 @@ export default class Chart{
         return bar;
     }
 
-    _setVisibleRange(){
+    _setVisibleRange(index1, index2){
+        var a = index1 ? index1 : this.allBars.length -25;
+        var b = index2 ? index2 : this.allBars.length -1;
         this.chart.timeScale().setVisibleRange({
-            from: this.allBars[this.allBars.length -25].time,
-            to: this.allBars[this.allBars.length -1].time,
+            from: this.allBars[a].time,
+            to: this.allBars[b].time,
         });
+    }
+
+    // _resetChartToLastRange(){
+    //     var range = this.lastRange;
+    //     setTimeout(() =>{
+    //         if (range !== null) {
+    //             console.log(new Date(range.from * 1000).toISOString(),
+    //             new Date(range.to * 1000).toISOString());
+    //             this.chart.timeScale().setVisibleRange({
+    //                 from: range.from,
+    //                 to: range.to,
+    //             });
+    //         }
+    //     }, 1000);
+    // }
+
+    _setRangeBy(range){
+            this.chart.timeScale().setVisibleRange({
+                from: range.from,
+                to: range.to,
+            });
     }
 
     _pushBar(bar){
@@ -293,28 +298,42 @@ export default class Chart{
     }
 
     setBars(bars){
+        /*
+            Called once when group of new bars need set to the chart.
+        */
         bars.forEach((bar)=>{
             this._pushBar(bar);
             this.setNextBar(bar);
         });
-        // this.setData(bars);
-        this._setVisibleRange();
         this.setHighLowMarkers();
         this.setSessionHighlights();
     }
 
-    setNextStreamBar(bar) {
-        let mergedBar = { };
-        Object.keys(bar).forEach(key => {
-          if (!isNaN(bar[key]) && bar[key] !== this.lastBar[key]) {
-            mergedBar[key] = bar[key];
-          }else{
-            mergedBar[key] = this.lastBar[key];
-          }
+    clearAllData(){
+        /**
+         * Empty data for all series.
+         */
+        // this.chart.timeScale().unsubscribeVisibleTimeRangeChange();
+        Object.keys(this.series).forEach(name => {
+            var series = this.series[name];
+            series.obj.setData([]);
         });
-        this._pushBar(mergedBar);
-        this.setNextBar(mergedBar);
-      }
+        this.allBars = [];
+        // this.lastRange = null;
+    }
+
+    setNextStreamBar(bar) {
+            let mergedBar = { };
+            Object.keys(bar).forEach(key => {
+            if (!isNaN(bar[key]) && bar[key] !== this.lastBar[key]) {
+                mergedBar[key] = bar[key];
+            }else{
+                mergedBar[key] = this.lastBar[key];
+            }
+            });
+            this._pushBar(mergedBar);
+            this.setNextBar(mergedBar);
+        }
 
     // setData(bars){
     //     Object.keys(this.series).forEach(name => {
@@ -349,6 +368,11 @@ export default class Chart{
         });
         
     } 
+
+    killSessionHighlights(){
+        delete this.series['bars'];
+        this.addCandlestickSeries('bars');
+    }
 
     setSessionHighlights(){
         var params = this.header.params;

@@ -11,9 +11,11 @@ function getEdgarReports(tableCls, symbol) {
         tableCls.setPollData(tableCls, r);
     }).catch(error => {
         console.log("[ERROR] getEdgarReports", error);
-        setTimeout(() => {
-            getEdgarReports(tableCls, symbol);
-        }, 1000);
+        if (error.message !== "Not Found"){
+            setTimeout(() => {
+                getEdgarReports(tableCls, symbol);
+            }, 1000);
+        }
     });
 }
 

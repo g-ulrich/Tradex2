@@ -24,6 +24,7 @@ export function setMarketDataBarsAndStream(cls, symbol, params){
     window.ts.marketData.getBars(symbol, params).then(bars => {
         var candles = window.ts.marketData.bars2Candles(bars);
         cls.setBars(candles);
+        cls._setVisibleRange();
         window.ts.marketData.streamBars(cls, `c_${getRandomAlphaNum(10)}`, symbol, params);
     }).catch(error => {
         console.log("[ERROR] setMarketDataBarsAndStream " + error);
@@ -39,16 +40,18 @@ export function prependMarketDataBars(cls, symbol, params) {
     var params = params ? params : {
         interval : '5',
         unit : 'Minute',
-        barsback : '25',
+        barsback : '100',
         sessiontemplate : 'Default'
       };
-    params.barsback = '25';
+    params.barsback = '50';
     var time = new Date(cls.allBars[0].time * 1000).toISOString();
     params.lastdate = time.replace('.000Z', '.00Z');
     window.ts.marketData.getBarsByLastDate(symbol, params).then(bars => {
         var candles = window.ts.marketData.bars2Candles(bars);
-        console.log(candles);
-        // cls.setBars([...candles, ...cls.allBars]);
+        var oldBars = cls.allBars.slice(0, -2);
+        cls.clearAllData();
+        cls.killSessionHighlights();
+        cls.setBars([...candles, ...oldBars]);
     }).catch(error => {
         console.log("[ERROR] prependMarketDataBars " + error);
         // setTimeout(() => {

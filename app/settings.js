@@ -2738,6 +2738,8 @@ class Accounts {
                 await this.delay(1000 * 5);
               } else if ((0,_util__WEBPACK_IMPORTED_MODULE_1__.isSubStr)(msg, 'whitespace')) {
                 this.info("None-whitespace Error");
+              } else if ((0,_util__WEBPACK_IMPORTED_MODULE_1__.isSubStr)(msg, 'syntaxerror')) {
+                this.info("SyntaxError");
               } else {
                 this.error(`streamPositions() while ${error}`);
               }
@@ -3032,9 +3034,13 @@ class MarketData {
     };
   }
   bars2Candles(bars) {
-    return bars.map(bar => {
-      return this.formatBar(bar);
+    var newBars = [];
+    bars.forEach(bar => {
+      if (bar.Close !== 0) {
+        newBars.push(this.formatBar(bar));
+      }
     });
+    return newBars;
   }
   fixBar(bar) {
     return {
@@ -3097,27 +3103,20 @@ class MarketData {
   }
   async getBarsByLastDate(symbol, params) {
     this.refreshToken();
-    const interval = params?.interval || '1';
-    const unit = params?.unit || 'Daily';
-    const barsback = params?.barsback || '1';
-    // const firstdate = params?.firstdate || '';
-    const lastdate = params?.lastdate || new Date().toISOString();
-    const sessiontemplate = params?.sessiontemplate || 'Default';
     const url = `${this.baseUrl}/barcharts/${symbol}`;
     const options = {
       params: {
-        interval,
-        unit,
-        barsback,
+        interval: params?.interval || '1',
+        unit: params?.unit || 'Daily',
+        barsback: params?.barsback || '1',
         // firstdate,
-        lastdate,
-        sessiontemplate
+        lastdate: params?.lastdate || new Date().toISOString(),
+        sessiontemplate: params?.sessiontemplate || 'Default'
       },
       headers: {
         Authorization: `Bearer ${this.accessToken}`
       }
     };
-    console.log(symbol, options);
     try {
       const response = await axios__WEBPACK_IMPORTED_MODULE_0___default().get(url, options);
       const bars = response.data.Bars;

@@ -49,7 +49,6 @@ class Chart {
     this.lastQuote = null;
     this.allBars = [];
     this.series = {};
-    this.pl = 0;
     this.color = {
       success: "#0b9657",
       primary: "#7289da",
@@ -57,20 +56,6 @@ class Chart {
     };
     this.lastPriceClicked = null;
     this.setWatermark(`${this.header.symbol}:${this.header.getIntervalName()}`);
-
-    //         const container = document.getElementById(this.containerId);
-    // const background = document.createElement('div');
-    // // place below the chart
-    // background.style.zIndex = -1;
-    // background.style.position = 'absolute';
-    // // set size and position to match container
-    // background.style.inset = '0px';
-    // background.style.backgroundImage = `url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOTIiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjkyIDEyOCI++PC9zdmc+")`;
-    // background.style.backgroundRepeat = 'no-repeat';
-    // background.style.backgroundPosition = 'center';
-    // background.style.opacity = '0.5';
-    // container.appendChild(background);
-
     this.addCandlestickSeries("bars");
     this.addHistogramSeries("vol");
     (0,_charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_6__.setMarketDataBarsAndStream)(this, this.header.symbol, this.header.params);
@@ -103,19 +88,16 @@ class Chart {
   _setRangeListener() {
     setTimeout(() => {
       this.chart.timeScale().subscribeVisibleTimeRangeChange(range => {
-        if (this.lastRange !== null && this.allBars.length > 0) {
+        var canRange = range !== null && this.lastRange !== null;
+        if (canRange && this.allBars.length > 0) {
           var needData = range.from == this.lastRange.from && this.allBars[0].time == range.from ? true : false;
           if (needData && !this.loadingNewRangeData) {
             this.loadingNewRangeData = true;
-            (0,_charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_6__.prependMarketDataBars)(this, this.header.params);
+            (0,_charts_customAPIBindings_getData__WEBPACK_IMPORTED_MODULE_6__.prependMarketDataBars)(this, this.header.symbol, this.header.params);
             setTimeout(() => {
+              this._setRangeBy(range);
               this.loadingNewRangeData = false;
-            }, 5000);
-            // .then(newData => {
-            //     // Prepend new data to the existing series
-            //     // lineSeries.setData([ ...newData, ...lineSeries.data() ]);
-            // });
-            console.log(needData, this.lastRange, range);
+            }, 1000);
           }
         }
         this.lastRange = range;
@@ -272,10 +254,33 @@ class Chart {
     : "rgba(11, 150, 87, .2)"; // success
     return bar;
   }
-  _setVisibleRange() {
+  _setVisibleRange(index1, index2) {
+    var a = index1 ? index1 : this.allBars.length - 25;
+    var b = index2 ? index2 : this.allBars.length - 1;
     this.chart.timeScale().setVisibleRange({
-      from: this.allBars[this.allBars.length - 25].time,
-      to: this.allBars[this.allBars.length - 1].time
+      from: this.allBars[a].time,
+      to: this.allBars[b].time
+    });
+  }
+
+  // _resetChartToLastRange(){
+  //     var range = this.lastRange;
+  //     setTimeout(() =>{
+  //         if (range !== null) {
+  //             console.log(new Date(range.from * 1000).toISOString(),
+  //             new Date(range.to * 1000).toISOString());
+  //             this.chart.timeScale().setVisibleRange({
+  //                 from: range.from,
+  //                 to: range.to,
+  //             });
+  //         }
+  //     }, 1000);
+  // }
+
+  _setRangeBy(range) {
+    this.chart.timeScale().setVisibleRange({
+      from: range.from,
+      to: range.to
     });
   }
   _pushBar(bar) {
@@ -308,14 +313,27 @@ class Chart {
     this.lastQuote = merged;
   }
   setBars(bars) {
+    /*
+        Called once when group of new bars need set to the chart.
+    */
     bars.forEach(bar => {
       this._pushBar(bar);
       this.setNextBar(bar);
     });
-    // this.setData(bars);
-    this._setVisibleRange();
     this.setHighLowMarkers();
     this.setSessionHighlights();
+  }
+  clearAllData() {
+    /**
+     * Empty data for all series.
+     */
+    // this.chart.timeScale().unsubscribeVisibleTimeRangeChange();
+    Object.keys(this.series).forEach(name => {
+      var series = this.series[name];
+      series.obj.setData([]);
+    });
+    this.allBars = [];
+    // this.lastRange = null;
   }
   setNextStreamBar(bar) {
     let mergedBar = {};
@@ -361,6 +379,10 @@ class Chart {
         series.obj.update(newBar);
       }
     });
+  }
+  killSessionHighlights() {
+    delete this.series['bars'];
+    this.addCandlestickSeries('bars');
   }
   setSessionHighlights() {
     var params = this.header.params;
@@ -909,6 +931,7 @@ function setMarketDataBarsAndStream(cls, symbol, params) {
   window.ts.marketData.getBars(symbol, params).then(bars => {
     var candles = window.ts.marketData.bars2Candles(bars);
     cls.setBars(candles);
+    cls._setVisibleRange();
     window.ts.marketData.streamBars(cls, `c_${(0,_util__WEBPACK_IMPORTED_MODULE_0__.getRandomAlphaNum)(10)}`, symbol, params);
   }).catch(error => {
     console.log("[ERROR] setMarketDataBarsAndStream " + error);
@@ -922,16 +945,18 @@ function prependMarketDataBars(cls, symbol, params) {
   var params = params ? params : {
     interval: '5',
     unit: 'Minute',
-    barsback: '25',
+    barsback: '100',
     sessiontemplate: 'Default'
   };
-  params.barsback = '25';
+  params.barsback = '50';
   var time = new Date(cls.allBars[0].time * 1000).toISOString();
   params.lastdate = time.replace('.000Z', '.00Z');
   window.ts.marketData.getBarsByLastDate(symbol, params).then(bars => {
     var candles = window.ts.marketData.bars2Candles(bars);
-    console.log(candles);
-    // cls.setBars([...candles, ...cls.allBars]);
+    var oldBars = cls.allBars.slice(0, -2);
+    cls.clearAllData();
+    cls.killSessionHighlights();
+    cls.setBars([...candles, ...oldBars]);
   }).catch(error => {
     console.log("[ERROR] prependMarketDataBars " + error);
     // setTimeout(() => {
@@ -4360,9 +4385,11 @@ function getEdgarReports(tableCls, symbol) {
     tableCls.setPollData(tableCls, r);
   }).catch(error => {
     console.log("[ERROR] getEdgarReports", error);
-    setTimeout(() => {
-      getEdgarReports(tableCls, symbol);
-    }, 1000);
+    if (error.message !== "Not Found") {
+      setTimeout(() => {
+        getEdgarReports(tableCls, symbol);
+      }, 1000);
+    }
   });
 }
 class EdgarTable {
@@ -8429,6 +8456,8 @@ class Accounts {
                 await this.delay(1000 * 5);
               } else if ((0,_util__WEBPACK_IMPORTED_MODULE_1__.isSubStr)(msg, 'whitespace')) {
                 this.info("None-whitespace Error");
+              } else if ((0,_util__WEBPACK_IMPORTED_MODULE_1__.isSubStr)(msg, 'syntaxerror')) {
+                this.info("SyntaxError");
               } else {
                 this.error(`streamPositions() while ${error}`);
               }
@@ -8723,9 +8752,13 @@ class MarketData {
     };
   }
   bars2Candles(bars) {
-    return bars.map(bar => {
-      return this.formatBar(bar);
+    var newBars = [];
+    bars.forEach(bar => {
+      if (bar.Close !== 0) {
+        newBars.push(this.formatBar(bar));
+      }
     });
+    return newBars;
   }
   fixBar(bar) {
     return {
@@ -8788,27 +8821,20 @@ class MarketData {
   }
   async getBarsByLastDate(symbol, params) {
     this.refreshToken();
-    const interval = params?.interval || '1';
-    const unit = params?.unit || 'Daily';
-    const barsback = params?.barsback || '1';
-    // const firstdate = params?.firstdate || '';
-    const lastdate = params?.lastdate || new Date().toISOString();
-    const sessiontemplate = params?.sessiontemplate || 'Default';
     const url = `${this.baseUrl}/barcharts/${symbol}`;
     const options = {
       params: {
-        interval,
-        unit,
-        barsback,
+        interval: params?.interval || '1',
+        unit: params?.unit || 'Daily',
+        barsback: params?.barsback || '1',
         // firstdate,
-        lastdate,
-        sessiontemplate
+        lastdate: params?.lastdate || new Date().toISOString(),
+        sessiontemplate: params?.sessiontemplate || 'Default'
       },
       headers: {
         Authorization: `Bearer ${this.accessToken}`
       }
     };
-    console.log(symbol, options);
     try {
       const response = await axios__WEBPACK_IMPORTED_MODULE_0___default().get(url, options);
       const bars = response.data.Bars;
